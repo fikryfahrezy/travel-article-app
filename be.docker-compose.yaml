@@ -8,9 +8,22 @@ services:
       - path: ./.env
         required: true
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8080/health"]
       interval: 5s
       timeout: 5s
       retries: 5
     extra_hosts:
       - host.docker.internal:host-gateway
+  # This is a naive way to do migration on the author's server, but for now it just works :)
+  migration:
+    build:
+      context: .
+      dockerfile: ./migration.Dockerfile
+    env_file:
+      - path: ./.env
+        required: true
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    depends_on:
+      back-end:
+        condition: service_healthy
