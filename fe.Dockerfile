@@ -8,16 +8,13 @@ FROM base AS builder
 WORKDIR /app
  
 COPY package*json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
+COPY pnpm-workspace.yaml ./
+COPY ./apps/front-end/package*json ./apps/front-end/
+
 RUN pnpm install --frozen-lockfile
 
 COPY . .
-RUN npm run build
-
-FROM base AS installer
-WORKDIR /app
- 
-COPY package*json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
-RUN pnpm install --frozen-lockfile --prod
+RUN npm run fe:build
 
 FROM base AS runner
 
@@ -28,8 +25,7 @@ ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 vue
 
-COPY --from=installer --chown=vue:nodejs /app/node_modules ./node_modules
-COPY --from=builder --chown=vue:nodejs /app/dist/ ./dist
+COPY --from=builder --chown=vue:nodejs /app/apps/front-end/dist/ ./dist
 
 RUN npm install --global http-server
 

@@ -1,8 +1,8 @@
 services:
-  front-end:
+  back-end:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: ./be.Dockerfile
     restart: unless-stopped
     env_file:
       - path: ./.env
@@ -12,3 +12,5 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    extra_hosts:
+      - host.docker.internal:host-gateway
