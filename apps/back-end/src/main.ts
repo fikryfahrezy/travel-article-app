@@ -1,6 +1,7 @@
-import { NestFactory } from "@nestjs/core";
+import { HttpAdapterHost, NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
+import { CatchEverythingFilter } from "./filters/catch-everything-filter";
 
 const PORT = process.env.PORT ?? 3000;
 
@@ -14,6 +15,9 @@ async function bootstrap() {
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup("docs", app, documentFactory);
+
+  const { httpAdapter } = app.get(HttpAdapterHost);
+  app.useGlobalFilters(new CatchEverythingFilter(httpAdapter));
 
   console.log("Listening on PORT: ", PORT);
   await app.listen(PORT, "0.0.0.0");

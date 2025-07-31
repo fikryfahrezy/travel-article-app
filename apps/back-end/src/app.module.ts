@@ -1,11 +1,12 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
-import { TypeOrmModule } from "@nestjs/typeorm";
 import { AuthModule } from "./auth/auth.module";
 import { validateEnv } from "./config/env";
 import { EnvModule } from "./config/env.module";
+import { CoreModule } from "./core/core.module";
+import { DatabaseModule } from "./core/database.module";
+import { JwtModule } from "./core/jwt.module";
 import { HealthModule } from "./health/health.module";
-import { TypeOrmConfigService } from "./lib/typeorm-service";
 import { UsersModule } from "./users/users.module";
 
 @Module({
@@ -16,13 +17,12 @@ import { UsersModule } from "./users/users.module";
       validate: validateEnv,
     }),
     EnvModule,
-    TypeOrmModule.forRootAsync({
-      imports: [],
-      useClass: TypeOrmConfigService,
-    }),
-    AuthModule,
-    UsersModule,
+    JwtModule.register(),
+    DatabaseModule.register(),
+    CoreModule,
     HealthModule,
+    UsersModule,
+    AuthModule,
   ],
 })
 export class AppModule {}

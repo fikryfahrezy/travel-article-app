@@ -4,14 +4,18 @@ import {
   DeleteDateColumn,
   Entity,
   JoinColumn,
-  OneToOne,
+  ManyToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from "typeorm";
 import { User } from "./user.entity";
 
 @Entity()
 export class Auth {
-  @PrimaryGeneratedColumn("uuid", { name: "id" })
+  @PrimaryGeneratedColumn("uuid", {
+    name: "id",
+    primaryKeyConstraintName: "auth_id_primary_key",
+  })
   id: string;
 
   @Column({ type: "varchar", name: "token", nullable: false })
@@ -23,15 +27,31 @@ export class Auth {
   @Column({ type: "timestamptz", name: "expires_at", nullable: false })
   expiresAt: Date;
 
-  @OneToOne(() => User)
-  @JoinColumn({ name: "user_id" })
+  @ManyToOne(() => User)
+  @JoinColumn({
+    name: "user_id",
+    foreignKeyConstraintName: "auth_user_id_foreign_key",
+  })
   user: User;
 
-  @CreateDateColumn()
-  @Column({ type: "timestamptz", name: "created_at", nullable: false })
+  @CreateDateColumn({
+    type: "timestamptz",
+    name: "created_at",
+    nullable: false,
+  })
   createdAt: Date;
 
-  @DeleteDateColumn()
-  @Column({ type: "timestamptz", name: "deleted_at", nullable: false })
+  @UpdateDateColumn({
+    type: "timestamptz",
+    name: "updated_at",
+    nullable: false,
+  })
+  updatedAt: Date;
+
+  @DeleteDateColumn({
+    type: "timestamptz",
+    name: "deleted_at",
+    nullable: true,
+  })
   deletedAt: Date;
 }

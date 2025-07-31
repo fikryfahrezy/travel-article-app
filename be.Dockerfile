@@ -36,7 +36,7 @@ RUN adduser --system --uid 1001 nestjs
 
 COPY --from=installer --chown=nestjs:nodejs /app/node_modules ./node_modules
 COPY --from=installer --chown=nestjs:nodejs /app/apps/back-end/node_modules ./apps/back-end/node_modules
-COPY --from=builder --chown=nestjs:nodejs /app/apps/back-end/dist/ ./apps/back-end/dist
+COPY --from=builder --chown=nestjs:nodejs /app/apps/back-end/dist/src ./apps/back-end/dist
 
 USER nestjs
 

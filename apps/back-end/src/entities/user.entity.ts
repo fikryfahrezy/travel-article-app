@@ -1,10 +1,14 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, Index, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 export class User {
-  @PrimaryGeneratedColumn("uuid", { name: "id" })
+  @PrimaryGeneratedColumn("uuid", {
+    name: "id",
+    primaryKeyConstraintName: "user_id_primary_key",
+  })
   id: string;
 
+  @Index("user_username_unique", { unique: true })
   @Column({ type: "varchar", name: "username", nullable: false })
   username: string;
 

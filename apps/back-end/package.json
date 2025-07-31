@@ -10,6 +10,7 @@
     "start:debug": "nest start --debug --watch",
     "typeorm": "node --env-file .env ./node_modules/typeorm/cli-ts-node-commonjs",
     "migrate:up": "npm run typeorm migration:run  -- -d migration/datasource",
+    "migrate:generate": "npm run typeorm migration:generate -- -d migration/datasource",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
     "ts:check": "tsc --noEmit"
   },
@@ -37,6 +38,7 @@
     "@swc/core": "1.10.7",
     "@types/express": "5.0.0",
     "@types/node": "22.10.7",
+    "@types/pg": "8.15.5",
     "@types/supertest": "6.0.2",
     "globals": "16.0.0",
     "prettier": "3.4.2",
