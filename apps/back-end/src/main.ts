@@ -1,5 +1,6 @@
 import { HttpAdapterHost, NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import * as cookieParser from "cookie-parser";
 import { AppModule } from "./app.module";
 import { CatchEverythingFilter } from "./filters/catch-everything-filter";
 
@@ -12,12 +13,15 @@ async function bootstrap() {
     .setTitle("Back End Service")
     .setDescription("The RESTful API documentation  for the Back End Service")
     .setVersion("1.0")
+    .addBearerAuth()
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup("docs", app, documentFactory);
 
   const { httpAdapter } = app.get(HttpAdapterHost);
   app.useGlobalFilters(new CatchEverythingFilter(httpAdapter));
+
+  app.use(cookieParser());
 
   console.log("Listening on PORT: ", PORT);
   await app.listen(PORT, "0.0.0.0");

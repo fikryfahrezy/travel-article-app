@@ -1,19 +1,19 @@
 import { DynamicModule } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { EnvService } from "src/config/env.service";
+import { ConfigService } from "src/config/config.service";
 
 export class DatabaseModule {
   static register(): DynamicModule {
     return TypeOrmModule.forRootAsync({
-      inject: [EnvService],
-      useFactory: (envService: EnvService) => {
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
         return {
           type: "postgres",
-          host: envService.key.DATABASE_HOST,
-          port: envService.key.DATABASE_PORT,
-          username: envService.key.DATABASE_USERNAME,
-          password: envService.key.DATABASE_PASSWORD,
-          database: envService.key.DATABASE_DBNAME,
+          host: configService.env.DATABASE_HOST,
+          port: configService.env.DATABASE_PORT,
+          username: configService.env.DATABASE_USERNAME,
+          password: configService.env.DATABASE_PASSWORD,
+          database: configService.env.DATABASE_DBNAME,
           entities: [__dirname + "/../entities/*.entity{.ts,.js}"],
         };
       },

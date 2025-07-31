@@ -1,17 +1,14 @@
 import { DynamicModule } from "@nestjs/common";
 import { JwtModule as NestJwtModule } from "@nestjs/jwt";
-import { EnvService } from "src/config/env.service";
+import { ConfigService } from "src/config/config.service";
 
 export class JwtModule {
   static register(): DynamicModule {
     return NestJwtModule.registerAsync({
-      inject: [EnvService],
+      inject: [ConfigService],
       global: true,
-      useFactory: (envService: EnvService) => {
-        return {
-          secret: envService.key.JWT_SECRET,
-          signOptions: { expiresIn: "60s" },
-        };
+      useFactory: () => {
+        return {};
       },
     });
   }

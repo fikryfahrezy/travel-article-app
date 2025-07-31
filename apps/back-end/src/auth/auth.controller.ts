@@ -1,5 +1,18 @@
-import { Body, Controller, HttpCode, Post, UsePipes } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  HttpCode,
+  Post,
+  Res,
+  UseGuards,
+  UsePipes,
+} from "@nestjs/common";
 import { ApiOperation, ApiResponse } from "@nestjs/swagger";
+import { Response } from "express";
+import { ConfigService } from "src/config/config.service";
+import { JwtPayload } from "src/core/jwt.service";
+import { Jwt } from "src/decorators/jwt.decorator";
+import { JwtGuard } from "src/guards/jwt.guard";
 import { ZodValidationPipe } from "src/pipes/zod-valition-pipe";
 import {
   AuthResDto,
@@ -23,7 +36,58 @@ import { AuthService } from "./auth.service";
 
 @Controller("auth")
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private configService: ConfigService,
+    private authService: AuthService,
+  ) {}
+
+  setCookie(response: Response, authResDto: AuthResDto) {
+    response.cookie(
+      this.configService.static.ACCESS_TOKEN_COOKIE_KEY,
+      authResDto.access_token,
+      {
+        httpOnly: true,
+        secure: true,
+        sameSite: "lax",
+        maxAge: this.configService.static.ACCESS_TOKEN_EXPIRES_AT * 1000, // convert seconds to milliseconds
+        domain: this.configService.env.TOKEN_COOKIE_DOMAIN,
+        path: "/",
+      },
+    );
+
+    response.cookie(
+      this.configService.static.REFRESH_TOKEN_COOKIE_KEY,
+      authResDto.refresh_token,
+      {
+        httpOnly: true,
+        secure: true,
+        sameSite: "lax",
+        maxAge: this.configService.static.REFRESH_TOKEN_EXPIRES_AT * 1000, // convert seconds to milliseconds
+        domain: this.configService.env.TOKEN_COOKIE_DOMAIN,
+        path: "/",
+      },
+    );
+  }
+
+  clearCookie(response: Response) {
+    response.cookie(this.configService.static.ACCESS_TOKEN_COOKIE_KEY, "", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "lax",
+      maxAge: 0,
+      domain: this.configService.env.TOKEN_COOKIE_DOMAIN,
+      path: "/",
+    });
+
+    response.cookie(this.configService.static.REFRESH_TOKEN_COOKIE_KEY, "", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "lax",
+      maxAge: 0,
+      domain: this.configService.env.TOKEN_COOKIE_DOMAIN,
+      path: "/",
+    });
+  }
 
   @Post("register")
   @HttpCode(201)
@@ -31,8 +95,13 @@ export class AuthController {
   @ApiResponse({ status: 200, type: AuthResDto })
   @ApiResponse({ status: 500, type: UnhandledError })
   @UsePipes(new ZodValidationPipe(RegisterReqSchema))
-  register(@Body() registerReqDto: RegisterReqDto) {
-    return this.authService.register(registerReqDto);
+  async register(
+    @Body() registerReqDto: RegisterReqDto,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const result = await this.authService.register(registerReqDto);
+    this.setCookie(response, result);
+    return result;
   }
 
   @Post("login")
@@ -44,8 +113,13 @@ export class AuthController {
   @ApiResponse({ status: 404, type: UserNotFoundError })
   @ApiResponse({ status: 500, type: UnhandledError })
   @UsePipes(new ZodValidationPipe(LoginReqSchema))
-  login(@Body() loginReqDto: LoginReqDto) {
-    return this.authService.login(loginReqDto);
+  async login(
+    @Body() loginReqDto: LoginReqDto,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const result = await this.authService.login(loginReqDto);
+    this.setCookie(response, result);
+    return result;
   }
 
   @Post("refresh")
@@ -56,17 +130,28 @@ export class AuthController {
   @ApiResponse({ status: 422, type: RefreshTokenExpiredError })
   @ApiResponse({ status: 500, type: UnhandledError })
   @UsePipes(new ZodValidationPipe(RefreshReqSchema))
-  refresh(@Body() refreshReqDto: RefreshReqDto) {
-    return this.authService.refresh(refreshReqDto);
+  async refresh(
+    @Body() refreshReqDto: RefreshReqDto,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const result = await this.authService.refresh(refreshReqDto);
+    this.setCookie(response, result);
+    return result;
   }
 
   @Post("logout")
   @HttpCode(200)
   @ApiOperation({ summary: "For user to logout" })
   @ApiResponse({ status: 200, type: LogoutResDto })
-  logout() {
-    return this.authService.logout({
-      userId: "78e7d49d-f0fa-4fea-8af4-45c87bfb90c6",
+  @UseGuards(JwtGuard)
+  logout(
+    @Jwt() jwt: JwtPayload,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const result = this.authService.logout({
+      userId: jwt.sub,
     });
+    this.clearCookie(response);
+    return result;
   }
 }

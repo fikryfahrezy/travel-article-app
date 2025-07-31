@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import { ConfigService } from "src/config/config.service";
 import { JwtService } from "src/core/jwt.service";
 import { Auth } from "src/entities/auth.entity";
 import { User } from "src/entities/user.entity";
@@ -35,10 +36,8 @@ type GenerateRefreshTokenParams =
 
 @Injectable()
 export class AuthService {
-  // Make the refresh token valid until 30 days in seconds
-  expiresAt = 30 * 24 * 60 * 60;
-
   constructor(
+    private configService: ConfigService,
     private jwtService: JwtService,
     private authRepository: AuthRepository,
   ) {}
@@ -53,7 +52,9 @@ export class AuthService {
       token: params.accessToken,
       refreshToken: refreshToken,
       // Add 30 days in milliseconds
-      expiresAt: new Date(Date.now() + this.expiresAt * 1000),
+      expiresAt: new Date(
+        Date.now() + this.configService.static.REFRESH_TOKEN_EXPIRES_AT * 1000,
+      ),
       user: userRelation,
     };
 
@@ -74,9 +75,14 @@ export class AuthService {
       username: registerReqDto.username,
     });
 
-    const accessToken = await this.jwtService.sign({
-      sub: newUser.id,
-    });
+    const accessToken = await this.jwtService.sign(
+      {
+        sub: newUser.id,
+      },
+      {
+        expiresIn: this.configService.static.ACCESS_TOKEN_EXPIRES_AT,
+      },
+    );
     const refreshToken = await this.generateRefreshToken({
       mode: "new",
       userId: newUser.id,
@@ -85,7 +91,7 @@ export class AuthService {
 
     return {
       token_type: "Bearer",
-      expires_in: this.expiresAt,
+      expires_in: this.configService.static.ACCESS_TOKEN_EXPIRES_AT,
       access_token: accessToken,
       refresh_token: refreshToken,
     };
@@ -105,9 +111,14 @@ export class AuthService {
       throw new PasswordNotMatchError("Password not match.");
     }
 
-    const accessToken = await this.jwtService.sign({
-      sub: user.id,
-    });
+    const accessToken = await this.jwtService.sign(
+      {
+        sub: user.id,
+      },
+      {
+        expiresIn: this.configService.static.ACCESS_TOKEN_EXPIRES_AT,
+      },
+    );
     const refreshToken = await this.generateRefreshToken({
       mode: "new",
       userId: user.id,
@@ -116,7 +127,7 @@ export class AuthService {
 
     return {
       token_type: "Bearer",
-      expires_in: this.expiresAt,
+      expires_in: this.configService.static.ACCESS_TOKEN_EXPIRES_AT,
       access_token: accessToken,
       refresh_token: refreshToken,
     };
@@ -135,9 +146,14 @@ export class AuthService {
       throw new RefreshTokenExpiredError("Refresh token is expired.");
     }
 
-    const accessToken = await this.jwtService.sign({
-      sub: auth.user.id,
-    });
+    const accessToken = await this.jwtService.sign(
+      {
+        sub: auth.user.id,
+      },
+      {
+        expiresIn: this.configService.static.ACCESS_TOKEN_EXPIRES_AT,
+      },
+    );
     const refreshToken = await this.generateRefreshToken({
       mode: "update",
       prevAuthId: auth.id,
@@ -147,8 +163,8 @@ export class AuthService {
 
     return {
       token_type: "Bearer",
-      expires_in: this.expiresAt,
       access_token: accessToken,
+      expires_in: this.configService.static.ACCESS_TOKEN_EXPIRES_AT,
       refresh_token: refreshToken,
     };
   }

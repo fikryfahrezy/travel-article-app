@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
-import { JwtService as NestJwtService } from "@nestjs/jwt";
-import { EnvService } from "src/config/env.service";
+import { JwtSignOptions, JwtService as NestJwtService } from "@nestjs/jwt";
+import { ConfigService } from "src/config/config.service";
 
 export type JwtPayload = {
   sub: string;
@@ -9,17 +9,25 @@ export type JwtPayload = {
 @Injectable()
 export class JwtService {
   constructor(
-    private envService: EnvService,
+    private configService: ConfigService,
     private jwtService: NestJwtService,
   ) {}
 
   async verify(token: string): Promise<JwtPayload> {
     return await this.jwtService.verifyAsync(token, {
-      secret: this.envService.key.JWT_SECRET,
+      secret: this.configService.env.JWT_SECRET,
+      issuer: this.configService.env.JWT_ISSUER,
     });
   }
 
-  async sign(payload: JwtPayload) {
-    return await this.jwtService.signAsync(payload);
+  async sign(payload: JwtPayload, options?: Pick<JwtSignOptions, "expiresIn">) {
+    return await this.jwtService.signAsync(
+      { ...payload, iat: Math.floor(Date.now() / 1000) },
+      {
+        ...options,
+        secret: this.configService.env.JWT_SECRET,
+        issuer: this.configService.env.JWT_ISSUER,
+      },
+    );
   }
 }

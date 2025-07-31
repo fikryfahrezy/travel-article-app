@@ -7,6 +7,8 @@ const EnvironmentVariables = z.object({
   DATABASE_PASSWORD: z.string(),
   DATABASE_DBNAME: z.string(),
   JWT_SECRET: z.string(),
+  JWT_ISSUER: z.string(),
+  TOKEN_COOKIE_DOMAIN: z.string(),
 });
 
 export type EnvironmentVariables = {
