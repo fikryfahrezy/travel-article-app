@@ -8,38 +8,35 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
+import { Article } from "./article.entity";
 import { User } from "./user.entity";
 
 @Entity({
-  name: "auths",
+  name: "comments",
 })
-export class Auth {
+export class Comment {
   @PrimaryGeneratedColumn("uuid", {
     name: "id",
-    primaryKeyConstraintName: "auths_id_primary_key",
+    primaryKeyConstraintName: "comments_id_primary_key",
   })
   id: string;
 
-  @Column({ type: "varchar", length: 255, name: "token", nullable: false })
-  token: string;
+  @Column({ type: "text", name: "content", default: "", nullable: false })
+  content: string;
 
-  @Column({
-    type: "varchar",
-    length: 255,
-    name: "refresh_token",
-    nullable: false,
+  @ManyToOne(() => Article)
+  @JoinColumn({
+    name: "article_id",
+    foreignKeyConstraintName: "comments_articles_id_foreign_key",
   })
-  refreshToken: string;
-
-  @Column({ type: "timestamptz", name: "expires_at", nullable: false })
-  expiresAt: Date;
+  article: User;
 
   @ManyToOne(() => User)
   @JoinColumn({
-    name: "user_id",
-    foreignKeyConstraintName: "auths_users_id_foreign_key",
+    name: "author_id",
+    foreignKeyConstraintName: "comments_users_id_foreign_key",
   })
-  user: User;
+  author: User;
 
   @CreateDateColumn({
     type: "timestamptz",

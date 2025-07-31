@@ -1,5 +1,5 @@
-import { ValidationPipe } from "@nestjs/common";
-import { HttpAdapterHost, NestFactory } from "@nestjs/core";
+import { ClassSerializerInterceptor, ValidationPipe } from "@nestjs/common";
+import { HttpAdapterHost, NestFactory, Reflector } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import * as cookieParser from "cookie-parser";
 import { AppModule } from "./app.module";
@@ -10,6 +10,7 @@ const PORT = process.env.PORT ?? 3000;
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix("/api");
+  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,

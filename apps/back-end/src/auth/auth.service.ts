@@ -1,8 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { ConfigService } from "src/config/config.service";
 import { JwtService } from "src/core/jwt.service";
-import { Auth } from "src/entities/auth.entity";
-import { User } from "src/entities/user.entity";
 import { passwordHash, passwordVerify } from "src/lib/password";
 import { generateOpaqueToken } from "src/lib/token";
 import {
@@ -10,6 +8,8 @@ import {
   LoginReqDto,
   LogoutReqDto,
   LogoutResDto,
+  ProfileReqDto,
+  ProfileResDto,
   RefreshReqDto,
   RegisterReqDto,
 } from "./auth.dto";
@@ -18,6 +18,7 @@ import {
   InvalidTokenError,
   PasswordNotMatchError,
   RefreshTokenExpiredError,
+  UserNotFoundError,
 } from "./auth.exception";
 import { AuthRepository } from "./auth.repository";
 
@@ -45,32 +46,36 @@ export class AuthService {
   async generateRefreshToken(params: GenerateRefreshTokenParams) {
     const refreshToken = generateOpaqueToken();
 
-    const userRelation = new User();
-    userRelation.id = params.userId;
-
-    const authValue: Partial<Auth> = {
-      token: params.accessToken,
-      refreshToken: refreshToken,
-      // Add 30 days in milliseconds
-      expiresAt: new Date(
-        Date.now() + this.configService.static.REFRESH_TOKEN_EXPIRES_AT * 1000,
-      ),
-      user: userRelation,
-    };
+    // Add 30 days in milliseconds
+    const expiresAt = new Date(
+      Date.now() + this.configService.static.REFRESH_TOKEN_EXPIRES_AT * 1000,
+    );
 
     if (params.mode === "new") {
-      await this.authRepository.createAuth(authValue);
+      await this.authRepository.saveAuth({
+        token: params.accessToken,
+        refreshToken: refreshToken,
+        expiresAt,
+        user: {
+          id: params.userId,
+        },
+      });
     } else {
       await this.authRepository.updateAuth({
-        ...authValue,
         id: params.prevAuthId,
+        token: params.accessToken,
+        refreshToken: refreshToken,
+        expiresAt,
+        user: {
+          id: params.userId,
+        },
       });
     }
 
     return refreshToken;
   }
   async register(registerReqDto: RegisterReqDto): Promise<AuthResDto> {
-    const newUser = await this.authRepository.insertUser({
+    const newUser = await this.authRepository.saveUser({
       password: await passwordHash(registerReqDto.password),
       username: registerReqDto.username,
     });
@@ -89,18 +94,24 @@ export class AuthService {
       accessToken: accessToken,
     });
 
-    return {
-      token_type: "Bearer",
-      expires_in: this.configService.static.ACCESS_TOKEN_EXPIRES_AT,
-      access_token: accessToken,
-      refresh_token: refreshToken,
-    };
+    return new AuthResDto({
+      tokenType: "Bearer",
+      expiresIn: this.configService.static.ACCESS_TOKEN_EXPIRES_AT,
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+    });
   }
 
   async login(loginReqDto: LoginReqDto): Promise<AuthResDto> {
     const user = await this.authRepository.getOneUser({
       username: loginReqDto.username,
     });
+
+    if (!user) {
+      throw new UserNotFoundError(
+        `User with ${loginReqDto.username} not found`,
+      );
+    }
 
     const isPasswordMatch = await passwordVerify(
       user.password,
@@ -125,17 +136,17 @@ export class AuthService {
       accessToken: accessToken,
     });
 
-    return {
-      token_type: "Bearer",
-      expires_in: this.configService.static.ACCESS_TOKEN_EXPIRES_AT,
-      access_token: accessToken,
-      refresh_token: refreshToken,
-    };
+    return new AuthResDto({
+      tokenType: "Bearer",
+      expiresIn: this.configService.static.ACCESS_TOKEN_EXPIRES_AT,
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+    });
   }
 
   async refresh(refreshReqDto: RefreshReqDto): Promise<AuthResDto> {
     const auth = await this.authRepository.getOneAuth({
-      refreshToken: refreshReqDto.refresh_token,
+      refreshToken: refreshReqDto.refreshToken,
     });
 
     if (!auth) {
@@ -161,15 +172,15 @@ export class AuthService {
       accessToken: accessToken,
     });
 
-    return {
-      token_type: "Bearer",
-      access_token: accessToken,
-      expires_in: this.configService.static.ACCESS_TOKEN_EXPIRES_AT,
-      refresh_token: refreshToken,
-    };
+    return new AuthResDto({
+      tokenType: "Bearer",
+      accessToken: accessToken,
+      expiresIn: this.configService.static.ACCESS_TOKEN_EXPIRES_AT,
+      refreshToken: refreshToken,
+    });
   }
 
-  async logout(logoutReqDto: LogoutReqDto): Promise<LogoutResDto> {
+  async logout(logoutReqDto: LogoutReqDto) {
     const auth = await this.authRepository.getOneAuth({
       user: {
         id: logoutReqDto.userId,
@@ -182,10 +193,28 @@ export class AuthService {
 
     await this.authRepository.deleteAuth({
       id: auth.id,
+      user: {
+        id: auth.user.id,
+      },
     });
 
-    return {
+    return new LogoutResDto({
       success: true,
-    };
+    });
+  }
+
+  async profile(profileReqDto: ProfileReqDto): Promise<ProfileResDto> {
+    const user = await this.authRepository.getOneUser({
+      id: profileReqDto.userId,
+    });
+
+    if (!user) {
+      throw new UserNotFoundError("User with profile not found");
+    }
+
+    return new ProfileResDto({
+      userId: user.id,
+      username: user.username,
+    });
   }
 }

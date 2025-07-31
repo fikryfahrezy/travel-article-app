@@ -1,4 +1,5 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { Expose } from "class-transformer";
 import { IsNotEmpty, IsOptional } from "class-validator";
 
 export class RegisterReqDto {
@@ -26,9 +27,10 @@ export class LoginReqDto {
 }
 
 export class RefreshReqDto {
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsOptional()
-  refresh_token: string;
+  @Expose({ name: "refresh_token" })
+  refreshToken: string;
 }
 
 export class LogoutReqDto {
@@ -38,20 +40,53 @@ export class LogoutReqDto {
 
 export class AuthResDto {
   @ApiProperty({ default: "Bearer" })
-  token_type: "Bearer";
+  @Expose({ name: "token_type" })
+  tokenType: "Bearer";
 
   @ApiProperty()
-  expires_in: number;
+  @Expose({ name: "expires_in" })
+  expiresIn: number;
 
   @ApiProperty()
   @IsNotEmpty()
-  access_token: string;
+  @Expose({ name: "access_token" })
+  accessToken: string;
 
   @ApiProperty()
   @IsNotEmpty()
-  refresh_token: string;
+  @Expose({ name: "refresh_token" })
+  refreshToken: string;
+
+  constructor(obj: AuthResDto) {
+    this.tokenType = obj.tokenType;
+    this.expiresIn = obj.expiresIn;
+    this.accessToken = obj.accessToken;
+    this.refreshToken = obj.refreshToken;
+  }
 }
 
 export class LogoutResDto {
   success: boolean;
+
+  constructor(obj: LogoutResDto) {
+    this.success = obj.success;
+  }
+}
+
+export class ProfileReqDto {
+  userId: string;
+}
+
+export class ProfileResDto {
+  @ApiProperty()
+  @Expose({ name: "user_id" })
+  userId: string;
+
+  @ApiProperty()
+  username: string;
+
+  constructor(obj: ProfileResDto) {
+    this.userId = obj.userId;
+    this.username = obj.username;
+  }
 }
