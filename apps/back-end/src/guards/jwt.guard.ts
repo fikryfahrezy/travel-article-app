@@ -8,8 +8,28 @@ import { Request } from "express";
 import { ConfigService } from "src/config/config.service";
 import { JwtService } from "src/core/jwt.service";
 
+export function extractJwtTokenFromCookie(
+  request: Request,
+  cookieKey: string,
+): string | undefined {
+  const reqCookies = request.cookies as unknown as Record<string, unknown>;
+  return reqCookies[cookieKey] as string;
+}
+
+export function extractJwtTokenFromHeaderOrCookie(
+  request: Request,
+  cookieKey: string,
+): string | undefined {
+  const tokenCookie = extractJwtTokenFromCookie(request, cookieKey);
+  if (tokenCookie) {
+    return tokenCookie;
+  }
+  const [type, token] = request.headers.authorization?.split(" ") ?? [];
+  return type === "Bearer" ? token : undefined;
+}
+
 @Injectable()
-export class JwtGuard implements CanActivate {
+export class JwtAuthGuard implements CanActivate {
   constructor(
     private configService: ConfigService,
     private jwtService: JwtService,
@@ -17,7 +37,10 @@ export class JwtGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request: Request = context.switchToHttp().getRequest();
-    const token = this.extractTokenFromHeaderOrCookie(request);
+    const token = extractJwtTokenFromHeaderOrCookie(
+      request,
+      this.configService.static.ACCESS_TOKEN_COOKIE_KEY,
+    );
     if (!token) {
       throw new UnauthorizedException();
     }
@@ -28,18 +51,5 @@ export class JwtGuard implements CanActivate {
       throw new UnauthorizedException();
     }
     return true;
-  }
-
-  private extractTokenFromHeaderOrCookie(request: Request): string | undefined {
-    const reqCookies = request.cookies as unknown as Record<string, unknown>;
-    const tokenCookie = reqCookies[
-      this.configService.static.ACCESS_TOKEN_COOKIE_KEY
-    ] as string;
-
-    if (tokenCookie) {
-      return tokenCookie;
-    }
-    const [type, token] = request.headers.authorization?.split(" ") ?? [];
-    return type === "Bearer" ? token : undefined;
   }
 }

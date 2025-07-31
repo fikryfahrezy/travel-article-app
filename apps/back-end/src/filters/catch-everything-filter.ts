@@ -1,12 +1,12 @@
 import {
   ArgumentsHost,
+  BadRequestException,
   Catch,
   ExceptionFilter,
   HttpException,
   HttpStatus,
 } from "@nestjs/common";
 import { AbstractHttpAdapter } from "@nestjs/core";
-import { ValidationError } from "src/exceptions/validation-error";
 
 @Catch()
 export class CatchEverythingFilter implements ExceptionFilter {
@@ -23,7 +23,19 @@ export class CatchEverythingFilter implements ExceptionFilter {
         ? exception.message
         : "This error is unknown or unhandled";
 
-    const fields = exception instanceof ValidationError ? exception.fields : {};
+    let errors: string[] = [];
+    if (exception instanceof BadRequestException) {
+      const exceptionResponse = exception.getResponse();
+      if (typeof exceptionResponse === "object") {
+        const message = (
+          exceptionResponse as unknown as Record<string, unknown>
+        )["message"];
+
+        if (Array.isArray(message)) {
+          errors = message as string[];
+        }
+      }
+    }
 
     const httpStatus =
       exception instanceof HttpException
@@ -33,7 +45,7 @@ export class CatchEverythingFilter implements ExceptionFilter {
     const responseBody = {
       name: errorName,
       message: errorMessage,
-      fields,
+      errors,
     };
 
     this.httpAdapter.reply(ctx.getResponse(), responseBody, httpStatus);

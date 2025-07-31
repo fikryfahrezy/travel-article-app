@@ -1,46 +1,38 @@
 import { ApiProperty } from "@nestjs/swagger";
-import z from "zod";
-
-export const RegisterReqSchema = z.object({
-  name: z.string(),
-  username: z.string(),
-  password: z.string(),
-});
+import { IsNotEmpty, IsOptional } from "class-validator";
 
 export class RegisterReqDto {
   @ApiProperty()
+  @IsNotEmpty()
   name: string;
 
   @ApiProperty()
+  @IsNotEmpty()
   username: string;
 
   @ApiProperty()
+  @IsNotEmpty()
   password: string;
 }
-
-export const LoginReqSchema = z.object({
-  username: z.string(),
-  password: z.string(),
-});
 
 export class LoginReqDto {
   @ApiProperty()
+  @IsNotEmpty()
   username: string;
 
   @ApiProperty()
+  @IsNotEmpty()
   password: string;
 }
 
-export const RefreshReqSchema = z.object({
-  refresh_token: z.string(),
-});
-
 export class RefreshReqDto {
   @ApiProperty()
+  @IsOptional()
   refresh_token: string;
 }
 
 export class LogoutReqDto {
+  @IsNotEmpty()
   userId: string;
 }
 
@@ -52,9 +44,11 @@ export class AuthResDto {
   expires_in: number;
 
   @ApiProperty()
+  @IsNotEmpty()
   access_token: string;
 
   @ApiProperty()
+  @IsNotEmpty()
   refresh_token: string;
 }
 

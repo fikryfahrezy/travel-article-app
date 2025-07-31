@@ -1,28 +1,25 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   HttpCode,
   Post,
+  Req,
   Res,
   UseGuards,
-  UsePipes,
 } from "@nestjs/common";
-import { ApiOperation, ApiResponse } from "@nestjs/swagger";
-import { Response } from "express";
+import { ApiBearerAuth, ApiOperation, ApiResponse } from "@nestjs/swagger";
+import { Request, Response } from "express";
 import { ConfigService } from "src/config/config.service";
 import { JwtPayload } from "src/core/jwt.service";
 import { Jwt } from "src/decorators/jwt.decorator";
-import { JwtGuard } from "src/guards/jwt.guard";
-import { ZodValidationPipe } from "src/pipes/zod-valition-pipe";
+import { extractJwtTokenFromCookie, JwtAuthGuard } from "src/guards/jwt.guard";
 import {
   AuthResDto,
   LoginReqDto,
-  LoginReqSchema,
   LogoutResDto,
   RefreshReqDto,
-  RefreshReqSchema,
   RegisterReqDto,
-  RegisterReqSchema,
 } from "./auth.dto";
 import {
   DuplicateUsernameError,
@@ -94,7 +91,6 @@ export class AuthController {
   @ApiOperation({ summary: "Register user account" })
   @ApiResponse({ status: 200, type: AuthResDto })
   @ApiResponse({ status: 500, type: UnhandledError })
-  @UsePipes(new ZodValidationPipe(RegisterReqSchema))
   async register(
     @Body() registerReqDto: RegisterReqDto,
     @Res({ passthrough: true }) response: Response,
@@ -112,7 +108,6 @@ export class AuthController {
   @ApiResponse({ status: 422, type: DuplicateUsernameError })
   @ApiResponse({ status: 404, type: UserNotFoundError })
   @ApiResponse({ status: 500, type: UnhandledError })
-  @UsePipes(new ZodValidationPipe(LoginReqSchema))
   async login(
     @Body() loginReqDto: LoginReqDto,
     @Res({ passthrough: true }) response: Response,
@@ -129,13 +124,26 @@ export class AuthController {
   @ApiResponse({ status: 400, type: InvalidTokenError })
   @ApiResponse({ status: 422, type: RefreshTokenExpiredError })
   @ApiResponse({ status: 500, type: UnhandledError })
-  @UsePipes(new ZodValidationPipe(RefreshReqSchema))
   async refresh(
     @Body() refreshReqDto: RefreshReqDto,
+    @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
-    const result = await this.authService.refresh(refreshReqDto);
+    const _refreshToken = extractJwtTokenFromCookie(
+      request,
+      this.configService.static.REFRESH_TOKEN_COOKIE_KEY,
+    );
+
+    const refreshToken = _refreshToken || refreshReqDto.refresh_token;
+    if (!refreshToken) {
+      throw new BadRequestException("Refresh token required.");
+    }
+
+    const result = await this.authService.refresh({
+      refresh_token: refreshToken,
+    });
     this.setCookie(response, result);
+
     return result;
   }
 
@@ -143,7 +151,8 @@ export class AuthController {
   @HttpCode(200)
   @ApiOperation({ summary: "For user to logout" })
   @ApiResponse({ status: 200, type: LogoutResDto })
-  @UseGuards(JwtGuard)
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   logout(
     @Jwt() jwt: JwtPayload,
     @Res({ passthrough: true }) response: Response,
