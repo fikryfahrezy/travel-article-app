@@ -19,6 +19,7 @@ services:
     build:
       context: .
       dockerfile: ./migration.Dockerfile
+    restart: no
     env_file:
       - path: ./.env
         required: true

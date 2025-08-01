@@ -7,8 +7,8 @@ RUN corepack prepare pnpm --activate
 FROM base AS builder
 WORKDIR /app
  
-COPY package*json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
 COPY pnpm-workspace.yaml ./
+COPY package*json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
 COPY ./apps/back-end/package*json ./apps/back-end/
 
 RUN pnpm install --frozen-lockfile
@@ -19,8 +19,8 @@ RUN npm run be:build
 FROM base AS installer
 WORKDIR /app
  
-COPY package*json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
 COPY pnpm-workspace.yaml ./
+COPY package*json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
 COPY ./apps/back-end/package*json ./apps/back-end/
 
 RUN pnpm install --frozen-lockfile --prod

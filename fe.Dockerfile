@@ -7,8 +7,8 @@ RUN corepack prepare pnpm --activate
 FROM base AS builder
 WORKDIR /app
  
-COPY package*json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
 COPY pnpm-workspace.yaml ./
+COPY package*json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
 COPY ./apps/front-end/package*json ./apps/front-end/
 
 RUN pnpm install --frozen-lockfile
