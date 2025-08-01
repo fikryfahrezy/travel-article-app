@@ -1,3 +1,9 @@
+export type ResponseError = {
+  name: string;
+  message: string;
+  errors: string[];
+};
+
 export type RegisterReqDto = {
   name: string;
   username: string;

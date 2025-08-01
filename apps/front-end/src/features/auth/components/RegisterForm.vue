@@ -6,7 +6,7 @@ import { useToastStore } from "@/stores/toast";
 import { ref, useTemplateRef } from "vue";
 import { useRouter } from "vue-router";
 import z from "zod";
-import { loginFormSchema, type LoginFormFieldErrors } from "../schemas";
+import { registerFormSchema, type RegisterFormFieldErrors } from "../schemas";
 import { useUserStore } from "../stores";
 
 const userStore = useUserStore();
@@ -14,7 +14,7 @@ const toastStore = useToastStore();
 const router = useRouter();
 const formRef = useTemplateRef("form-ref");
 
-const fieldErrors = ref<LoginFormFieldErrors>();
+const fieldErrors = ref<RegisterFormFieldErrors>();
 
 async function onSubmit() {
   const formElement = formRef.value;
@@ -24,19 +24,19 @@ async function onSubmit() {
 
   const formData = new FormData(formElement);
   const formValue = Object.fromEntries(formData.entries());
-  const loginForm = loginFormSchema.safeParse(formValue);
+  const registerForm = registerFormSchema.safeParse(formValue);
 
-  if (!loginForm.success) {
-    fieldErrors.value = z.flattenError(loginForm.error).fieldErrors;
+  if (!registerForm.success) {
+    fieldErrors.value = z.flattenError(registerForm.error).fieldErrors;
     return;
   }
 
-  const error = await userStore.login(loginForm.data);
+  const error = await userStore.register(registerForm.data);
   if (error) {
     toastStore.showToast("success", error.error.message);
     return;
   }
-  toastStore.showToast("success", "Successfully login.");
+  toastStore.showToast("success", "Successfully register.");
   router.push("/");
 }
 </script>
@@ -46,6 +46,25 @@ async function onSubmit() {
     class="flex w-full flex-col gap-4"
     @submit.prevent="onSubmit"
   >
+    <Label for="name">Name</Label>
+    <Input
+      id="name"
+      name="name"
+      type="text"
+      placeholder="Name"
+      :aria-invalid="!!fieldErrors?.name"
+    />
+    <ul>
+      <ul
+        v-for="error in fieldErrors?.name || []"
+        :key="error"
+        class="text-destructive"
+      >
+        {{
+          error
+        }}
+      </ul>
+    </ul>
     <Label for="username">Username</Label>
     <Input
       id="username"
@@ -71,7 +90,7 @@ async function onSubmit() {
       name="password"
       type="password"
       placeholder="Password"
-      :aria-invalid="!!fieldErrors?.username"
+      :aria-invalid="!!fieldErrors?.password"
     />
     <ul>
       <ul
@@ -84,6 +103,6 @@ async function onSubmit() {
         }}
       </ul>
     </ul>
-    <Button type="submit">Login</Button>
+    <Button type="submit">Register</Button>
   </form>
 </template>

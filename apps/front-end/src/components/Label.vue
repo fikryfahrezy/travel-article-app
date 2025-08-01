@@ -9,7 +9,7 @@ withDefaults(defineProps<ButtonProps>(), {
 </script>
 
 <template>
-  <component :is="as" :class="$attrs.class">
+  <component :is="as" :class="[$attrs.class]">
     <slot />
   </component>
 </template>

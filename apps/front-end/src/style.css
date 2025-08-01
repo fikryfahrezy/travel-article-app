@@ -1,13 +1,24 @@
+@import url("https://fonts.googleapis.com/css2?family=Titillium+Web:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,200;1,300;1,400;1,600;1,700&display=swap");
 @import "tailwindcss";
 
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  --primary: oklch(0.7025 0.132 160.37);
+  --destructive: oklch(63.7% 0.237 25.331);
+}
+
+@theme inline {
+  --color-primary: var(--primary);
+  --color-destructive: var(--destructive);
+}
+
+:root {
+  font-family: "Titillium Web", system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
   color-scheme: light dark;
   color: rgb(0, 0, 0);
-  background-color: #ffffff;
+  background-color: oklch(0.9734 0.0013 286.37);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
