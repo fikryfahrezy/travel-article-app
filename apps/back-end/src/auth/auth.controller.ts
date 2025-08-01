@@ -49,7 +49,7 @@ export class AuthController {
       authResDto.accessToken,
       {
         httpOnly: true,
-        secure: true,
+        secure: this.configService.env.IS_PRODUCTION,
         sameSite: "lax",
         maxAge: this.configService.static.ACCESS_TOKEN_EXPIRES_AT * 1000, // convert seconds to milliseconds
         domain: this.configService.env.TOKEN_COOKIE_DOMAIN,
@@ -62,7 +62,7 @@ export class AuthController {
       authResDto.refreshToken,
       {
         httpOnly: true,
-        secure: true,
+        secure: this.configService.env.IS_PRODUCTION,
         sameSite: "lax",
         maxAge: this.configService.static.REFRESH_TOKEN_EXPIRES_AT * 1000, // convert seconds to milliseconds
         domain: this.configService.env.TOKEN_COOKIE_DOMAIN,

@@ -13,7 +13,6 @@ import { HealthModule } from "./health/health.module";
   imports: [
     NestConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: [".env", ".env.development.local", ".env.development"],
       validate: validateEnv,
     }),
     ConfigModule,

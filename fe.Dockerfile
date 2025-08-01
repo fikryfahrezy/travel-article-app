@@ -6,32 +6,21 @@ RUN corepack prepare pnpm --activate
 
 FROM base AS builder
 WORKDIR /app
- 
+
+ARG VITE_API_BASE_URL
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+
 COPY pnpm-workspace.yaml ./
 COPY package*json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
 COPY ./apps/front-end/package*json ./apps/front-end/
 
 RUN pnpm install --frozen-lockfile
 
-COPY . .
+COPY ./apps/front-end/ ./apps/front-end/
 RUN npm run fe:build
 
-FROM base AS runner
-
+FROM nginx:1.29.0-bookworm AS runner
 WORKDIR /app
 
-ENV NODE_ENV=production
-
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 vue
-
-COPY --from=builder --chown=vue:nodejs /app/apps/front-end/dist/ ./dist
-
-RUN npm install --global http-server
-
-USER vue
-
-# Default port from `http-server`
-EXPOSE 8080
-
-CMD ["http-server", "dist"]
+COPY ./fe.nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=builder /app/apps/front-end/dist/ /var/www/out/

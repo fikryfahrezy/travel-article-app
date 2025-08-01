@@ -13,7 +13,7 @@ COPY ./apps/back-end/package*json ./apps/back-end/
 
 RUN pnpm install --frozen-lockfile
 
-COPY ./apps/back-end ./apps/back-end
+COPY ./apps/back-end/ ./apps/back-end/
 RUN npm run be:build
 
 FROM base AS installer

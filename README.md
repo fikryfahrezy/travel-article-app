@@ -1,5 +1,7 @@
-# Datacakra Fullstack Test
+# Travel Article App
 
-https://datacakra-test-fe.fahrezy.work
+https://travel-article-app-fe.fahrezy.work
 
-https://datacakra-test-be.fahrezy.work
+git@github.com:fikryfahrezy/travel-article-app.git
+
+https://travel-article-app-be.fahrezy.work

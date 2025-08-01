@@ -1,10 +1,12 @@
 {
-  "name": "datacakra-test",
+  "name": "travel-article-app",
   "version": "0.0.0",
   "scripts": {
     "be:build": "cd apps/back-end && npm run build",
-    "fe:build": "cd apps/front-end && npm run build",
+    "be:dev": "cd apps/back-end && npm run dev",
     "be:ts:check": "cd apps/front-end && npm run ts:check",
+    "fe:build": "cd apps/front-end && npm run build",
+    "fe:dev": "cd apps/front-end && npm run dev",
     "fe:ts:check": "cd apps/front-end && npm run ts:check",
     "migrate:up": "cd apps/back-end && npm run migrate:up",
     "ts:check": "npm run be:ts:check && npm run fe:ts:check",

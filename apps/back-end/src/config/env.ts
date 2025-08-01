@@ -7,6 +7,7 @@ const EnvironmentVariables = {
   JWT_SECRET: "",
   JWT_ISSUER: "",
   TOKEN_COOKIE_DOMAIN: "",
+  IS_PRODUCTION: false,
 };
 
 export type EnvironmentVariables = {
@@ -18,6 +19,8 @@ export function validateEnv(
 ): EnvironmentVariables {
   const errors: string[] = [];
   const env: Record<string, unknown> = {};
+  config["IS_PRODUCTION"] = String(process.env.NODE_ENV === "production");
+
   for (const [key, value] of Object.entries(EnvironmentVariables)) {
     if (!config[key]) {
       errors.push(`Environment variable ${key}`);

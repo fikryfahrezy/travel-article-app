@@ -8,6 +8,7 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Put,
   Query,
   UseGuards,
 } from "@nestjs/common";
@@ -21,11 +22,13 @@ import {
   AuthReqDto,
   CreateArticleCommentReqDto,
   CreateArticleReqDto,
-  DeleteArticleCommentReqDtoDto,
+  DeleteArticleCommentReqDto,
   DeleteArticleReqDto,
   GetAllArticleCommentReqDto,
+  GetAllArticleCommentResDto,
   GetAllArticleResDto,
   GetArticleCommentReqDto,
+  GetArticleCommentResDto,
   GetArticleReqDto,
   GetArticleResDto,
   LikeArticleReqDto,
@@ -153,7 +156,7 @@ export class ArticleController {
     return result;
   }
 
-  @Post(":articleId/likes")
+  @Put(":articleId/likes")
   @HttpCode(200)
   @ApiBearerAuth()
   @ApiOperation({ summary: "Like / unlike article" })
@@ -202,7 +205,7 @@ export class ArticleController {
   @HttpCode(200)
   @ApiBearerAuth()
   @ApiOperation({ summary: "Get all article comment" })
-  @ApiResponse({ status: 200, type: MutationResDto })
+  @ApiResponse({ status: 200, type: GetAllArticleCommentResDto })
   @ApiResponse({ status: 401, type: UnauthorizedError })
   @ApiResponse({ status: 500, type: UnhandledError })
   @UseGuards(JwtAuthGuard)
@@ -227,7 +230,7 @@ export class ArticleController {
   @HttpCode(200)
   @ApiBearerAuth()
   @ApiOperation({ summary: "Get one article comment" })
-  @ApiResponse({ status: 200, type: MutationResDto })
+  @ApiResponse({ status: 200, type: GetArticleCommentResDto })
   @ApiResponse({ status: 401, type: UnauthorizedError })
   @ApiResponse({ status: 404, type: ArticleCommentNotFoundError })
   @ApiResponse({ status: 500, type: UnhandledError })
@@ -289,13 +292,13 @@ export class ArticleController {
     @Param("commentId", ParseUUIDPipe) commentId: string,
   ) {
     const authReqDto = new AuthReqDto({ userId: jwt.sub });
-    const deleteArticleCommentReqDtoDto = new DeleteArticleCommentReqDtoDto({
+    const deleteArticleCommentReqDto = new DeleteArticleCommentReqDto({
       articleId,
       commentId,
     });
     const result = await this.articleService.deleteArticleComment(
       authReqDto,
-      deleteArticleCommentReqDtoDto,
+      deleteArticleCommentReqDto,
     );
     return result;
   }

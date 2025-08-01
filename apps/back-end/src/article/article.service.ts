@@ -7,7 +7,7 @@ import {
   AuthReqDto,
   CreateArticleCommentReqDto,
   CreateArticleReqDto,
-  DeleteArticleCommentReqDtoDto,
+  DeleteArticleCommentReqDto,
   DeleteArticleReqDto,
   GetAllArticleCommentItemResDto,
   GetAllArticleCommentReqDto,
@@ -283,19 +283,19 @@ export class ArticleService {
 
   async deleteArticleComment(
     auth: AuthReqDto,
-    deleteArticleCommentReqDtoDto: DeleteArticleCommentReqDtoDto,
+    deleteArticleCommentReqDto: DeleteArticleCommentReqDto,
   ): Promise<MutationResDto> {
     const skipDeleted = true;
     await this.articleRespository.deleteArticleComment(
       {
-        id: deleteArticleCommentReqDtoDto.commentId,
+        id: deleteArticleCommentReqDto.commentId,
         author: { id: auth.userId },
       },
       skipDeleted,
     );
 
     return new MutationResDto({
-      id: deleteArticleCommentReqDtoDto.commentId,
+      id: deleteArticleCommentReqDto.commentId,
     });
   }
 }

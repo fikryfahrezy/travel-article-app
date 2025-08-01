@@ -267,11 +267,11 @@ export class UpdateArticleCommentReqDto {
   commentId: string;
 }
 
-export class DeleteArticleCommentReqDtoDto {
+export class DeleteArticleCommentReqDto {
   articleId: string;
   commentId: string;
 
-  constructor(obj: DeleteArticleCommentReqDtoDto) {
+  constructor(obj: DeleteArticleCommentReqDto) {
     this.articleId = obj.articleId;
     this.commentId = obj.commentId;
   }
