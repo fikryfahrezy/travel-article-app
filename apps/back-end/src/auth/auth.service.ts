@@ -1,8 +1,10 @@
 import { Injectable } from "@nestjs/common";
 import { ConfigService } from "src/config/config.service";
 import { JwtService } from "src/core/jwt.service";
+import { Auth } from "src/entities/auth.entity";
+import { User } from "src/entities/user.entity";
 import { passwordHash, passwordVerify } from "src/lib/password";
-import { generateOpaqueToken } from "src/lib/token";
+import { generateRandomString } from "src/lib/string";
 import {
   AuthResDto,
   LoginReqDto,
@@ -14,7 +16,6 @@ import {
   RegisterReqDto,
 } from "./auth.dto";
 import {
-  AuthNotFoundError,
   InvalidTokenError,
   PasswordNotMatchError,
   RefreshTokenExpiredError,
@@ -44,32 +45,31 @@ export class AuthService {
   ) {}
 
   async generateRefreshToken(params: GenerateRefreshTokenParams) {
-    const refreshToken = generateOpaqueToken();
+    const refreshToken = generateRandomString();
 
     // Add 30 days in milliseconds
     const expiresAt = new Date(
       Date.now() + this.configService.static.REFRESH_TOKEN_EXPIRES_AT * 1000,
     );
 
+    const authUser = new User();
+    authUser.id = params.userId;
+
+    const auth = new Auth();
+    auth.token = params.accessToken;
+    auth.refreshToken = refreshToken;
+    auth.expiresAt = expiresAt;
+    auth.user = authUser;
+
     if (params.mode === "new") {
-      await this.authRepository.saveAuth({
-        token: params.accessToken,
-        refreshToken: refreshToken,
-        expiresAt,
-        user: {
-          id: params.userId,
-        },
-      });
+      await this.authRepository.saveAuth(auth);
     } else {
-      await this.authRepository.updateAuth({
-        id: params.prevAuthId,
-        token: params.accessToken,
-        refreshToken: refreshToken,
-        expiresAt,
-        user: {
-          id: params.userId,
+      await this.authRepository.updateAuth(
+        {
+          id: params.prevAuthId,
         },
-      });
+        auth,
+      );
     }
 
     return refreshToken;
@@ -181,22 +181,16 @@ export class AuthService {
   }
 
   async logout(logoutReqDto: LogoutReqDto) {
-    const auth = await this.authRepository.getOneAuth({
-      user: {
-        id: logoutReqDto.userId,
+    const skipDeleted = true;
+    await this.authRepository.deleteAuth(
+      {
+        token: logoutReqDto.token,
+        user: {
+          id: logoutReqDto.userId,
+        },
       },
-    });
-
-    if (!auth) {
-      throw new AuthNotFoundError("User not logged in.");
-    }
-
-    await this.authRepository.deleteAuth({
-      id: auth.id,
-      user: {
-        id: auth.user.id,
-      },
-    });
+      skipDeleted,
+    );
 
     return new LogoutResDto({
       success: true,

@@ -1,24 +1,33 @@
 import { Injectable } from "@nestjs/common";
+import { ArticleComment } from "src/entities/article-comment.entity";
+import { ArticleLike } from "src/entities/article-like.entity";
 import { Article } from "src/entities/article.entity";
 import { User } from "src/entities/user.entity";
 import {
   AuthReqDto,
   CreateArticleCommentReqDto,
   CreateArticleReqDto,
-  CursorReqDto,
   DeleteArticleCommentReqDtoDto,
   DeleteArticleReqDto,
+  GetAllArticleCommentItemResDto,
   GetAllArticleCommentReqDto,
+  GetAllArticleCommentResDto,
+  GetAllArticleItemResDto,
   GetAllArticleResDto,
   GetArticleCommentReqDto,
+  GetArticleCommentResDto,
   GetArticleReqDto,
   GetArticleResDto,
   LikeArticleReqDto,
   MutationResDto,
+  PaginationReqDto,
   UpdateArticleCommentReqDto,
   UpdateArticleReqDto,
 } from "./article.dto";
-import { ArticleNotFoundError } from "./article.exception";
+import {
+  ArticleCommentNotFoundError,
+  ArticleNotFoundError,
+} from "./article.exception";
 import { ArticleRepository } from "./article.repository";
 
 @Injectable()
@@ -46,15 +55,16 @@ export class ArticleService {
 
   async getAllArticle(
     auth: AuthReqDto,
-    cursorReqDto: CursorReqDto,
-  ): Promise<GetAllArticleResDto[]> {
+    paginationReqDto: PaginationReqDto,
+  ): Promise<GetAllArticleResDto> {
     const articles = await this.articleRespository.getAllArticle(
       auth.userId,
-      cursorReqDto,
+      paginationReqDto,
     );
 
-    return articles.map((article) => {
-      return new GetAllArticleResDto({
+    const totalData = articles[0]?.total || 0;
+    const data = articles.map((article) => {
+      return new GetAllArticleItemResDto({
         id: article.id,
         title: article.title,
         slug: article.slug,
@@ -63,6 +73,13 @@ export class ArticleService {
         createdAt: article.created_at,
         updatedAt: article.updated_at,
       });
+    });
+
+    return new GetAllArticleResDto({
+      data,
+      totalData,
+      limit: paginationReqDto.limit,
+      page: paginationReqDto.page,
     });
   }
 
@@ -84,6 +101,7 @@ export class ArticleService {
       title: article.title,
       slug: article.slug,
       liked: article.liked,
+      content: article.content,
       authorId: article.author_id,
       createdAt: article.created_at,
       updatedAt: article.updated_at,
@@ -94,77 +112,190 @@ export class ArticleService {
     auth: AuthReqDto,
     updateArticleReqDto: UpdateArticleReqDto,
   ): Promise<MutationResDto> {
-    const author = new User();
-    author.id = auth.userId;
-
     const updatedArticle = new Article();
     updatedArticle.title = updateArticleReqDto.title;
     updatedArticle.content = updateArticleReqDto.content;
 
     await this.articleRespository.updateArticle(
-      { id: updateArticleReqDto.articleId, author: author },
+      { id: updateArticleReqDto.articleId, author: { id: auth.userId } },
       updatedArticle,
     );
 
     return new MutationResDto({
-      id: updatedArticle.id,
+      id: updateArticleReqDto.articleId,
     });
   }
 
-  deleteArticle(_: AuthReqDto, __: DeleteArticleReqDto): MutationResDto {
+  async deleteArticle(
+    auth: AuthReqDto,
+    deleteArticleReqDto: DeleteArticleReqDto,
+  ): Promise<MutationResDto> {
+    const skipDeleted = true;
+    await this.articleRespository.deleteArticle(
+      {
+        id: deleteArticleReqDto.articleId,
+        author: { id: auth.userId },
+      },
+      skipDeleted,
+    );
+
     return new MutationResDto({
-      id: "",
+      id: deleteArticleReqDto.articleId,
     });
   }
 
-  likeArticle(_: AuthReqDto, __: LikeArticleReqDto): MutationResDto {
+  async likeArticle(
+    auth: AuthReqDto,
+    likeArticleReqDto: LikeArticleReqDto,
+  ): Promise<MutationResDto> {
+    const article = new Article();
+    article.id = likeArticleReqDto.articleId;
+
+    const user = new User();
+    user.id = auth.userId;
+
+    const articleLike = new ArticleLike();
+    articleLike.article = article;
+    articleLike.user = user;
+
+    if (likeArticleReqDto.like) {
+      const existingArticle = await this.articleRespository.getOneArticle({
+        id: likeArticleReqDto.articleId,
+      });
+
+      if (!existingArticle) {
+        throw new ArticleNotFoundError("Requested article not found.");
+      }
+
+      articleLike.deletedAt = null;
+      await this.articleRespository.upsertArticleLike(articleLike);
+    } else {
+      articleLike.deletedAt = new Date();
+      await this.articleRespository.upsertArticleLike(articleLike);
+    }
+
     return new MutationResDto({
-      id: "",
+      id: articleLike.id,
     });
   }
 
-  createArticleComment(
-    _: AuthReqDto,
-    __: CreateArticleCommentReqDto,
-  ): MutationResDto {
+  async createArticleComment(
+    auth: AuthReqDto,
+    createArticleCommentReqDto: CreateArticleCommentReqDto,
+  ): Promise<MutationResDto> {
+    const article = new Article();
+    article.id = createArticleCommentReqDto.articleId;
+
+    const author = new User();
+    author.id = auth.userId;
+
+    const newComment = new ArticleComment();
+    newComment.content = createArticleCommentReqDto.content;
+    newComment.author = author;
+    newComment.article = article;
+
+    await this.articleRespository.saveArticleComment(newComment);
+
     return new MutationResDto({
-      id: "",
+      id: newComment.id,
     });
   }
 
-  getAllArticleComment(
-    _: AuthReqDto,
-    __: GetAllArticleCommentReqDto,
-  ): MutationResDto {
-    return new MutationResDto({
-      id: "",
+  async getAllArticleComment(
+    auth: AuthReqDto,
+    getAllArticleCommentReqDto: GetAllArticleCommentReqDto,
+  ): Promise<GetAllArticleCommentResDto> {
+    const articles = await this.articleRespository.getAllArticleComment(
+      getAllArticleCommentReqDto.articleId,
+      getAllArticleCommentReqDto.pagination,
+    );
+
+    const totalData = articles[0]?.total || 0;
+    const data = articles.map((comment) => {
+      return new GetAllArticleCommentItemResDto({
+        id: comment.id,
+        articleId: comment.article_id,
+        articleTitle: comment.article_title,
+        articleSlug: comment.article_slug,
+        articleAuthorId: comment.article_author_id,
+        articleAuthorUsername: comment.article_author_username,
+        authorId: comment.author_id,
+        authorUsername: comment.author_username,
+        content: comment.content,
+        createdAt: comment.created_at,
+        updatedAt: comment.updated_at,
+      });
+    });
+
+    return new GetAllArticleCommentResDto({
+      data,
+      totalData,
+      limit: getAllArticleCommentReqDto.pagination.limit,
+      page: getAllArticleCommentReqDto.pagination.page,
     });
   }
 
-  getArticleComment(
-    _: AuthReqDto,
-    __: GetArticleCommentReqDto,
-  ): MutationResDto {
-    return new MutationResDto({
-      id: "",
+  async getArticleComment(
+    auth: AuthReqDto,
+    getArticleCommentReqDto: GetArticleCommentReqDto,
+  ): Promise<GetArticleCommentResDto> {
+    const comment = await this.articleRespository.getOneArticleCommentById(
+      getArticleCommentReqDto.commentId,
+    );
+
+    if (!comment) {
+      throw new ArticleCommentNotFoundError(
+        "Requested article comment not found.",
+      );
+    }
+
+    return new GetArticleCommentResDto({
+      id: comment.id,
+      articleId: comment.article_id,
+      articleTitle: comment.article_title,
+      articleSlug: comment.article_slug,
+      articleAuthorId: comment.article_author_id,
+      articleAuthorUsername: comment.article_author_username,
+      authorId: comment.author_id,
+      authorUsername: comment.author_username,
+      content: comment.content,
+      createdAt: comment.created_at,
+      updatedAt: comment.updated_at,
     });
   }
 
-  updateArticleComment(
-    _: AuthReqDto,
-    __: UpdateArticleCommentReqDto,
-  ): MutationResDto {
+  async updateArticleComment(
+    auth: AuthReqDto,
+    updateArticleCommentReqDto: UpdateArticleCommentReqDto,
+  ): Promise<MutationResDto> {
+    const updatedArticleComment = new ArticleComment();
+    updatedArticleComment.content = updateArticleCommentReqDto.content;
+
+    await this.articleRespository.updateArticleComment(
+      { id: updateArticleCommentReqDto.commentId, author: { id: auth.userId } },
+      updatedArticleComment,
+    );
+
     return new MutationResDto({
-      id: "",
+      id: updateArticleCommentReqDto.commentId,
     });
   }
 
-  deleteArticleComment(
-    _: AuthReqDto,
-    __: DeleteArticleCommentReqDtoDto,
-  ): MutationResDto {
+  async deleteArticleComment(
+    auth: AuthReqDto,
+    deleteArticleCommentReqDtoDto: DeleteArticleCommentReqDtoDto,
+  ): Promise<MutationResDto> {
+    const skipDeleted = true;
+    await this.articleRespository.deleteArticleComment(
+      {
+        id: deleteArticleCommentReqDtoDto.commentId,
+        author: { id: auth.userId },
+      },
+      skipDeleted,
+    );
+
     return new MutationResDto({
-      id: "",
+      id: deleteArticleCommentReqDtoDto.commentId,
     });
   }
 }

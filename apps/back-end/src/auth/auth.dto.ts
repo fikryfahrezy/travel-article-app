@@ -34,8 +34,14 @@ export class RefreshReqDto {
 }
 
 export class LogoutReqDto {
-  @IsNotEmpty()
   userId: string;
+
+  token: string;
+
+  constructor(obj: LogoutReqDto) {
+    this.userId = obj.userId;
+    this.token = obj.token;
+  }
 }
 
 export class AuthResDto {
@@ -75,6 +81,10 @@ export class LogoutResDto {
 
 export class ProfileReqDto {
   userId: string;
+
+  constructor(obj: ProfileReqDto) {
+    this.userId = obj.userId;
+  }
 }
 
 export class ProfileResDto {

@@ -23,6 +23,7 @@ export class CatchEverythingFilter implements ExceptionFilter {
         ? exception.message
         : "This error is unknown or unhandled";
 
+    // For validation error from `class-validator`
     let errors: string[] = [];
     if (exception instanceof BadRequestException) {
       const exceptionResponse = exception.getResponse();

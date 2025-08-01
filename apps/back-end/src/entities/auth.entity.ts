@@ -34,7 +34,7 @@ export class Auth {
   @Column({ type: "timestamptz", name: "expires_at", nullable: false })
   expiresAt: Date;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { nullable: false })
   @JoinColumn({
     name: "user_id",
     foreignKeyConstraintName: "auths_users_id_foreign_key",
@@ -60,5 +60,5 @@ export class Auth {
     name: "deleted_at",
     nullable: true,
   })
-  deletedAt: Date;
+  deletedAt: Date | null;
 }

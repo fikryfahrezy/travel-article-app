@@ -9,31 +9,35 @@ import {
   Patch,
   Post,
   Query,
-  UnauthorizedException,
   UseGuards,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiOperation, ApiResponse } from "@nestjs/swagger";
 import { UnhandledError } from "src/auth/auth.exception";
 import { JwtPayload } from "src/core/jwt.service";
 import { Jwt } from "src/decorators/jwt.decorator";
+import { UnauthorizedError } from "src/exceptions/api.exception";
 import { JwtAuthGuard } from "src/guards/jwt.guard";
 import {
   AuthReqDto,
   CreateArticleCommentReqDto,
   CreateArticleReqDto,
-  CursorReqDto,
   DeleteArticleCommentReqDtoDto,
   DeleteArticleReqDto,
   GetAllArticleCommentReqDto,
+  GetAllArticleResDto,
   GetArticleCommentReqDto,
   GetArticleReqDto,
+  GetArticleResDto,
   LikeArticleReqDto,
   MutationResDto,
-  PaginationQueryReqDto,
+  PaginationReqDto,
   UpdateArticleCommentReqDto,
   UpdateArticleReqDto,
 } from "./article.dto";
-import { ArticleNotFoundError } from "./article.exception";
+import {
+  ArticleCommentNotFoundError,
+  ArticleNotFoundError,
+} from "./article.exception";
 import { ArticleService } from "./article.service";
 
 @Controller("articles")
@@ -45,7 +49,7 @@ export class ArticleController {
   @ApiBearerAuth()
   @ApiOperation({ summary: "Create article" })
   @ApiResponse({ status: 201, type: MutationResDto })
-  @ApiResponse({ status: 401, type: UnauthorizedException })
+  @ApiResponse({ status: 401, type: UnauthorizedError })
   @ApiResponse({ status: 500, type: UnhandledError })
   @UseGuards(JwtAuthGuard)
   async createArticle(
@@ -64,19 +68,18 @@ export class ArticleController {
   @HttpCode(200)
   @ApiBearerAuth()
   @ApiOperation({ summary: "Get all article" })
-  @ApiResponse({ status: 200, type: MutationResDto })
-  @ApiResponse({ status: 401, type: UnauthorizedException })
+  @ApiResponse({ status: 200, type: GetAllArticleResDto })
+  @ApiResponse({ status: 401, type: UnauthorizedError })
   @ApiResponse({ status: 500, type: UnhandledError })
   @UseGuards(JwtAuthGuard)
   async getAllArticle(
     @Jwt() jwt: JwtPayload,
-    @Query() query: PaginationQueryReqDto,
+    @Query() paginationReqDto: PaginationReqDto,
   ) {
     const authReqDto = new AuthReqDto({ userId: jwt.sub });
-    const cursorReqDto = new CursorReqDto(query.cursor, query.limit);
     const result = await this.articleService.getAllArticle(
       authReqDto,
-      cursorReqDto,
+      paginationReqDto,
     );
     return result;
   }
@@ -85,8 +88,8 @@ export class ArticleController {
   @HttpCode(200)
   @ApiBearerAuth()
   @ApiOperation({ summary: "Get one article" })
-  @ApiResponse({ status: 200, type: MutationResDto })
-  @ApiResponse({ status: 401, type: UnauthorizedException })
+  @ApiResponse({ status: 200, type: GetArticleResDto })
+  @ApiResponse({ status: 401, type: UnauthorizedError })
   @ApiResponse({ status: 404, type: ArticleNotFoundError })
   @ApiResponse({ status: 500, type: UnhandledError })
   @UseGuards(JwtAuthGuard)
@@ -108,7 +111,8 @@ export class ArticleController {
   @ApiBearerAuth()
   @ApiOperation({ summary: "Update article" })
   @ApiResponse({ status: 200, type: MutationResDto })
-  @ApiResponse({ status: 401, type: UnauthorizedException })
+  @ApiResponse({ status: 401, type: UnauthorizedError })
+  @ApiResponse({ status: 404, type: ArticleNotFoundError })
   @ApiResponse({ status: 500, type: UnhandledError })
   @UseGuards(JwtAuthGuard)
   async updateArticle(
@@ -130,18 +134,19 @@ export class ArticleController {
   @ApiBearerAuth()
   @ApiOperation({ summary: "Delete article" })
   @ApiResponse({ status: 200, type: MutationResDto })
-  @ApiResponse({ status: 401, type: UnauthorizedException })
+  @ApiResponse({ status: 401, type: UnauthorizedError })
+  @ApiResponse({ status: 404, type: ArticleNotFoundError })
   @ApiResponse({ status: 500, type: UnhandledError })
   @UseGuards(JwtAuthGuard)
-  deleteArticle(
+  async deleteArticle(
     @Jwt() jwt: JwtPayload,
     @Param("articleId", ParseUUIDPipe) articleId: string,
   ) {
     const authReqDto = new AuthReqDto({ userId: jwt.sub });
     const deleteArticleReqDto = new DeleteArticleReqDto({
-      articleId: articleId,
+      articleId,
     });
-    const result = this.articleService.deleteArticle(
+    const result = await this.articleService.deleteArticle(
       authReqDto,
       deleteArticleReqDto,
     );
@@ -153,17 +158,18 @@ export class ArticleController {
   @ApiBearerAuth()
   @ApiOperation({ summary: "Like / unlike article" })
   @ApiResponse({ status: 200, type: MutationResDto })
-  @ApiResponse({ status: 401, type: UnauthorizedException })
+  @ApiResponse({ status: 401, type: UnauthorizedError })
+  @ApiResponse({ status: 404, type: ArticleNotFoundError })
   @ApiResponse({ status: 500, type: UnhandledError })
   @UseGuards(JwtAuthGuard)
-  likeArticle(
+  async likeArticle(
     @Jwt() jwt: JwtPayload,
     @Param("articleId", ParseUUIDPipe) articleId: string,
     @Body() likeArticleReqDto: LikeArticleReqDto,
   ) {
     const authReqDto = new AuthReqDto({ userId: jwt.sub });
     likeArticleReqDto.articleId = articleId;
-    const result = this.articleService.likeArticle(
+    const result = await this.articleService.likeArticle(
       authReqDto,
       likeArticleReqDto,
     );
@@ -175,17 +181,17 @@ export class ArticleController {
   @ApiBearerAuth()
   @ApiOperation({ summary: "Create article article" })
   @ApiResponse({ status: 201, type: MutationResDto })
-  @ApiResponse({ status: 401, type: UnauthorizedException })
+  @ApiResponse({ status: 401, type: UnauthorizedError })
   @ApiResponse({ status: 500, type: UnhandledError })
   @UseGuards(JwtAuthGuard)
-  createArticleComment(
+  async createArticleComment(
     @Jwt() jwt: JwtPayload,
     @Param("articleId", ParseUUIDPipe) articleId: string,
     @Body() createArticleCommentReqDto: CreateArticleCommentReqDto,
   ) {
     const authReqDto = new AuthReqDto({ userId: jwt.sub });
     createArticleCommentReqDto.articleId = articleId;
-    const result = this.articleService.createArticleComment(
+    const result = await this.articleService.createArticleComment(
       authReqDto,
       createArticleCommentReqDto,
     );
@@ -197,44 +203,46 @@ export class ArticleController {
   @ApiBearerAuth()
   @ApiOperation({ summary: "Get all article comment" })
   @ApiResponse({ status: 200, type: MutationResDto })
-  @ApiResponse({ status: 401, type: UnauthorizedException })
+  @ApiResponse({ status: 401, type: UnauthorizedError })
   @ApiResponse({ status: 500, type: UnhandledError })
   @UseGuards(JwtAuthGuard)
-  getAllArticleComment(
+  async getAllArticleComment(
     @Jwt() jwt: JwtPayload,
     @Param("articleId", ParseUUIDPipe) articleId: string,
-    @Query() query: PaginationQueryReqDto,
+    @Query() paginationReqDto: PaginationReqDto,
   ) {
     const authReqDto = new AuthReqDto({ userId: jwt.sub });
-    const cursorReqDto = new CursorReqDto(query.cursor, query.limit);
     const createArticleCommentDto = new GetAllArticleCommentReqDto({
       articleId,
-      cursor: cursorReqDto,
+      pagination: paginationReqDto,
     });
-    const result = this.articleService.getAllArticleComment(
+    const result = await this.articleService.getAllArticleComment(
       authReqDto,
       createArticleCommentDto,
     );
     return result;
   }
 
-  @Get(":articleId/comments")
+  @Get(":articleId/comments/:commentId")
   @HttpCode(200)
   @ApiBearerAuth()
   @ApiOperation({ summary: "Get one article comment" })
   @ApiResponse({ status: 200, type: MutationResDto })
-  @ApiResponse({ status: 401, type: UnauthorizedException })
+  @ApiResponse({ status: 401, type: UnauthorizedError })
+  @ApiResponse({ status: 404, type: ArticleCommentNotFoundError })
   @ApiResponse({ status: 500, type: UnhandledError })
   @UseGuards(JwtAuthGuard)
-  getArticleComment(
+  async getArticleComment(
     @Jwt() jwt: JwtPayload,
     @Param("articleId", ParseUUIDPipe) articleId: string,
+    @Param("commentId", ParseUUIDPipe) commentId: string,
   ) {
     const authReqDto = new AuthReqDto({ userId: jwt.sub });
     const getArticleCommentReqDto = new GetArticleCommentReqDto({
       articleId,
+      commentId,
     });
-    const result = this.articleService.getArticleComment(
+    const result = await this.articleService.getArticleComment(
       authReqDto,
       getArticleCommentReqDto,
     );
@@ -246,10 +254,11 @@ export class ArticleController {
   @ApiBearerAuth()
   @ApiOperation({ summary: "Update article comment" })
   @ApiResponse({ status: 200, type: MutationResDto })
-  @ApiResponse({ status: 401, type: UnauthorizedException })
+  @ApiResponse({ status: 401, type: UnauthorizedError })
+  @ApiResponse({ status: 404, type: ArticleCommentNotFoundError })
   @ApiResponse({ status: 500, type: UnhandledError })
   @UseGuards(JwtAuthGuard)
-  updateArticleComment(
+  async updateArticleComment(
     @Jwt() jwt: JwtPayload,
     @Param("articleId", ParseUUIDPipe) articleId: string,
     @Param("commentId", ParseUUIDPipe) commentId: string,
@@ -258,7 +267,7 @@ export class ArticleController {
     const authReqDto = new AuthReqDto({ userId: jwt.sub });
     updateArticleCommentReqDto.articleId = articleId;
     updateArticleCommentReqDto.commentId = commentId;
-    const result = this.articleService.updateArticleComment(
+    const result = await this.articleService.updateArticleComment(
       authReqDto,
       updateArticleCommentReqDto,
     );
@@ -270,10 +279,11 @@ export class ArticleController {
   @ApiBearerAuth()
   @ApiOperation({ summary: "Delete article comment" })
   @ApiResponse({ status: 200, type: MutationResDto })
-  @ApiResponse({ status: 401, type: UnauthorizedException })
+  @ApiResponse({ status: 401, type: UnauthorizedError })
+  @ApiResponse({ status: 404, type: ArticleCommentNotFoundError })
   @ApiResponse({ status: 500, type: UnhandledError })
   @UseGuards(JwtAuthGuard)
-  deleteArticleComment(
+  async deleteArticleComment(
     @Jwt() jwt: JwtPayload,
     @Param("articleId", ParseUUIDPipe) articleId: string,
     @Param("commentId", ParseUUIDPipe) commentId: string,
@@ -283,7 +293,7 @@ export class ArticleController {
       articleId,
       commentId,
     });
-    const result = this.articleService.deleteArticleComment(
+    const result = await this.articleService.deleteArticleComment(
       authReqDto,
       deleteArticleCommentReqDtoDto,
     );

@@ -1,12 +1,24 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { UnhandledError } from "src/auth/auth.exception";
+import { ArticleComment } from "src/entities/article-comment.entity";
 import { ArticleLike } from "src/entities/article-like.entity";
 import { Article } from "src/entities/article.entity";
-import { Comment } from "src/entities/comment.entity";
-import { DataSource, DeepPartial, FindOptionsWhere, Repository } from "typeorm";
-import { CursorReqDto } from "./article.dto";
-import { ArticleNotFoundError } from "./article.exception";
+import { User } from "src/entities/user.entity";
+import { isUniqueConstraintViolationError } from "src/lib/error-assertion";
+import {
+  DataSource,
+  DeepPartial,
+  FindOptionsWhere,
+  IsNull,
+  Repository,
+} from "typeorm";
+import { PaginationReqDto } from "./article.dto";
+import {
+  ArticleCommentNotFoundError,
+  ArticleNotFoundError,
+  ArticleUserUniqueLikeError,
+} from "./article.exception";
 
 @Injectable()
 export class ArticleRepository {
@@ -14,8 +26,8 @@ export class ArticleRepository {
     private dataSource: DataSource,
     @InjectRepository(Article)
     private articleRepository: Repository<Article>,
-    @InjectRepository(Comment)
-    private commentRepository: Repository<Comment>,
+    @InjectRepository(ArticleComment)
+    private articleCommentRepository: Repository<ArticleComment>,
     @InjectRepository(ArticleLike)
     private articleLikeRepository: Repository<ArticleLike>,
   ) {}
@@ -27,6 +39,15 @@ export class ArticleRepository {
     try {
       return (await callback()) as TReturn;
     } catch (error) {
+      if (
+        isUniqueConstraintViolationError(
+          error,
+          "article_likes_articles_users_unique",
+        )
+      ) {
+        throw new ArticleUserUniqueLikeError("User already like the article.");
+      }
+
       if (error instanceof Error) {
         throw error;
       }
@@ -43,12 +64,14 @@ export class ArticleRepository {
     });
   }
 
-  async getAllArticle(userId: string, cursorReqDto: CursorReqDto) {
-    const { limit, date, identifer } = cursorReqDto;
+  async getAllArticle(userId: string, paginationReqDto: PaginationReqDto) {
+    const { limit, page } = paginationReqDto;
 
+    const offset = page > 0 ? (page - 1) * limit : 0;
     const query = this.articleRepository
       .createQueryBuilder("article")
       .select([
+        "(COUNT(article.id) OVER ())::int AS total",
         "article.id AS id",
         "article.title AS title",
         "article.slug AS slug",
@@ -63,28 +86,28 @@ export class ArticleRepository {
         "article_like.article_id = article.id AND article_like.user_id = :userId",
         { userId },
       )
+      .where("article.deleted_at IS NULL")
       .orderBy("article.created_at", "DESC")
-      .addOrderBy("article.id", "DESC")
+      .offset(offset)
       .limit(limit);
-
-    if (identifer && date) {
-      query.where(
-        "(article.created_at, article.id) > (:createdAt, :identifer)",
-        {
-          identifer,
-          createdAt: date,
-        },
-      );
-    }
 
     return await this.runQuery(async () => {
       type ReturnType = Pick<Article, "id" | "title" | "slug"> & {
+        total: number;
         created_at: Article["createdAt"];
         updated_at: Article["updatedAt"];
         liked: boolean;
         author_id: string;
       };
       return await query.getRawMany<ReturnType>();
+    });
+  }
+
+  async getOneArticle(criteria: FindOptionsWhere<Article>) {
+    return await this.runQuery(async () => {
+      return await this.articleRepository.findOne({
+        where: criteria,
+      });
     });
   }
 
@@ -104,10 +127,11 @@ export class ArticleRepository {
       .leftJoin(
         ArticleLike,
         "article_like",
-        "article_like.article_id = article.id AND article_like.user_id = :userId",
+        "article_like.article_id = article.id AND article_like.deleted_at IS NULL AND article_like.user_id = :userId",
         { userId },
       )
-      .where("article.id = :articleId", {
+      .where("article.deleted_at IS NULL")
+      .andWhere("article.id = :articleId", {
         articleId,
       });
 
@@ -134,10 +158,15 @@ export class ArticleRepository {
     }
   }
 
-  async deleteArticle(criteria: FindOptionsWhere<Article>) {
+  async deleteArticle(criteria: FindOptionsWhere<Article>, skipDeleted = true) {
     const result = await this.runQuery(async () => {
-      return await this.articleRepository.update(criteria, {
-        deletedAt: new Date(),
+      return await this.articleRepository.softDelete({
+        ...criteria,
+        ...(skipDeleted
+          ? {
+              deletedAt: IsNull(),
+            }
+          : {}),
       });
     });
     if (result.affected === 0) {
@@ -145,73 +174,159 @@ export class ArticleRepository {
     }
   }
 
-  async saveComment(
-    comment: DeepPartial<Comment>,
-  ): Promise<Pick<Comment, "id">> {
+  async saveArticleComment(
+    comment: DeepPartial<ArticleComment>,
+  ): Promise<Pick<ArticleComment, "id">> {
     return await this.runQuery(async () => {
-      return await this.commentRepository.save(comment);
+      return await this.articleCommentRepository.save(comment);
     });
   }
 
-  async getAllComment(cursorReqDto: CursorReqDto) {
-    const { limit, date, identifer } = cursorReqDto;
+  async getAllArticleComment(
+    articleId: string,
+    paginationReqDto: PaginationReqDto,
+  ) {
+    const { limit, page } = paginationReqDto;
 
+    const offset = page > 0 ? (page - 1) * limit : 0;
     const query = this.dataSource
-      .getRepository(Comment)
-      .createQueryBuilder("comment")
+      .getRepository(ArticleComment)
+      .createQueryBuilder("article_comment")
       .select([
-        "comment.id AS id",
-        "comment.content AS content",
-        "comment.created_at AS created_at",
-        "comment.updated_at AS updated_at",
+        "(COUNT(article_comment.id) OVER ())::int AS total",
+        "article_comment.id AS id",
+        "article_comment.content AS content",
+        "article_comment.article_id AS article_id",
+        "article.title AS article_title",
+        "article.slug AS article_slug",
+        "article.author_id AS article_author_id",
+        "article_author.username AS article_author_username",
+        "article_comment.author_id AS author_id",
+        "comment_author.username AS author_username",
+        "article_comment.created_at AS created_at",
+        "article_comment.updated_at AS updated_at",
       ])
-      .orderBy("comment.created_at", "DESC")
-      .addOrderBy("comment.id", "DESC")
+      .leftJoin(Article, "article", "article.id = article_comment.article_id")
+      .leftJoin(User, "article_author", "article_author.id = article.author_id")
+      .leftJoin(
+        User,
+        "comment_author",
+        "comment_author.id = article_comment.author_id",
+      )
+      .where("article.deleted_at IS NULL")
+      .andWhere("article_comment.article_id = :articleId", { articleId })
+      .orderBy("article_comment.created_at", "DESC")
+      .offset(offset)
       .limit(limit);
 
-    if (identifer && date) {
-      query.where(
-        "(comment.created_at, comment.id) > (:createdAt, :identifer)",
-        {
-          identifer,
-          createdAt: date,
-        },
-      );
-    }
-
     return await this.runQuery(async () => {
-      type ReturnType = Pick<Comment, "id" | "content"> & {
-        created_at: Comment["createdAt"];
-        updated_at: Comment["updatedAt"];
+      type ReturnType = Pick<ArticleComment, "id" | "content"> & {
+        total: number;
+        article_id: ArticleComment["article"]["id"];
+        article_title: ArticleComment["article"]["title"];
+        article_slug: ArticleComment["article"]["slug"];
+        article_author_id: ArticleComment["article"]["author"]["id"];
+        article_author_username: User["username"];
+        author_id: ArticleComment["author"]["id"];
+        author_username: User["username"];
+        created_at: ArticleComment["createdAt"];
+        updated_at: ArticleComment["updatedAt"];
       };
 
       return await query.getRawMany<ReturnType>();
     });
   }
 
-  async getOneComment(commentFields: FindOptionsWhere<Comment>) {
+  async getOneArticleCommentById(id: string) {
+    const query = this.dataSource
+      .getRepository(ArticleComment)
+      .createQueryBuilder("article_comment")
+      .select([
+        "(COUNT(article_comment.id) OVER ())::int AS total",
+        "article_comment.id AS id",
+        "article_comment.content AS content",
+        "article_comment.article_id AS article_id",
+        "article.title AS article_title",
+        "article.content AS article_content",
+        "article.slug AS article_slug",
+        "article.author_id AS article_author_id",
+        "article_author AS article_author_username",
+        "article_comment.author_id AS author_id",
+        "comment_author.username AS author_username",
+        "article_comment.created_at AS created_at",
+        "article_comment.updated_at AS updated_at",
+      ])
+      .leftJoin(Article, "article", "article.id = article_comment.article_id")
+      .leftJoin(User, "article_author", "article_author.id = article.author_id")
+      .leftJoin(
+        User,
+        "comment_author",
+        "comment_author.id = article_comment.author_id",
+      )
+      .where("article.deleted_at IS NULL")
+      .andWhere("article_comment.id = :id", { id });
+
     return await this.runQuery(async () => {
-      return await this.commentRepository.findOne({
-        where: commentFields,
+      type ReturnType = Pick<ArticleComment, "id" | "content"> & {
+        total: number;
+        article_id: ArticleComment["article"]["id"];
+        article_title: ArticleComment["article"]["title"];
+        article_slug: ArticleComment["article"]["slug"];
+        article_author_id: ArticleComment["article"]["author"]["id"];
+        article_author_username: User["username"];
+        author_id: ArticleComment["author"]["id"];
+        author_username: User["username"];
+        created_at: ArticleComment["createdAt"];
+        updated_at: ArticleComment["updatedAt"];
+      };
+
+      return await query.getRawOne<ReturnType>();
+    });
+  }
+
+  async updateArticleComment(
+    criteria: FindOptionsWhere<ArticleComment>,
+    articleComment: DeepPartial<ArticleComment>,
+  ) {
+    const result = await this.runQuery(async () => {
+      return await this.articleCommentRepository.update(
+        criteria,
+        articleComment,
+      );
+    });
+    if (result.affected === 0) {
+      throw new ArticleCommentNotFoundError();
+    }
+  }
+
+  async deleteArticleComment(
+    criteria: FindOptionsWhere<ArticleComment>,
+    skipDeleted = true,
+  ) {
+    const result = await this.runQuery(async () => {
+      return await this.articleCommentRepository.softDelete({
+        ...criteria,
+        ...(skipDeleted
+          ? {
+              deletedAt: IsNull(),
+            }
+          : {}),
       });
     });
+
+    if (result.affected === 0) {
+      throw new ArticleCommentNotFoundError();
+    }
   }
 
-  async deleteComment(comment: FindOptionsWhere<Comment>) {
+  async upsertArticleLike(articleLike: DeepPartial<ArticleLike>) {
     return await this.runQuery(async () => {
-      return await this.commentRepository.softDelete(comment);
-    });
-  }
-
-  async saveArticleLike(articleLike: DeepPartial<ArticleLike>) {
-    return await this.runQuery(async () => {
-      return await this.articleLikeRepository.save(articleLike);
-    });
-  }
-
-  async deleteArticleLike(articleLike: FindOptionsWhere<ArticleLike>) {
-    return await this.runQuery(async () => {
-      return await this.articleLikeRepository.softDelete(articleLike);
+      return await this.articleLikeRepository.upsert(articleLike, {
+        conflictPaths: {
+          user: true,
+          article: true,
+        },
+      });
     });
   }
 }

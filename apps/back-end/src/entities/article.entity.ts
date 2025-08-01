@@ -12,7 +12,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
-import { generateOpaqueToken } from "../lib/token";
+import { generateRandomString } from "../lib/string";
 import { User } from "./user.entity";
 
 @Entity({
@@ -35,7 +35,7 @@ export class Article {
   @Column({ type: "text", name: "content", default: "", nullable: false })
   content: string;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { nullable: false })
   @JoinColumn({
     name: "author_id",
     foreignKeyConstraintName: "articles_users_id_foreign_key",
@@ -61,14 +61,13 @@ export class Article {
     name: "deleted_at",
     nullable: true,
   })
-  deletedAt: Date;
+  deletedAt: Date | null;
 
   @BeforeInsert()
   @BeforeUpdate()
   generateSlug() {
-    // Just reuse the function for generate random string.
-    // It doesn't have anything todo with opaque token or something.
-    this.slug = slugify(`${this.title}-${generateOpaqueToken(8)}`, {
+    // In case there are similary title.
+    this.slug = slugify(`${this.title}-${generateRandomString(8)}`, {
       lower: true,
     });
   }

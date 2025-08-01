@@ -1,6 +1,8 @@
 import {
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -12,6 +14,9 @@ import { User } from "./user.entity";
 @Entity({
   name: "article_likes",
 })
+@Index("article_likes_articles_users_unique", ["article", "user"], {
+  unique: true,
+})
 export class ArticleLike {
   @PrimaryGeneratedColumn("uuid", {
     name: "id",
@@ -19,14 +24,14 @@ export class ArticleLike {
   })
   id: string;
 
-  @ManyToOne(() => Article)
+  @ManyToOne(() => Article, { nullable: false })
   @JoinColumn({
     name: "article_id",
     foreignKeyConstraintName: "article_likes_articles_id_foreign_key",
   })
-  article: User;
+  article: Article;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { nullable: false })
   @JoinColumn({
     name: "user_id",
     foreignKeyConstraintName: "article_likes_users_id_foreign_key",
@@ -46,4 +51,11 @@ export class ArticleLike {
     nullable: false,
   })
   updatedAt: Date;
+
+  @DeleteDateColumn({
+    type: "timestamptz",
+    name: "deleted_at",
+    nullable: true,
+  })
+  deletedAt: Date | null;
 }

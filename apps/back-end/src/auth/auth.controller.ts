@@ -6,19 +6,21 @@ import {
   Post,
   Req,
   Res,
-  UnauthorizedException,
   UseGuards,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiOperation, ApiResponse } from "@nestjs/swagger";
 import { Request, Response } from "express";
 import { ConfigService } from "src/config/config.service";
 import { JwtPayload } from "src/core/jwt.service";
-import { Jwt } from "src/decorators/jwt.decorator";
+import { Jwt, JwtToken } from "src/decorators/jwt.decorator";
+import { UnauthorizedError } from "src/exceptions/api.exception";
 import { extractJwtTokenFromCookie, JwtAuthGuard } from "src/guards/jwt.guard";
 import {
   AuthResDto,
   LoginReqDto,
+  LogoutReqDto,
   LogoutResDto,
+  ProfileReqDto,
   ProfileResDto,
   RefreshReqDto,
   RegisterReqDto,
@@ -132,19 +134,17 @@ export class AuthController {
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
-    const _refreshToken = extractJwtTokenFromCookie(
+    const refreshToken = extractJwtTokenFromCookie(
       request,
       this.configService.static.REFRESH_TOKEN_COOKIE_KEY,
     );
 
-    const refreshToken = _refreshToken || refreshReqDto.refreshToken;
-    if (!refreshToken) {
+    refreshReqDto.refreshToken = refreshToken || refreshReqDto.refreshToken;
+    if (!refreshReqDto.refreshToken) {
       throw new InvalidTokenError();
     }
 
-    const result = await this.authService.refresh({
-      refreshToken: refreshToken,
-    });
+    const result = await this.authService.refresh(refreshReqDto);
     this.setCookie(response, result);
 
     return result;
@@ -155,17 +155,20 @@ export class AuthController {
   @ApiBearerAuth()
   @ApiOperation({ summary: "For user to logout" })
   @ApiResponse({ status: 200, type: LogoutResDto })
-  @ApiResponse({ status: 401, type: UnauthorizedException })
+  @ApiResponse({ status: 401, type: UnauthorizedError })
   @ApiResponse({ status: 404, type: AuthNotFoundError })
   @ApiResponse({ status: 500, type: UnhandledError })
   @UseGuards(JwtAuthGuard)
   async logout(
     @Jwt() jwt: JwtPayload,
+    @JwtToken() jwtToken: string,
     @Res({ passthrough: true }) response: Response,
   ) {
-    const result = await this.authService.logout({
+    const logoutReqDto = new LogoutReqDto({
+      token: jwtToken,
       userId: jwt.sub,
     });
+    const result = await this.authService.logout(logoutReqDto);
     this.clearCookie(response);
     return result;
   }
@@ -175,14 +178,15 @@ export class AuthController {
   @ApiBearerAuth()
   @ApiOperation({ summary: "Get user profile" })
   @ApiResponse({ status: 200, type: ProfileResDto })
-  @ApiResponse({ status: 401, type: UnauthorizedException })
+  @ApiResponse({ status: 401, type: UnauthorizedError })
   @ApiResponse({ status: 404, type: UserNotFoundError })
   @ApiResponse({ status: 500, type: UnhandledError })
   @UseGuards(JwtAuthGuard)
   async profile(@Jwt() jwt: JwtPayload) {
-    const result = await this.authService.profile({
+    const profileReqDto = new ProfileReqDto({
       userId: jwt.sub,
     });
+    const result = await this.authService.profile(profileReqDto);
     return result;
   }
 }

@@ -3,7 +3,13 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Auth } from "src/entities/auth.entity";
 import { User } from "src/entities/user.entity";
 import { isUniqueConstraintViolationError } from "src/lib/error-assertion";
-import { DataSource, DeepPartial, FindOptionsWhere, Repository } from "typeorm";
+import {
+  DataSource,
+  DeepPartial,
+  FindOptionsWhere,
+  IsNull,
+  Repository,
+} from "typeorm";
 import {
   AuthNotFoundError,
   DuplicateUsernameError,
@@ -45,20 +51,25 @@ export class AuthRepository {
     });
   }
 
-  async updateAuth({ id, ...newAuth }: DeepPartial<Auth>) {
+  async updateAuth(criteria: FindOptionsWhere<Auth>, auth: DeepPartial<Auth>) {
     return await this.runQuery(async () => {
       await this.dataSource.transaction(async (transactionalEntityManager) => {
         const authRepository = transactionalEntityManager.getRepository(Auth);
-        await authRepository.softDelete({ id: id });
-        await authRepository.save(newAuth);
+        await authRepository.softDelete(criteria);
+        await authRepository.save(auth);
       });
     });
   }
 
-  async deleteAuth(criteria: FindOptionsWhere<Auth>) {
+  async deleteAuth(criteria: FindOptionsWhere<Auth>, skipDeleted = true) {
     const result = await this.runQuery(async () => {
-      return await this.authRepository.update(criteria, {
-        deletedAt: new Date(),
+      return await this.authRepository.softDelete({
+        ...criteria,
+        ...(skipDeleted
+          ? {
+              deletedAt: IsNull(),
+            }
+          : {}),
       });
     });
 
@@ -67,10 +78,10 @@ export class AuthRepository {
     }
   }
 
-  async getOneAuth(authFields: FindOptionsWhere<Auth>) {
+  async getOneAuth(criteria: FindOptionsWhere<Auth>) {
     return await this.runQuery(async () => {
       return await this.authRepository.findOne({
-        where: authFields,
+        where: criteria,
         relations: {
           user: true,
         },
@@ -84,10 +95,10 @@ export class AuthRepository {
     });
   }
 
-  async getOneUser(userFields: FindOptionsWhere<User>) {
+  async getOneUser(criteria: FindOptionsWhere<User>) {
     return await this.runQuery(async () => {
       return await this.userRepository.findOne({
-        where: userFields,
+        where: criteria,
       });
     });
   }
