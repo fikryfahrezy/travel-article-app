@@ -4,6 +4,9 @@
 - API: https://travel-article-app-be.fahrezy.work
 - Swagger: https://travel-article-app-be.fahrezy.work/docs
 
+<img width="1191" height="687" alt="image" src="https://github.com/user-attachments/assets/38737baa-b635-4452-ac18-523424c13388" />
+
+
 ## Setup Development
 
 ### Create .env file
@@ -114,4 +117,238 @@ From the root of the project, first create `.env` file that is similar to the ab
 
 ```bash
 docker compose --progress ./fe.docker-compose.yaml up  --build
+```
+
+## API Endpoints
+
+### Health
+
+Request:
+
+```bash
+curl -X 'GET' \
+  'https://travel-article-app-be.fahrezy.work/api/health' \
+  -H 'accept: application/json'
+```
+
+Response:
+
+```bash
+{
+  "status": "ok",
+  "info": {
+    "database": {
+      "status": "up"
+    }
+  },
+  "error": {},
+  "details": {
+    "database": {
+      "status": "up"
+    }
+  }
+}
+```
+
+### Auth
+
+#### Register
+
+Request:
+
+```bash
+curl -X 'POST' \
+  'https://travel-article-app-be.fahrezy.work/api/auth/register' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "name": "name",
+  "username": "username",
+  "password": "password"
+}'
+```
+
+Response (201):
+
+```bash
+{
+  "token_type": "Bearer",
+  "expires_in": 300,
+  "access_token": "eyJhbGciOiJIUzI1N........",
+  "refresh_token": "3cLACpKHFIzL......."
+}
+```
+
+#### Login
+
+Request:
+
+```bash
+curl -X 'POST' \
+  'https://travel-article-app-be.fahrezy.work/api/auth/login' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "username": "username",
+  "password": "password"
+}'
+```
+
+Response (200):
+
+```bash
+{
+  "token_type": "Bearer",
+  "expires_in": 300,
+  "access_token": "eyJhbGciOiJIUzI1N........",
+  "refresh_token": "3cLACpKHFIzL......."
+}
+```
+
+#### Refresh (to refresh the access_token)
+
+Request:
+
+```bash
+curl -X 'POST' \
+  'https://travel-article-app-be.fahrezy.work/api/auth/refresh' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "refresh_token": "3cLACpKHFIzL......."
+}'
+```
+
+Response (200):
+
+```bash
+{
+  "token_type": "Bearer",
+  "expires_in": 300,
+  "access_token": "eyJhbGciOiJIUzI1N........",
+  "refresh_token": "3cLACpKHFIzL......."
+}
+```
+
+#### Logout
+
+Request:
+
+```bash
+curl -X 'POST' \
+  'https://travel-article-app-be.fahrezy.work/api/auth/logout' \
+  -H 'accept: application/json' \
+  -d ''
+```
+
+Response (200):
+
+```bash
+{
+  "success": true
+}
+```
+
+
+#### Profile
+
+Request:
+
+```bash
+curl -X 'GET' \
+  'https://travel-article-app-be.fahrezy.work/api/auth/profile' \
+  -H 'accept: application/json'
+```
+
+Response (200):
+
+```bash
+{
+  "user_id": "fc1c9f91-af07-41cb-90ac-e088adfbdf30",
+  "username": "username"
+}
+```
+
+### Article
+
+#### Create Article
+
+Request:
+
+```bash
+curl -X 'POST' \
+  'https://travel-article-app-be.fahrezy.work/api/articles' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "title": "string",
+  "content": "string"
+}'
+```
+
+Response (201):
+
+```bash
+{
+  "id": "45a68fea-566f-4e0d-a13f-b73189718f9a"
+}
+```
+
+#### Get All Articles
+
+Request:
+
+```bash
+curl -X 'GET' \
+  'https://travel-article-app-be.fahrezy.work/api/articles?page=1&limit=10' \
+  -H 'accept: application/json'
+```
+
+Response (200):
+
+```bash
+{
+  "page": 1,
+  "limit": 10,
+  "total_data": 2,
+  "total_pages": 1,
+  "data": [
+    {
+      "id": "45a68fea-566f-4e0d-a13f-b73189718f9a",
+      "title": "string",
+      "liked": false,
+      "slug": "string-67wq5uxp1e0",
+      "author_id": "fc1c9f91-af07-41cb-90ac-e088adfbdf30",
+      "author_username": "username",
+      "updated_at": "2025-08-02T13:30:03.322Z",
+      "created_at": "2025-08-02T13:30:03.322Z"
+    }
+  ]
+}
+```
+
+#### Get One Article
+
+Request:
+
+```bash
+curl -X 'GET' \
+  'https://travel-article-app-be.fahrezy.work/api/articles/45a68fea-566f-4e0d-a13f-b73189718f9a' \
+  -H 'accept: application/json'
+```
+
+Response (200):
+
+```bash
+{
+  "id": "45a68fea-566f-4e0d-a13f-b73189718f9a",
+  "title": "string",
+  "liked": false,
+  "slug": "string-67wq5uxp1e0",
+  "author_id": "fc1c9f91-af07-41cb-90ac-e088adfbdf30",
+  "author_username": "username",
+  "updated_at": "2025-08-02T13:30:03.322Z",
+  "created_at": "2025-08-02T13:30:03.322Z",
+  "content": "string"
+}
 ```
