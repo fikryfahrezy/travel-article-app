@@ -41,34 +41,6 @@ TOKEN_COOKIE_DOMAIN=.domain.com                                             # Th
 CORS_ORIGINS=http://localhost:5173,https://domain.com,https://domain.co     # The origin for the `Access-Control-Allow-Origin` header
 ```
 
-### Install dependencies
-
-```bash
-# in project root
-pnpm install
-```
-
-### Run database migration
-
-```bash
-# cd apps/backend-end
-npm run migrate:up:env
-```
-
-### Run the apps
-
-```bash
-# in project root
-npm run fe:dev
-npm run be:dev
-
-# or `cd apps/front-end`
-npm run dev
-
-# or `cd apps/backend-end`
-npm run dev
-```
-
 ## Run using Docker
 
 ### Run the backend
@@ -585,4 +557,77 @@ Response (200):
 {
   "id": "6c6eb292-e487-4e95-bdbd-cb1248619151"
 }
+```
+
+## Install dependencies
+
+```bash
+# in project root
+pnpm install
+```
+
+### Run database migration
+
+```bash
+# cd apps/backend-end
+npm run migrate:up:env
+```
+
+### Run the apps
+
+```bash
+# in project root
+npm run fe:dev
+npm run be:dev
+
+# or `cd apps/front-end`
+npm run dev
+
+# or `cd apps/backend-end`
+npm run dev
+```
+
+## Project Structure
+
+The project using [`pnpm Workspace`](https://pnpm.io/workspaces) to be able to use commit hooks for 2 project in 1 `.git`.
+
+### apps/front-end
+
+The folder for all front-end code
+
+```bash
+src/                            #
+|__assets/                      #
+|__components/                  #
+|__layouts/                     #
+|__lib/                         #
+|__pages/                       #
+|__stores/                      #
+|__[features]/                  #
+|____[feature-name]/            #
+|______components/              #
+|______stores/                  #
+|______schemas/                 #
+```
+
+### apps/back-end
+
+The folder for all back-end code
+
+```bash
+src/                            #
+|__config/                      #
+|__core/                        #
+|__decorators/                  #
+|__entities/                    #
+|__exceptions/                  #
+|__filters/                     #
+|__guards/                      #
+|__[domain]/                    #
+|____[domain].controller.ts     #
+|____[domain].dto.ts            #
+|____[domain].exception.ts      #
+|____[domain].filter.ts         #
+|____[domain].module.ts         #
+|____[domain].service.ts        #
 ```
