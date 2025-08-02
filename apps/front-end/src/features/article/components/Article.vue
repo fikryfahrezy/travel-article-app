@@ -27,7 +27,9 @@ defineProps({
       $attrs.class,
     ]"
   >
-    <h3 class="text-primary text-2xl font-bold">{{ title }}</h3>
+    <h3 class="text-primary line-clamp-2 h-full text-2xl font-bold">
+      {{ title }}
+    </h3>
     <p class="font-medium">{{ authorName }}</p>
     <p class="text-xs">
       {{ new Intl.DateTimeFormat().format(new Date(createdAt)) }}

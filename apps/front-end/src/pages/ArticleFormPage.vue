@@ -61,7 +61,10 @@ async function onSubmit() {
     </Button>
     <Button background="text"></Button>
   </div>
-  <form class="flex h-full w-full flex-col gap-4" @submit.prevent="onSubmit">
+  <form
+    class="flex h-full w-full flex-col gap-4 overflow-scroll"
+    @submit.prevent="onSubmit"
+  >
     <div
       v-if="activeTab === 'editor'"
       class="flex h-full w-full flex-col gap-4"
@@ -110,6 +113,7 @@ async function onSubmit() {
       v-if="activeTab === 'preview'"
       :markdown-title="title"
       :markdown-content="markdownContent"
+      class="overflow-scroll"
     />
     <Button type="submit" class="w-full lg:ml-auto lg:w-fit">Post</Button>
   </form>

@@ -3,10 +3,12 @@ import { computed } from "vue";
 import Button from "./components/Button.vue";
 import Toaster from "./components/Toaster.vue";
 
+import { useRouter } from "vue-router";
 import LoadingOverlay from "./components/LoadingOverlay.vue";
 import { useUserStore } from "./features/auth/stores/user";
 import { navItems } from "./pages/router";
 
+const router = useRouter();
 const userStore = useUserStore();
 
 const publicRoutes = computed(() => {
@@ -18,6 +20,11 @@ const publicRoutes = computed(() => {
     return route.meta?.requiredAuth === undefined;
   });
 });
+
+function logout() {
+  router.push("/");
+  userStore.logout();
+}
 </script>
 
 <template>
@@ -30,6 +37,8 @@ const publicRoutes = computed(() => {
           <RouterLink
             :to="route.path"
             class="hover:text-primary text-base hover:brightness-90 lg:text-xl"
+            active-class="text-primary"
+            exact-active-class="text-primary"
           >
             {{ route.name }}
           </RouterLink>
@@ -39,13 +48,16 @@ const publicRoutes = computed(() => {
         v-if="userStore.profile !== null"
         variant="destructive"
         background="solid"
-        @click="userStore.logout"
+        @click="logout"
       >
         Logout
       </Button>
     </nav>
-    <main class="flex h-full flex-[1] flex-col">
-      <RouterView />
+    <main class="flex h-full flex-[1] flex-col overflow-scroll">
+      <Suspense>
+        <RouterView />
+        <template #fallback> Loading ... </template>
+      </Suspense>
     </main>
   </div>
   <Toaster />

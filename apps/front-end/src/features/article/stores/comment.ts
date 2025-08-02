@@ -20,7 +20,8 @@ export type UseCommentStoreState = GetAllArticleCommentResDto & {
 export const useCommentStore = defineStore("comment", {
   state: (): UseCommentStoreState => {
     return {
-      totalData: 0,
+      total_data: 0,
+      total_pages: 0,
       limit: 0,
       page: 1,
       data: [],
@@ -58,8 +59,10 @@ export const useCommentStore = defineStore("comment", {
         this.latestPagination = getAllArticleCommentReqDto.pagination;
         this.data = result.data.data;
         this.limit = result.data.limit;
-        this.totalData = result.data.totalData;
+        this.total_data = result.data.total_data;
+        this.total_pages = result.data.total_pages;
         this.page = result.data.page;
+        this.latestArticleId = getAllArticleCommentReqDto.article_id;
 
         return result;
       });
@@ -71,10 +74,14 @@ export const useCommentStore = defineStore("comment", {
         const createArticleCommentResult = await apiSdk.createArticleComment(
           createArticleCommentReqDto,
         );
-        await this.getAllArticleComment({
-          article_id: this.latestArticleId,
-          pagination: { ...this.latestPagination, page: 1 },
-        });
+        console.log();
+        if (this.latestArticleId) {
+          await this.getAllArticleComment({
+            article_id: this.latestArticleId,
+            pagination: { ...this.latestPagination, page: 1 },
+          });
+        }
+
         return createArticleCommentResult;
       });
     },

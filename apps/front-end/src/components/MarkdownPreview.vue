@@ -2,7 +2,7 @@
 import DOMPurify from "dompurify";
 import { marked } from "marked";
 
-const props = defineProps({
+defineProps({
   markdownTitle: {
     type: String,
     default: "",
@@ -13,7 +13,6 @@ const props = defineProps({
   },
 });
 
-console.log(props.markdownTitle);
 const renderer = new marked.Renderer();
 renderer.heading = ({ text, depth }) => {
   const newLevel = Math.min(depth + 1, 6);
@@ -21,7 +20,7 @@ renderer.heading = ({ text, depth }) => {
 };
 </script>
 <template>
-  <div class="markdown-preview h-full">
+  <div :class="['markdown-preview h-fit', $attrs.class]">
     <h1>{{ markdownTitle }}</h1>
     <!-- eslint-disable -- to suppress the warn for `v-html` -->
     <div
@@ -115,7 +114,7 @@ renderer.heading = ({ text, depth }) => {
 
   code {
     /* Inline code */
-    @apply rounded-md bg-gray-100 px-1 py-0.5 text-(--primary);
+    @apply rounded-md px-1 py-0.5 text-(--primary);
   }
 
   pre {

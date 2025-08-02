@@ -347,7 +347,7 @@ export class ApiSDK {
   ): Promise<Result<MutationResDto>> {
     const { article_id, ...restDto } = createArticleCommentReqDto;
     return await this.autoRefreshRequest<MutationResDto>(
-      this.baseUrl + `/articles/${article_id}`,
+      this.baseUrl + `/articles/${article_id}/comments`,
       {
         signal,
         method: "POST",
@@ -372,7 +372,7 @@ export class ApiSDK {
     });
 
     return await this.autoRefreshRequest<GetAllArticleCommentResDto>(
-      this.baseUrl + `/articles/${article_id}/likes?${params.toString}`,
+      this.baseUrl + `/articles/${article_id}/comments?${params.toString}`,
       {
         signal,
         method: "GET",

@@ -51,12 +51,12 @@ const nextPage = computed(() => {
 
   <div
     v-if="articleStore.data.length !== 0"
-    class="flex h-full flex-col flex-wrap gap-4 lg:flex-row"
+    class="flex h-full flex-col flex-wrap content-start gap-4 p-2 lg:flex-row"
   >
     <Article
       v-for="article in articleStore.data"
       :key="article.id"
-      class="w-full lg:h-36 lg:w-fit lg:max-w-96"
+      class="w-full lg:h-44 lg:w-fit lg:max-w-96"
       :title="article.title"
       :slug="article.slug"
       :author-name="article.author_username"

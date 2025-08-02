@@ -46,21 +46,22 @@ export const routes: RouteRecordRaw[] = [
     component: AuthLayout,
     children: [
       {
-        name: "Login",
-        path: "login",
-        component: LoginPage,
-        meta: { navItem: true, requiredAuth: false },
-      },
-      {
         name: "Register",
         path: "register",
         component: RegisterPage,
+        meta: { navItem: true, requiredAuth: false },
+      },
+      {
+        name: "Login",
+        path: "login",
+        component: LoginPage,
         meta: { navItem: true, requiredAuth: false },
       },
     ],
   },
 ];
 
+// Get routes to rendered on the navbar based on the `navItem` flag in `meta`
 export function getNavItemRoutes() {
   const navItems: RouteRecordRaw[] = [];
   const tmpRoutes = [...routes];
@@ -95,7 +96,6 @@ export const navItems = getNavItemRoutes();
 const router = createRouter({
   history: createWebHistory(),
   routes,
-  linkExactActiveClass: "text-primary",
 });
 
 router.beforeEach(async (to) => {
