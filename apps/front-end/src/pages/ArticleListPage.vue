@@ -19,8 +19,6 @@ const paginationReq = reactive<Required<PaginationReqDto>>({
   page: Number(route.query.page || 1),
 });
 
-articleStore.getAllArticle(paginationReq);
-
 watch(
   () => route.query.page,
   (newPage) => {
@@ -32,6 +30,7 @@ watch(
       page: newPageNumber,
     });
   },
+  { immediate: true },
 );
 
 const prevPage = computed(() => {

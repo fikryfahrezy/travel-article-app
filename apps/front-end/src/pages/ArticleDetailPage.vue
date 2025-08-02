@@ -23,16 +23,20 @@ const commentStore = useCommentStore();
 
 const showDeleteConfirmation = ref(false);
 
-const articleSlug = String(route.params.articleSlug);
+const articleSlug = computed(() => {
+  return String(route.params.articleSlug);
+});
 
 const paginationCommentReq = reactive<Required<PaginationReqDto>>({
   limit: 10,
   page: 1,
 });
 
-articleStore.getArticle({
-  idOrSlug: articleSlug,
-});
+function getCurrentArticle() {
+  articleStore.getArticle({
+    idOrSlug: articleSlug.value,
+  });
+}
 
 function getAllArticleComment(page: number) {
   if (!articleStore.detail) {
@@ -43,6 +47,14 @@ function getAllArticleComment(page: number) {
     pagination: { ...paginationCommentReq, page },
   });
 }
+
+watch(
+  () => articleSlug,
+  () => {
+    getCurrentArticle();
+  },
+  { immediate: true },
+);
 
 watch(
   [() => articleStore.detail, () => paginationCommentReq.page],
@@ -120,7 +132,7 @@ function commentDeleted() {
           v-if="userStore.isAuthenticated"
           :article-id="articleStore.detail.id"
           :liked="articleStore.detail.liked"
-          @like-change="articleStore.getArticle({ idOrSlug: articleSlug })"
+          @like-change="getCurrentArticle"
         />
         <RouterLink
           v-if="allowedToModifyArticle"
