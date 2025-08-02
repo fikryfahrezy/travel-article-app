@@ -7,18 +7,16 @@ import Article from "@/features/article/components/Article.vue";
 import { useArticleStore } from "@/features/article/stores/article";
 import { useUserStore } from "@/features/auth/stores/user";
 import type { PaginationReqDto } from "@/lib/api-sdk.types";
-import { computed, reactive, ref, watch } from "vue";
+import { computed, reactive, watch } from "vue";
 import { useRoute } from "vue-router";
 
 const route = useRoute();
 const userStore = useUserStore();
 const articleStore = useArticleStore();
 
-const currentPage = ref(1);
-
 const paginationReq = reactive<Required<PaginationReqDto>>({
   limit: 10,
-  page: 1,
+  page: Number(route.query.page || 1),
 });
 
 articleStore.getAllArticle(paginationReq);
@@ -28,7 +26,7 @@ watch(
   (newPage) => {
     const newPageNumber = Number(String(newPage || 1));
 
-    currentPage.value = newPageNumber;
+    paginationReq.page = newPageNumber;
     articleStore.getAllArticle({
       ...paginationReq,
       page: newPageNumber,
@@ -37,13 +35,13 @@ watch(
 );
 
 const prevPage = computed(() => {
-  return currentPage.value <= 1 ? 1 : currentPage.value - 1;
+  return paginationReq.page <= 1 ? 1 : paginationReq.page - 1;
 });
 
 const nextPage = computed(() => {
-  return currentPage.value >= articleStore.allArticle.total_pages
+  return paginationReq.page >= articleStore.allArticle.total_pages
     ? articleStore.allArticle.total_pages
-    : currentPage.value + 1;
+    : paginationReq.page + 1;
 });
 </script>
 
@@ -90,7 +88,7 @@ const nextPage = computed(() => {
         <Button
           as="a"
           :href="href"
-          :disabled="currentPage <= prevPage"
+          :disabled="paginationReq.page <= prevPage"
           @click="navigate"
         >
           <ChevronLeftIcon />
@@ -106,7 +104,7 @@ const nextPage = computed(() => {
         <Button
           as="a"
           :href="href"
-          :disabled="currentPage === page"
+          :disabled="paginationReq.page === page"
           @click="navigate"
         >
           {{ page }}
@@ -122,7 +120,7 @@ const nextPage = computed(() => {
         <Button
           as="a"
           :href="href"
-          :disabled="currentPage >= nextPage"
+          :disabled="paginationReq.page >= nextPage"
           @click="navigate"
         >
           <ChevronRightIcon />
