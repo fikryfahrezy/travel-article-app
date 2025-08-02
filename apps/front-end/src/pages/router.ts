@@ -1,4 +1,4 @@
-import { useUserStore } from "@/features/auth/stores";
+import { useUserStore } from "@/features/auth/stores/user";
 import AuthLayout from "@/layouts/AuthLayout.vue";
 import {
   type RouteRecordRaw,
@@ -7,7 +7,8 @@ import {
 } from "vue-router";
 import ArticleCommentDetailPage from "./ArticleCommentDetailPage.vue";
 import ArticleDetailPage from "./ArticleDetailPage.vue";
-import ArticlesPage from "./ArticlesPage.vue";
+import ArticlesFormPage from "./ArticleFormPage.vue";
+import ArticleListPage from "./ArticleListPage.vue";
 import LandingPage from "./LandingPage.vue";
 import LoginPage from "./LoginPage.vue";
 import RegisterPage from "./RegisterPage.vue";
@@ -25,12 +26,17 @@ export const routes: RouteRecordRaw[] = [
       {
         name: "Articles",
         path: "",
-        component: ArticlesPage,
+        component: ArticleListPage,
         meta: { navItem: true },
       },
-      { path: ":articleId", component: ArticleDetailPage },
       {
-        path: ":articleId/comments/:commentId",
+        path: "form",
+        component: ArticlesFormPage,
+        meta: { requiredAuth: true },
+      },
+      { path: ":articleSlug", component: ArticleDetailPage },
+      {
+        path: "comments/:commentId",
         component: ArticleCommentDetailPage,
       },
     ],
@@ -84,6 +90,8 @@ export function getNavItemRoutes() {
   return navItems;
 }
 
+export const navItems = getNavItemRoutes();
+
 const router = createRouter({
   history: createWebHistory(),
   routes,
@@ -94,7 +102,10 @@ router.beforeEach(async (to) => {
   const userStore = useUserStore();
   await userStore.getProfile();
 
-  if (userStore.profile && to.meta.requiredAuth === false) {
+  if (
+    (userStore.profile && to.meta.requiredAuth === false) ||
+    (!userStore.profile && to.meta.requiredAuth === true)
+  ) {
     return { path: "/" };
   }
 });

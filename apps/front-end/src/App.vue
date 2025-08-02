@@ -1,24 +1,20 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import Button from "./components/Button.vue";
-import LoadingOverlay from "./components/LoadingOverlay.vue";
 import Toaster from "./components/Toaster.vue";
 
-import { useUserStore } from "./features/auth/stores";
-import { getNavItemRoutes } from "./pages/router";
+import LoadingOverlay from "./components/LoadingOverlay.vue";
+import { useUserStore } from "./features/auth/stores/user";
+import { navItems } from "./pages/router";
 
 const userStore = useUserStore();
 
-const navRoutes = computed(() => {
-  return getNavItemRoutes();
-});
-
 const publicRoutes = computed(() => {
   if (!userStore.profile) {
-    return navRoutes.value;
+    return navItems;
   }
 
-  return navRoutes.value.filter((route) => {
+  return navItems.filter((route) => {
     return route.meta?.requiredAuth === undefined;
   });
 });
@@ -34,8 +30,9 @@ const publicRoutes = computed(() => {
           <RouterLink
             :to="route.path"
             class="hover:text-primary text-base hover:brightness-90 lg:text-xl"
-            >{{ route.name }}</RouterLink
           >
+            {{ route.name }}
+          </RouterLink>
         </template>
       </div>
       <Button

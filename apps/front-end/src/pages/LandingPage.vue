@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import backgroundImage from "@/assets/kalen-emsley-Bkci_8qcdvQ-unsplash.jpg";
+import ArrowRightIcon from "@/components/ArrowRightIcon.vue";
 </script>
 <template>
   <h1
@@ -14,20 +15,7 @@ import backgroundImage from "@/assets/kalen-emsley-Bkci_8qcdvQ-unsplash.jpg";
       class="text-primary flex items-center space-x-4 text-2xl"
     >
       <span>Get inspired</span>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      >
-        <path d="M5 12h14" />
-        <path d="m12 5 7 7-7 7" />
-      </svg>
+      <ArrowRightIcon />
     </RouterLink>
   </div>
 </template>

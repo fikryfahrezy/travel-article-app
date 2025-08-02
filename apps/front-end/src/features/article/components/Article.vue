@@ -1,0 +1,43 @@
+<script setup lang="ts">
+import ArrowRightIcon from "@/components/ArrowRightIcon.vue";
+
+defineProps({
+  title: {
+    type: String,
+    default: "",
+  },
+  slug: {
+    type: String,
+    default: "",
+  },
+  authorName: {
+    type: String,
+    default: "",
+  },
+  createdAt: {
+    type: String,
+    default: "",
+  },
+});
+</script>
+<template>
+  <article
+    :class="[
+      'hover:ring-primary flex flex-col space-y-2 p-2 hover:ring-2',
+      $attrs.class,
+    ]"
+  >
+    <h3 class="text-primary text-2xl font-bold">{{ title }}</h3>
+    <p class="font-medium">{{ authorName }}</p>
+    <p class="text-xs">
+      {{ new Intl.DateTimeFormat().format(new Date(createdAt)) }}
+    </p>
+    <RouterLink
+      :to="'/articles/' + slug"
+      class="text-primary flex items-center space-x-4 text-sm"
+    >
+      <span>Continue Reading </span>
+      <ArrowRightIcon class="size-5" />
+    </RouterLink>
+  </article>
+</template>

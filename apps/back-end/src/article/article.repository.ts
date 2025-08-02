@@ -78,6 +78,7 @@ export class ArticleRepository {
         "article.created_at AS created_at",
         "article.updated_at AS updated_at",
         "article.author_id AS author_id",
+        "author.username AS author_username",
         "CASE WHEN article_like.user_id IS NOT NULL THEN true ELSE false END AS liked",
       ])
       .leftJoin(
@@ -86,6 +87,7 @@ export class ArticleRepository {
         "article_like.article_id = article.id AND article_like.user_id = :userId",
         { userId },
       )
+      .leftJoin(User, "author", "author.id = article.author_id")
       .where("article.deleted_at IS NULL")
       .orderBy("article.created_at", "DESC")
       .offset(offset)
@@ -98,6 +100,7 @@ export class ArticleRepository {
         updated_at: Article["updatedAt"];
         liked: boolean;
         author_id: string;
+        author_username: string;
       };
       return await query.getRawMany<ReturnType>();
     });
@@ -111,7 +114,7 @@ export class ArticleRepository {
     });
   }
 
-  async getOneArticleById(articleId: string, userId: string) {
+  async getOneArticleBySlug(articleSlug: string, userId: string) {
     const query = this.articleRepository
       .createQueryBuilder("article")
       .select([
@@ -122,6 +125,7 @@ export class ArticleRepository {
         "article.created_at AS created_at",
         "article.updated_at AS updated_at",
         "article.author_id AS author_id",
+        "author.username AS author_username",
         "CASE WHEN article_like.user_id IS NOT NULL THEN true ELSE false END AS liked",
       ])
       .leftJoin(
@@ -130,9 +134,10 @@ export class ArticleRepository {
         "article_like.article_id = article.id AND article_like.deleted_at IS NULL AND article_like.user_id = :userId",
         { userId },
       )
+      .leftJoin(User, "author", "author.id = article.author_id")
       .where("article.deleted_at IS NULL")
-      .andWhere("article.id = :articleId", {
-        articleId,
+      .andWhere("article.slug = :articleSlug", {
+        articleSlug,
       });
 
     return await this.runQuery(async () => {
@@ -141,6 +146,7 @@ export class ArticleRepository {
         updated_at: Article["updatedAt"];
         liked: boolean;
         author_id: string;
+        author_username: string;
       };
       return await query.getRawOne<ReturnType>();
     });

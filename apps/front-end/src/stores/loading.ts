@@ -1,18 +1,28 @@
+import { randomString } from "@/lib/string";
 import { acceptHMRUpdate, defineStore } from "pinia";
 
+export type UseLoadingStoreState = {
+  callerIds: Record<string, boolean>;
+};
+
 export const useLoadingStore = defineStore("loading", {
-  state: () => {
+  state: (): UseLoadingStoreState => {
     return {
-      isLoading: false,
+      callerIds: {},
     };
   },
   actions: {
     startLoading() {
-      this.isLoading = true;
+      const callerId = randomString();
+      this.callerIds[callerId] = true;
+      return callerId;
     },
-    stopLoading() {
-      this.isLoading = false;
+    stopLoading(callerId: string) {
+      delete this.callerIds[callerId];
     },
+  },
+  getters: {
+    isLoading: (state) => Object.keys(state.callerIds).length !== 0,
   },
 });
 

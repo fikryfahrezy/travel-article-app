@@ -42,7 +42,7 @@ export type PaginationReqDto = {
 };
 
 export type GetArticleReqDto = {
-  article_id: string;
+  slug: string;
 };
 
 export type UpdateArticleReqDto = {
@@ -90,8 +90,9 @@ export type MutationResDto = {
   id: string;
 };
 
-export type PaginationResDto<TData> = PaginationReqDto & {
-  totalData: number;
+export type PaginationResDto<TData> = Required<PaginationReqDto> & {
+  total_data: number;
+  total_pages: number;
   data: TData[];
 };
 
@@ -101,6 +102,7 @@ export type GetAllArticleItemResDto = {
   liked: boolean;
   slug: string;
   author_id: string;
+  author_username: string;
   updated_at: string;
   created_at: string;
 };

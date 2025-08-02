@@ -277,9 +277,9 @@ export class ApiSDK {
     getArticleReqDto: GetArticleReqDto,
     signal?: AbortSignal,
   ): Promise<Result<GetArticleResDto>> {
-    const { article_id } = getArticleReqDto;
+    const { slug } = getArticleReqDto;
     return await this.autoRefreshRequest<GetArticleResDto>(
-      this.baseUrl + `/articles/${article_id}`,
+      this.baseUrl + `/articles/${slug}`,
       {
         signal,
         method: "GET",
@@ -416,10 +416,10 @@ export class ApiSDK {
   }
 
   async deleteArticleComment(
-    DeleteArticleCommentReqDto: DeleteArticleCommentReqDto,
+    deleteArticleCommentReqDto: DeleteArticleCommentReqDto,
     signal?: AbortSignal,
   ): Promise<Result<MutationResDto>> {
-    const { article_id, comment_id } = DeleteArticleCommentReqDto;
+    const { article_id, comment_id } = deleteArticleCommentReqDto;
     return await this.autoRefreshRequest<MutationResDto>(
       this.baseUrl + `/articles/${article_id}/comments/${comment_id}`,
       {

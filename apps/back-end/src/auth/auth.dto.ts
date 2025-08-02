@@ -27,7 +27,7 @@ export class LoginReqDto {
 }
 
 export class RefreshReqDto {
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ name: "refresh_token" })
   @IsOptional()
   @Expose({ name: "refresh_token" })
   refreshToken: string;
@@ -45,20 +45,20 @@ export class LogoutReqDto {
 }
 
 export class AuthResDto {
-  @ApiProperty({ default: "Bearer" })
+  @ApiProperty({ name: "token_type", default: "Bearer" })
   @Expose({ name: "token_type" })
   tokenType: "Bearer";
 
-  @ApiProperty()
+  @ApiProperty({ name: "expires_in" })
   @Expose({ name: "expires_in" })
   expiresIn: number;
 
-  @ApiProperty()
+  @ApiProperty({ name: "access_token" })
   @IsNotEmpty()
   @Expose({ name: "access_token" })
   accessToken: string;
 
-  @ApiProperty()
+  @ApiProperty({ name: "refresh_token" })
   @IsNotEmpty()
   @Expose({ name: "refresh_token" })
   refreshToken: string;
@@ -88,7 +88,7 @@ export class ProfileReqDto {
 }
 
 export class ProfileResDto {
-  @ApiProperty()
+  @ApiProperty({ name: "user_id" })
   @Expose({ name: "user_id" })
   userId: string;
 

@@ -87,7 +87,7 @@ export class ArticleController {
     return result;
   }
 
-  @Get(":articleId")
+  @Get(":articleSlug")
   @HttpCode(200)
   @ApiBearerAuth()
   @ApiOperation({ summary: "Get one article" })
@@ -98,10 +98,10 @@ export class ArticleController {
   @UseGuards(JwtAuthGuard)
   async getArticle(
     @Jwt() jwt: JwtPayload,
-    @Param("articleId", ParseUUIDPipe) articleId: string,
+    @Param("articleSlug") articleSlug: string,
   ) {
     const authReqDto = new AuthReqDto({ userId: jwt.sub });
-    const getArticleReqDto = new GetArticleReqDto({ articleId });
+    const getArticleReqDto = new GetArticleReqDto({ articleSlug });
     const result = await this.articleService.getArticle(
       authReqDto,
       getArticleReqDto,
@@ -226,7 +226,7 @@ export class ArticleController {
     return result;
   }
 
-  @Get(":articleId/comments/:commentId")
+  @Get("comments/:commentId")
   @HttpCode(200)
   @ApiBearerAuth()
   @ApiOperation({ summary: "Get one article comment" })
@@ -237,12 +237,10 @@ export class ArticleController {
   @UseGuards(JwtAuthGuard)
   async getArticleComment(
     @Jwt() jwt: JwtPayload,
-    @Param("articleId", ParseUUIDPipe) articleId: string,
     @Param("commentId", ParseUUIDPipe) commentId: string,
   ) {
     const authReqDto = new AuthReqDto({ userId: jwt.sub });
     const getArticleCommentReqDto = new GetArticleCommentReqDto({
-      articleId,
       commentId,
     });
     const result = await this.articleService.getArticleComment(
@@ -252,7 +250,7 @@ export class ArticleController {
     return result;
   }
 
-  @Patch(":articleId/comments/:commentId")
+  @Patch("comments/:commentId")
   @HttpCode(200)
   @ApiBearerAuth()
   @ApiOperation({ summary: "Update article comment" })
@@ -263,12 +261,10 @@ export class ArticleController {
   @UseGuards(JwtAuthGuard)
   async updateArticleComment(
     @Jwt() jwt: JwtPayload,
-    @Param("articleId", ParseUUIDPipe) articleId: string,
     @Param("commentId", ParseUUIDPipe) commentId: string,
     @Body() updateArticleCommentReqDto: UpdateArticleCommentReqDto,
   ) {
     const authReqDto = new AuthReqDto({ userId: jwt.sub });
-    updateArticleCommentReqDto.articleId = articleId;
     updateArticleCommentReqDto.commentId = commentId;
     const result = await this.articleService.updateArticleComment(
       authReqDto,
@@ -277,7 +273,7 @@ export class ArticleController {
     return result;
   }
 
-  @Delete(":articleId/comments/:commentId")
+  @Delete("comments/:commentId")
   @HttpCode(200)
   @ApiBearerAuth()
   @ApiOperation({ summary: "Delete article comment" })
@@ -288,12 +284,10 @@ export class ArticleController {
   @UseGuards(JwtAuthGuard)
   async deleteArticleComment(
     @Jwt() jwt: JwtPayload,
-    @Param("articleId", ParseUUIDPipe) articleId: string,
     @Param("commentId", ParseUUIDPipe) commentId: string,
   ) {
     const authReqDto = new AuthReqDto({ userId: jwt.sub });
     const deleteArticleCommentReqDto = new DeleteArticleCommentReqDto({
-      articleId,
       commentId,
     });
     const result = await this.articleService.deleteArticleComment(

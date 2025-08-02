@@ -23,13 +23,18 @@ export class PaginationReqDto {
 }
 
 export class PaginationResDto extends PaginationReqDto {
-  @ApiProperty()
+  @ApiProperty({ name: "total_data" })
   @Expose({ name: "total_data" })
   totalData: number;
 
-  constructor(obj: PaginationResDto & PaginationReqDto) {
+  @ApiProperty({ name: "total_pages" })
+  @Expose({ name: "total_pages" })
+  totalPages: number;
+
+  constructor(obj: Omit<PaginationResDto & PaginationReqDto, "totalPages">) {
     super();
     this.totalData = obj.totalData;
+    this.totalPages = Math.ceil(obj.totalData / obj.limit);
     this.page = obj.page;
     this.limit = obj.limit;
   }
@@ -46,31 +51,35 @@ export class CreateArticleReqDto {
 }
 
 export class GetAllArticleItemResDto {
-  @ApiProperty()
+  @ApiProperty({ name: "id" })
   @Expose({ name: "id" })
   id: string;
 
-  @ApiProperty()
+  @ApiProperty({ name: "title" })
   @Expose({ name: "title" })
   title: string;
 
-  @ApiProperty()
+  @ApiProperty({ name: "liked" })
   @Expose({ name: "liked" })
   liked: boolean;
 
-  @ApiProperty()
+  @ApiProperty({ name: "slug" })
   @Expose({ name: "slug" })
   slug: string;
 
-  @ApiProperty()
+  @ApiProperty({ name: "author_id" })
   @Expose({ name: "author_id" })
   authorId: string;
 
-  @ApiProperty()
+  @ApiProperty({ name: "author_username" })
+  @Expose({ name: "author_username" })
+  authorUsername: string;
+
+  @ApiProperty({ name: "updated_at" })
   @Expose({ name: "updated_at" })
   updatedAt: Date;
 
-  @ApiProperty()
+  @ApiProperty({ name: "created_at" })
   @Expose({ name: "created_at" })
   createdAt: Date;
 
@@ -80,6 +89,7 @@ export class GetAllArticleItemResDto {
     this.liked = obj.liked;
     this.slug = obj.slug;
     this.authorId = obj.authorId;
+    this.authorUsername = obj.authorUsername;
     this.updatedAt = obj.updatedAt;
     this.createdAt = obj.createdAt;
   }
@@ -90,17 +100,17 @@ export class GetAllArticleResDto extends PaginationResDto {
   @Expose({ name: "data" })
   data: GetAllArticleItemResDto[];
 
-  constructor(obj: GetAllArticleResDto & PaginationResDto) {
+  constructor(obj: Omit<GetAllArticleResDto & PaginationResDto, "totalPages">) {
     super(obj);
     this.data = obj.data;
   }
 }
 
 export class GetArticleReqDto {
-  articleId: string;
+  articleSlug: string;
 
   constructor(obj: GetArticleReqDto) {
-    this.articleId = obj.articleId;
+    this.articleSlug = obj.articleSlug;
   }
 }
 
@@ -164,47 +174,47 @@ export class GetAllArticleCommentReqDto {
 }
 
 export class GetAllArticleCommentItemResDto {
-  @ApiProperty()
+  @ApiProperty({ name: "id" })
   @Expose({ name: "id" })
   id: string;
 
-  @ApiProperty()
+  @ApiProperty({ name: "content" })
   @Expose({ name: "content" })
   content: string;
 
-  @ApiProperty()
+  @ApiProperty({ name: "article_id" })
   @Expose({ name: "article_id" })
   articleId: string;
 
-  @ApiProperty()
+  @ApiProperty({ name: "article_title" })
   @Expose({ name: "article_title" })
   articleTitle: string;
 
-  @ApiProperty()
+  @ApiProperty({ name: "article_slug" })
   @Expose({ name: "article_slug" })
   articleSlug: string;
 
-  @ApiProperty()
+  @ApiProperty({ name: "article_author_id" })
   @Expose({ name: "article_author_id" })
   articleAuthorId: string;
 
-  @ApiProperty()
+  @ApiProperty({ name: "article_author_username" })
   @Expose({ name: "article_author_username" })
   articleAuthorUsername: string;
 
-  @ApiProperty()
+  @ApiProperty({ name: "author_id" })
   @Expose({ name: "author_id" })
   authorId: string;
 
-  @ApiProperty()
+  @ApiProperty({ name: "author_username" })
   @Expose({ name: "author_username" })
   authorUsername: string;
 
-  @ApiProperty()
+  @ApiProperty({ name: "updated_at" })
   @Expose({ name: "updated_at" })
   updatedAt: Date;
 
-  @ApiProperty()
+  @ApiProperty({ name: "created_at" })
   @Expose({ name: "created_at" })
   createdAt: Date;
 
@@ -228,24 +238,24 @@ export class GetAllArticleCommentResDto extends PaginationResDto {
   @Expose({ name: "data" })
   data: GetAllArticleCommentItemResDto[];
 
-  constructor(obj: GetAllArticleCommentResDto & PaginationResDto) {
+  constructor(
+    obj: Omit<GetAllArticleCommentResDto & PaginationResDto, "totalPages">,
+  ) {
     super(obj);
     this.data = obj.data;
   }
 }
 
 export class GetArticleCommentReqDto {
-  articleId: string;
   commentId: string;
 
   constructor(obj: GetArticleCommentReqDto) {
-    this.articleId = obj.articleId;
     this.commentId = obj.commentId;
   }
 }
 
 export class GetArticleCommentResDto extends GetAllArticleCommentItemResDto {
-  @ApiProperty()
+  @ApiProperty({ name: "content" })
   @Expose({ name: "content" })
   content: string;
 
@@ -261,18 +271,13 @@ export class UpdateArticleCommentReqDto {
   content: string;
 
   @Exclude()
-  articleId: string;
-
-  @Exclude()
   commentId: string;
 }
 
 export class DeleteArticleCommentReqDto {
-  articleId: string;
   commentId: string;
 
   constructor(obj: DeleteArticleCommentReqDto) {
-    this.articleId = obj.articleId;
     this.commentId = obj.commentId;
   }
 }

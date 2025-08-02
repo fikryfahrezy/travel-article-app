@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import Button from "@/components/Button.vue";
 import Input from "@/components/Input.vue";
-import Label from "@/components/Label.vue";
 import { useToastStore } from "@/stores/toast";
 import { ref, useTemplateRef } from "vue";
 import { useRouter } from "vue-router";
 import z from "zod";
 import { loginFormSchema, type LoginFormFieldErrors } from "../schemas";
-import { useUserStore } from "../stores";
+import { useUserStore } from "../stores/user";
 
 const userStore = useUserStore();
 const toastStore = useToastStore();
@@ -31,9 +30,9 @@ async function onSubmit() {
     return;
   }
 
-  const error = await userStore.login(loginForm.data);
-  if (error) {
-    toastStore.showToast("success", error.error.message);
+  const loginResult = await userStore.login(loginForm.data);
+  if (!loginResult.success) {
+    toastStore.showToast("error", loginResult.error.message);
     return;
   }
   toastStore.showToast("success", "Successfully login.");
@@ -46,7 +45,7 @@ async function onSubmit() {
     class="flex w-full flex-col gap-4"
     @submit.prevent="onSubmit"
   >
-    <Label for="username">Username</Label>
+    <label for="username">Username</label>
     <Input
       id="username"
       name="username"
@@ -65,7 +64,7 @@ async function onSubmit() {
         }}
       </ul>
     </ul>
-    <Label for="password">Password</Label>
+    <label for="password">Password</label>
     <Input
       id="password"
       name="password"

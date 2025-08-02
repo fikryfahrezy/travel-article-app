@@ -1,22 +1,20 @@
-import { useLoadingStore } from "@/stores/loading";
-import { acceptHMRUpdate, defineStore } from "pinia";
-import { apiSdk } from "../../lib/api-sdk";
+import { apiSdk } from "@/lib/api-sdk";
 import type {
   LoginReqDto,
   ProfileResDto,
   RegisterReqDto,
-} from "../../lib/api-sdk.types";
+} from "@/lib/api-sdk.types";
+import { useLoadingStore } from "@/stores/loading";
+import { acceptHMRUpdate, defineStore } from "pinia";
 
 export type UseUserStoreState = {
   profile: ProfileResDto | null;
-  loadingProfile: boolean;
 };
 
 export const useUserStore = defineStore("user", {
   state: (): UseUserStoreState => {
     return {
       profile: null,
-      loadingProfile: false,
     };
   },
   actions: {
@@ -25,48 +23,48 @@ export const useUserStore = defineStore("user", {
       TReturn extends Awaited<ReturnType<TCallback>>,
     >(callback: TCallback) {
       const globalLoadingStore = useLoadingStore();
-      globalLoadingStore.startLoading();
-      this.loadingProfile = true;
+      const loadingId = globalLoadingStore.startLoading();
 
       const result = await callback();
-
-      this.loadingProfile = false;
-      globalLoadingStore.stopLoading();
+      globalLoadingStore.stopLoading(loadingId);
 
       return result as TReturn;
     },
     async getProfile() {
       return await this.apiCall(async () => {
-        const profileResult = await apiSdk.profile();
-        this.profile = profileResult.success ? profileResult.data : null;
-        return profileResult;
+        const result = await apiSdk.profile();
+        this.profile = result.success ? result.data : null;
+        return result;
       });
     },
     async login(loginReqDto: LoginReqDto) {
       return await this.apiCall(async () => {
-        const loginResult = await apiSdk.login(loginReqDto);
-        if (!loginResult.success) {
-          return loginResult;
+        const result = await apiSdk.login(loginReqDto);
+        if (!result.success) {
+          return result;
         }
         await this.getProfile();
+        return result;
       });
     },
     async register(registerReqDto: RegisterReqDto) {
       return await this.apiCall(async () => {
-        const loginResult = await apiSdk.register(registerReqDto);
-        if (!loginResult.success) {
-          return loginResult;
+        const result = await apiSdk.register(registerReqDto);
+        if (!result.success) {
+          return result;
         }
         await this.getProfile();
+        return result;
       });
     },
     async logout() {
       return await this.apiCall(async () => {
-        const loginResult = await apiSdk.logout();
-        if (!loginResult.success) {
-          return loginResult;
+        const result = await apiSdk.logout();
+        if (!result.success) {
+          return result;
         }
         this.profile = null;
+        return result;
       });
     },
   },

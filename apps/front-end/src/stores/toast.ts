@@ -1,29 +1,43 @@
+import { randomString } from "@/lib/string";
 import { acceptHMRUpdate, defineStore } from "pinia";
 
-export type UseToastStoreState = {
+export type ToastItem = {
+  id: string;
   type: "success" | "error" | "";
   message: string;
-  isShowing: boolean;
+};
+
+export type UseToastStoreState = {
+  items: ToastItem[];
 };
 
 export const useToastStore = defineStore("toast", {
   state: (): UseToastStoreState => {
     return {
-      message: "",
-      type: "",
-      isShowing: false,
+      items: [],
     };
   },
   actions: {
-    showToast(type: UseToastStoreState["type"], message: string) {
-      this.type = type;
-      this.message = message;
-      this.isShowing = true;
+    closeToast(id: string) {
+      this.items = this.items.filter((item) => {
+        return item.id !== id;
+      });
     },
-    resetToast() {
-      this.type = "";
-      this.message = "";
-      this.isShowing = false;
+    showToast(
+      type: ToastItem["type"],
+      message: string,
+      duration: number = 5000,
+    ) {
+      const id = randomString();
+      this.items.push({
+        id,
+        type: type,
+        message: message,
+      });
+
+      setTimeout(() => {
+        this.closeToast(id);
+      }, duration);
     },
   },
 });

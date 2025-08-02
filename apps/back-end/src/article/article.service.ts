@@ -70,6 +70,7 @@ export class ArticleService {
         slug: article.slug,
         liked: article.liked,
         authorId: article.author_id,
+        authorUsername: article.author_username,
         createdAt: article.created_at,
         updatedAt: article.updated_at,
       });
@@ -87,8 +88,8 @@ export class ArticleService {
     auth: AuthReqDto,
     getArticleReqDto: GetArticleReqDto,
   ): Promise<GetArticleResDto> {
-    const article = await this.articleRespository.getOneArticleById(
-      getArticleReqDto.articleId,
+    const article = await this.articleRespository.getOneArticleBySlug(
+      getArticleReqDto.articleSlug,
       auth.userId,
     );
 
@@ -103,6 +104,7 @@ export class ArticleService {
       liked: article.liked,
       content: article.content,
       authorId: article.author_id,
+      authorUsername: article.author_username,
       createdAt: article.created_at,
       updatedAt: article.updated_at,
     });
@@ -236,7 +238,7 @@ export class ArticleService {
   }
 
   async getArticleComment(
-    auth: AuthReqDto,
+    _: AuthReqDto,
     getArticleCommentReqDto: GetArticleCommentReqDto,
   ): Promise<GetArticleCommentResDto> {
     const comment = await this.articleRespository.getOneArticleCommentById(
