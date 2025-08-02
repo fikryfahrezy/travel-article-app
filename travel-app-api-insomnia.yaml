@@ -1,0 +1,602 @@
+type: collection.insomnia.rest/5.0
+name: Travel App API
+meta:
+  id: wrk_030128dcf3254f11a5dbf725c99ffb46
+  created: 1753921264541
+  modified: 1754142772262
+  description: ""
+collection:
+  - name: Auth
+    meta:
+      id: fld_746c19ae3e9f4c6e89dbd80539d37da3
+      created: 1753934691625
+      modified: 1753958756167
+      sortKey: -1753958077827
+      description: ""
+    children:
+      - url: "{{ _.BASE_URL }}/api/auth/login"
+        name: Login
+        meta:
+          id: req_420b08bf5bee4e718b91bb78fbeb5df4
+          created: 1753934693446
+          modified: 1754142527216
+          isPrivate: false
+          description: ""
+          sortKey: -1753934693446
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"username": "username",
+            	"password": "password"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/11.3.0
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.BASE_URL }}/api/auth/register"
+        name: Register
+        meta:
+          id: req_7ab84848a6e54d2d910983b8b29b9200
+          created: 1753934741037
+          modified: 1754142521207
+          isPrivate: false
+          description: ""
+          sortKey: -1753934693546
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"name": "name",
+            	"username": "username",
+            	"password": "password"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/11.3.0
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.BASE_URL }}/api/auth/refresh"
+        name: Refresh
+        meta:
+          id: req_250bcfc11fc74971bf49403dca68053c
+          created: 1753938286689
+          modified: 1754142532394
+          isPrivate: false
+          description: ""
+          sortKey: -1741442692264
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"refresh_token": "W_26jO6vzT2PUvOa__bKiOk4Jv40KiYhcffOu_4x_NA"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/11.3.0
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.BASE_URL }}/api/auth/logout"
+        name: Logout
+        meta:
+          id: req_df1cf52ed1cf4bcbadebe74de923414b
+          created: 1753943258853
+          modified: 1754012067115
+          isPrivate: false
+          description: ""
+          sortKey: -1739360692067
+        method: POST
+        headers:
+          - name: User-Agent
+            value: insomnia/11.3.0
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.BASE_URL }}/api/auth/profile"
+        name: Profile
+        meta:
+          id: req_67fe6460f95f44aebaa86d28c07cf938
+          created: 1753966408801
+          modified: 1754012061048
+          isPrivate: false
+          description: ""
+          sortKey: -1733592108397
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/11.3.0
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: Article
+    meta:
+      id: fld_e0924a2f6be44bc589e5a7efd104b443
+      created: 1753958077727
+      modified: 1753958077727
+      sortKey: -1753958077727
+      description: ""
+    children:
+      - url: "{{ _.BASE_URL }}/api/articles"
+        name: Create Article
+        meta:
+          id: req_17722b02726341ddb1198e54f901d2b4
+          created: 1753958081924
+          modified: 1754142550991
+          isPrivate: false
+          description: ""
+          sortKey: -1753958081924
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"title": "title",
+            	"content": "content"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/11.3.0
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.BASE_URL }}/api/articles"
+        name: Get Articles
+        meta:
+          id: req_536dd12079f449198303c9ba7971a6c0
+          created: 1753958118835
+          modified: 1754020911447
+          isPrivate: false
+          description: ""
+          sortKey: -1753946387685
+        method: GET
+        parameters:
+          - id: pair_e259069fbc9c4340abb724d174efc1cb
+            name: page
+            value: "1"
+            description: ""
+            disabled: false
+          - id: pair_d1893b4fb00c41fb8ef4e5ac36d437b1
+            name: limit
+            value: "10"
+            description: ""
+            disabled: false
+        headers:
+          - name: User-Agent
+            value: insomnia/11.3.0
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.BASE_URL }}/api/articles/:articleIdOrSlug"
+        name: Get Article
+        meta:
+          id: req_f8c002a0874b496c83d446bfde68112b
+          created: 1753958141978
+          modified: 1754142583289
+          isPrivate: false
+          description: ""
+          sortKey: -1753940540565.5
+        method: GET
+        parameters:
+          - id: pair_4e7f7e4060144559868c23ac6af2c417
+            name: ""
+            value: ""
+            description: ""
+            disabled: false
+        headers:
+          - name: User-Agent
+            value: insomnia/11.3.0
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+        pathParameters:
+          - name: articleIdOrSlug
+            value: title-4ivpupxrse4
+      - url: "{{ _.BASE_URL }}/api/articles/:articleId"
+        name: Update Article
+        meta:
+          id: req_fb51a23139f04d8e92f3960a02affbe9
+          created: 1753958175257
+          modified: 1754142600786
+          isPrivate: false
+          description: ""
+          sortKey: -1753937617005.75
+        method: PATCH
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"title": "new title",
+            	"content": "new content"
+            }
+        parameters:
+          - id: pair_4e7f7e4060144559868c23ac6af2c417
+            name: ""
+            value: ""
+            description: ""
+            disabled: false
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/11.3.0
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+        pathParameters:
+          - name: articleId
+            value: ff84d54a-f34b-49eb-8389-fd82a26ca602
+      - url: "{{ _.BASE_URL }}/api/articles/:articleId"
+        name: Delete Article
+        meta:
+          id: req_04e9148adb6f476992d4d07cf066c2e1
+          created: 1753958598641
+          modified: 1754142646621
+          isPrivate: false
+          description: ""
+          sortKey: -1753936155225.875
+        method: DELETE
+        parameters:
+          - id: pair_b2fec3b5bab549709eca75936627c83f
+            name: ""
+            value: ""
+            description: ""
+            disabled: false
+        headers:
+          - name: User-Agent
+            value: insomnia/11.3.0
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+        pathParameters:
+          - name: articleId
+            value: 3c4b8d7d-e2fb-464f-bb56-5995f4fc53af
+      - url: "{{ _.BASE_URL }}/api/articles/:articleId/comments"
+        name: Create Article Comment
+        meta:
+          id: req_de556b2166734d49a37c2ce9a3000c49
+          created: 1753958624328
+          modified: 1754142670219
+          isPrivate: false
+          description: ""
+          sortKey: -1753936155125.875
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"content": "content"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/11.3.0
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+        pathParameters:
+          - name: articleId
+            value: 3c4b8d7d-e2fb-464f-bb56-5995f4fc53af
+      - url: "{{ _.BASE_URL }}/api/articles/:articleId/comments"
+        name: Get Article Comments
+        meta:
+          id: req_a7867ff4b58b4fe582dda7e79a0a4dba
+          created: 1753958632974
+          modified: 1754142678294
+          isPrivate: false
+          description: ""
+          sortKey: -1753936155025.875
+        method: GET
+        parameters:
+          - id: pair_e3d4f84097934b419c54b07138b8fb82
+            name: page
+            value: "1"
+            description: ""
+            disabled: false
+          - id: pair_dee5bc99a4204f4cab0b298d5623835a
+            name: limit
+            value: "10"
+            description: ""
+            disabled: false
+        headers:
+          - name: User-Agent
+            value: insomnia/11.3.0
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+        pathParameters:
+          - name: articleId
+            value: 3c4b8d7d-e2fb-464f-bb56-5995f4fc53af
+      - url: "{{ _.BASE_URL }}/api/articles/comments/:commentId"
+        name: Get Article Comment
+        meta:
+          id: req_4314ce9467674017b568473fed0cfedc
+          created: 1753958685265
+          modified: 1754142691648
+          isPrivate: false
+          description: ""
+          sortKey: -1753935424235.9375
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/11.3.0
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+        pathParameters:
+          - name: commentId
+            value: 0bdbedf2-0991-4d55-8f35-1f86605d8e5f
+      - url: "{{ _.BASE_URL }}/api/articles/comments/:commentId"
+        name: Update Article Comment
+        meta:
+          id: req_9d5fd6bd710344b7b5d293ba173a55de
+          created: 1753958696574
+          modified: 1754142702414
+          isPrivate: false
+          description: ""
+          sortKey: -1753935058840.9688
+        method: PATCH
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"content": "new content"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/11.3.0
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+        pathParameters:
+          - name: commentId
+            value: 0bdbedf2-0991-4d55-8f35-1f86605d8e5f
+      - url: "{{ _.BASE_URL }}/api/articles/comments/:commentId"
+        name: Delete Article Comment
+        meta:
+          id: req_7e120e9c2a424467ac56d0d825784e3d
+          created: 1753958726663
+          modified: 1754142714098
+          isPrivate: false
+          description: ""
+          sortKey: -1753934876143.4844
+        method: DELETE
+        headers:
+          - name: User-Agent
+            value: insomnia/11.3.0
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+        pathParameters:
+          - name: commentId
+            value: 0bdbedf2-0991-4d55-8f35-1f86605d8e5f
+      - url: "{{ _.BASE_URL }}/api/articles/:articleId/likes"
+        name: Like Article
+        meta:
+          id: req_cff1dae3d95b43c4a446d38b7dc89f17
+          created: 1753967108823
+          modified: 1754142660160
+          isPrivate: false
+          description: ""
+          sortKey: -1753936155175.875
+        method: PUT
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"like": true
+            }
+        parameters:
+          - id: pair_4e7f7e4060144559868c23ac6af2c417
+            name: ""
+            value: ""
+            description: ""
+            disabled: false
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/11.3.0
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+        pathParameters:
+          - name: articleId
+            value: 3c4b8d7d-e2fb-464f-bb56-5995f4fc53af
+  - url: "{{ _.BASE_URL }}/api/health"
+    name: Health check
+    meta:
+      id: req_97052d5b64dd49e5a66004fad9e94b34
+      created: 1754140796299
+      modified: 1754140838380
+      isPrivate: false
+      description: ""
+      sortKey: -1754140796299
+    method: GET
+    headers:
+      - name: User-Agent
+        value: insomnia/11.4.0
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+cookieJar:
+  name: Default Jar
+  meta:
+    id: jar_40a244b579e1e01c58836bf9bbe797b8099369f0
+    created: 1753921264544
+    modified: 1754142541998
+  cookies:
+    - key: access_token
+      value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyNTc2MDMwNi1iNTAyLTQ1MGItYWUyNy0xMjc5MmViNWQ2NTkiLCJpYXQiOjE3NTQxMTg0NDMsImV4cCI6MTc1NDExODc0MywiaXNzIjoiaHR0cHM6Ly9sb2NhbGhvc3QifQ.u64n-a6q8JWiMUlBAeEih7VGeAimPfGSXRROrHQslgg
+      maxAge: 300
+      domain: localhost
+      path: /
+      httpOnly: true
+      hostOnly: false
+      creation: 2025-07-31T08:03:02.455Z
+      lastAccessed: 2025-08-02T07:07:23.355Z
+      sameSite: lax
+      id: 4d3b53b6-eae7-4770-b622-b805ffece243
+    - key: refresh_token
+      value: rtqpOngb9jxZkfLkZzQygGtqytkHOPFI83gKOSjYR0E
+      maxAge: 2592000
+      domain: localhost
+      path: /
+      httpOnly: true
+      hostOnly: false
+      creation: 2025-07-31T08:03:02.457Z
+      lastAccessed: 2025-08-02T07:07:23.355Z
+      sameSite: lax
+      id: 09a05ddc-1204-49ed-aac9-cb57f8986fe4
+    - key: access_token
+      value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmYzFjOWY5MS1hZjA3LTQxY2ItOTBhYy1lMDg4YWRmYmRmMzAiLCJpYXQiOjE3NTQxNDI1NDIsImV4cCI6MTc1NDE0Mjg0MiwiaXNzIjoiaHR0cHM6Ly9kYXRhY2FrcmEtdGVzdC1iZS5mYWhyZXp5LndvcmsifQ.Tbh0qEazacnHlmIzySaIP2jCIZmOgEVKu7520e9yysk
+      maxAge: 300
+      domain: fahrezy.work
+      path: /
+      secure: true
+      httpOnly: true
+      hostOnly: false
+      creation: 2025-08-01T12:00:36.289Z
+      lastAccessed: 2025-08-02T13:49:01.998Z
+      sameSite: lax
+      id: 869aec26-6cd4-4ecd-ace9-d5ee3f5ec406
+    - key: refresh_token
+      value: 4TQ1ImjuxunnQxsuXV1Yc6AWwuEFppKTYp2u4CZ4xQc
+      maxAge: 2592000
+      domain: fahrezy.work
+      path: /
+      secure: true
+      httpOnly: true
+      hostOnly: false
+      creation: 2025-08-01T12:00:36.292Z
+      lastAccessed: 2025-08-02T13:49:01.998Z
+      sameSite: lax
+      id: 46de0a27-4668-4f28-b532-1f97a569bb9f
+environments:
+  name: Base Environment
+  meta:
+    id: env_40a244b579e1e01c58836bf9bbe797b8099369f0
+    created: 1753921264543
+    modified: 1753934588220
+    isPrivate: false
+  subEnvironments:
+    - name: Development Environment
+      meta:
+        id: env_18f63cc159634f20a7c347cb57e5dd7e
+        created: 1753934567830
+        modified: 1753934590279
+        isPrivate: false
+        sortKey: 1753934567830
+      data:
+        BASE_URL: http://localhost:3000
+    - name: Production Environment
+      meta:
+        id: env_67b993dac6d7423c93dbc33011a5bb25
+        created: 1753934592139
+        modified: 1754049632577
+        isPrivate: false
+        sortKey: 1753934567880
+      data:
+        BASE_URL: https://travel-article-app-be.fahrezy.work
