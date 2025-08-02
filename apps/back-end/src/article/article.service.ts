@@ -46,7 +46,10 @@ export class ArticleService {
     newArticle.content = createArticleReqDto.content;
     newArticle.author = author;
 
-    await this.articleRespository.saveArticle(newArticle);
+    const result = await this.articleRespository.saveArticle(newArticle);
+    if (result instanceof Error) {
+      throw result;
+    }
 
     return new MutationResDto({
       id: newArticle.id,
@@ -61,6 +64,10 @@ export class ArticleService {
       auth.userId,
       paginationReqDto,
     );
+
+    if (articles instanceof Error) {
+      throw articles;
+    }
 
     const totalData = articles[0]?.total || 0;
     const data = articles.map((article) => {
@@ -93,8 +100,12 @@ export class ArticleService {
       auth.userId,
     );
 
+    if (article instanceof Error) {
+      throw article;
+    }
+
     if (!article) {
-      throw new ArticleNotFoundError("Requested article not found.");
+      throw new ArticleNotFoundError();
     }
 
     return new GetArticleResDto({
@@ -118,10 +129,13 @@ export class ArticleService {
     updatedArticle.title = updateArticleReqDto.title;
     updatedArticle.content = updateArticleReqDto.content;
 
-    await this.articleRespository.updateArticle(
+    const result = await this.articleRespository.updateArticle(
       { id: updateArticleReqDto.articleId, author: { id: auth.userId } },
       updatedArticle,
     );
+    if (result instanceof Error) {
+      throw result;
+    }
 
     return new MutationResDto({
       id: updateArticleReqDto.articleId,
@@ -133,13 +147,16 @@ export class ArticleService {
     deleteArticleReqDto: DeleteArticleReqDto,
   ): Promise<MutationResDto> {
     const skipDeleted = true;
-    await this.articleRespository.deleteArticle(
+    const result = await this.articleRespository.deleteArticle(
       {
         id: deleteArticleReqDto.articleId,
         author: { id: auth.userId },
       },
       skipDeleted,
     );
+    if (result instanceof Error) {
+      throw result;
+    }
 
     return new MutationResDto({
       id: deleteArticleReqDto.articleId,
@@ -160,20 +177,25 @@ export class ArticleService {
     articleLike.article = article;
     articleLike.user = user;
 
+    let result: unknown = null;
     if (likeArticleReqDto.like) {
       const existingArticle = await this.articleRespository.getOneArticle({
         id: likeArticleReqDto.articleId,
       });
 
       if (!existingArticle) {
-        throw new ArticleNotFoundError("Requested article not found.");
+        throw new ArticleNotFoundError();
       }
 
       articleLike.deletedAt = null;
-      await this.articleRespository.upsertArticleLike(articleLike);
+      result = await this.articleRespository.upsertArticleLike(articleLike);
     } else {
       articleLike.deletedAt = new Date();
-      await this.articleRespository.upsertArticleLike(articleLike);
+      result = await this.articleRespository.upsertArticleLike(articleLike);
+    }
+
+    if (result instanceof Error) {
+      throw result;
     }
 
     return new MutationResDto({
@@ -196,7 +218,10 @@ export class ArticleService {
     newComment.author = author;
     newComment.article = article;
 
-    await this.articleRespository.saveArticleComment(newComment);
+    const result = await this.articleRespository.saveArticleComment(newComment);
+    if (result instanceof Error) {
+      throw result;
+    }
 
     return new MutationResDto({
       id: newComment.id,
@@ -211,6 +236,10 @@ export class ArticleService {
       getAllArticleCommentReqDto.articleId,
       getAllArticleCommentReqDto.pagination,
     );
+
+    if (articles instanceof Error) {
+      throw articles;
+    }
 
     const totalData = articles[0]?.total || 0;
     const data = articles.map((comment) => {
@@ -245,10 +274,12 @@ export class ArticleService {
       getArticleCommentReqDto.commentId,
     );
 
+    if (comment instanceof Error) {
+      throw comment;
+    }
+
     if (!comment) {
-      throw new ArticleCommentNotFoundError(
-        "Requested article comment not found.",
-      );
+      throw new ArticleCommentNotFoundError();
     }
 
     return new GetArticleCommentResDto({
@@ -273,10 +304,13 @@ export class ArticleService {
     const updatedArticleComment = new ArticleComment();
     updatedArticleComment.content = updateArticleCommentReqDto.content;
 
-    await this.articleRespository.updateArticleComment(
+    const result = await this.articleRespository.updateArticleComment(
       { id: updateArticleCommentReqDto.commentId, author: { id: auth.userId } },
       updatedArticleComment,
     );
+    if (result instanceof Error) {
+      throw result;
+    }
 
     return new MutationResDto({
       id: updateArticleCommentReqDto.commentId,
@@ -288,13 +322,17 @@ export class ArticleService {
     deleteArticleCommentReqDto: DeleteArticleCommentReqDto,
   ): Promise<MutationResDto> {
     const skipDeleted = true;
-    await this.articleRespository.deleteArticleComment(
+    const result = await this.articleRespository.deleteArticleComment(
       {
         id: deleteArticleCommentReqDto.commentId,
         author: { id: auth.userId },
       },
       skipDeleted,
     );
+
+    if (result instanceof Error) {
+      throw result;
+    }
 
     return new MutationResDto({
       id: deleteArticleCommentReqDto.commentId,

@@ -57,15 +57,13 @@ async function onSubmit() {
       :aria-invalid="!!fieldErrors?.name"
     />
     <ul>
-      <ul
+      <li
         v-for="error in fieldErrors?.name || []"
         :key="error"
         class="text-destructive"
       >
-        {{
-          error
-        }}
-      </ul>
+        {{ error }}
+      </li>
     </ul>
     <label for="username">Username</label>
     <Input
@@ -76,15 +74,13 @@ async function onSubmit() {
       :aria-invalid="!!fieldErrors?.username"
     />
     <ul>
-      <ul
+      <li
         v-for="error in fieldErrors?.username || []"
         :key="error"
         class="text-destructive"
       >
-        {{
-          error
-        }}
-      </ul>
+        {{ error }}
+      </li>
     </ul>
     <label for="password">Password</label>
     <Input
@@ -95,15 +91,13 @@ async function onSubmit() {
       :aria-invalid="!!fieldErrors?.password"
     />
     <ul>
-      <ul
+      <li
         v-for="error in fieldErrors?.password || []"
         :key="error"
         class="text-destructive"
       >
-        {{
-          error
-        }}
-      </ul>
+        {{ error }}
+      </li>
     </ul>
     <Button type="submit">Register</Button>
   </form>

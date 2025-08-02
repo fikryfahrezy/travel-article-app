@@ -57,15 +57,13 @@ async function onSubmit() {
       :aria-invalid="!!fieldErrors?.username"
     />
     <ul>
-      <ul
+      <li
         v-for="error in fieldErrors?.username || []"
         :key="error"
         class="text-destructive"
       >
-        {{
-          error
-        }}
-      </ul>
+        {{ error }}
+      </li>
     </ul>
     <label for="password">Password</label>
     <Input

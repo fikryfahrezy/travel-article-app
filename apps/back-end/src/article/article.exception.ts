@@ -1,25 +1,24 @@
-import { HttpStatus } from "@nestjs/common";
-import { APIException } from "src/exceptions/api.exception";
+import { DomainError } from "src/exceptions/api.exception";
 
-export class ArticleNotFoundError extends APIException {
+export class ArticleNotFoundError extends DomainError {
   constructor(message = "Article Not Found") {
-    super(message, HttpStatus.NOT_FOUND);
+    super(message);
     this.name = "ArticleNotFoundError";
     this.message = message;
   }
 }
 
-export class ArticleUserUniqueLikeError extends APIException {
+export class ArticleUserUniqueLikeError extends DomainError {
   constructor(message = "Article User Unique Like") {
-    super(message, HttpStatus.BAD_REQUEST);
+    super(message);
     this.name = "ArticleUserUniqueLikeError";
     this.message = message;
   }
 }
 
-export class ArticleCommentNotFoundError extends APIException {
+export class ArticleCommentNotFoundError extends DomainError {
   constructor(message = "Article Comment Not Found") {
-    super(message, HttpStatus.NOT_FOUND);
+    super(message);
     this.name = "ArticleCommentNotFoundError";
     this.message = message;
   }

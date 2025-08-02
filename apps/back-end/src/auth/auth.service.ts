@@ -61,15 +61,20 @@ export class AuthService {
     auth.expiresAt = expiresAt;
     auth.user = authUser;
 
+    let result: unknown = null;
     if (params.mode === "new") {
-      await this.authRepository.saveAuth(auth);
+      result = await this.authRepository.saveAuth(auth);
     } else {
-      await this.authRepository.updateAuth(
+      result = await this.authRepository.updateAuth(
         {
           id: params.prevAuthId,
         },
         auth,
       );
+    }
+
+    if (result instanceof Error) {
+      throw result;
     }
 
     return refreshToken;
@@ -79,6 +84,10 @@ export class AuthService {
       password: await passwordHash(registerReqDto.password),
       username: registerReqDto.username,
     });
+
+    if (newUser instanceof Error) {
+      throw newUser;
+    }
 
     const accessToken = await this.jwtService.sign(
       {
@@ -107,10 +116,12 @@ export class AuthService {
       username: loginReqDto.username,
     });
 
+    if (user instanceof Error) {
+      throw user;
+    }
+
     if (!user) {
-      throw new UserNotFoundError(
-        `User with ${loginReqDto.username} not found`,
-      );
+      throw new UserNotFoundError();
     }
 
     const isPasswordMatch = await passwordVerify(
@@ -119,7 +130,7 @@ export class AuthService {
     );
 
     if (!isPasswordMatch) {
-      throw new PasswordNotMatchError("Password not match.");
+      throw new PasswordNotMatchError();
     }
 
     const accessToken = await this.jwtService.sign(
@@ -149,12 +160,16 @@ export class AuthService {
       refreshToken: refreshReqDto.refreshToken,
     });
 
+    if (auth instanceof Error) {
+      throw auth;
+    }
+
     if (!auth) {
-      throw new InvalidTokenError("Either token or refresh token is invalid");
+      throw new InvalidTokenError();
     }
 
     if (auth.expiresAt.getTime() < new Date().getTime()) {
-      throw new RefreshTokenExpiredError("Refresh token is expired.");
+      throw new RefreshTokenExpiredError();
     }
 
     const accessToken = await this.jwtService.sign(
@@ -182,7 +197,7 @@ export class AuthService {
 
   async logout(logoutReqDto: LogoutReqDto) {
     const skipDeleted = true;
-    await this.authRepository.deleteAuth(
+    const result = await this.authRepository.deleteAuth(
       {
         token: logoutReqDto.token,
         user: {
@@ -191,6 +206,10 @@ export class AuthService {
       },
       skipDeleted,
     );
+
+    if (result instanceof Error) {
+      throw result;
+    }
 
     return new LogoutResDto({
       success: true,
@@ -202,8 +221,12 @@ export class AuthService {
       id: profileReqDto.userId,
     });
 
+    if (user instanceof Error) {
+      throw user;
+    }
+
     if (!user) {
-      throw new UserNotFoundError("User with profile not found");
+      throw new UserNotFoundError();
     }
 
     return new ProfileResDto({

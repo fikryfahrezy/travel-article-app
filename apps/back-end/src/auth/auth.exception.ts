@@ -1,57 +1,56 @@
-import { HttpStatus } from "@nestjs/common";
-import { APIException } from "src/exceptions/api.exception";
+import { DomainError } from "src/exceptions/api.exception";
 
-export class UnhandledError extends APIException {
+export class UnhandledError extends DomainError {
   constructor(message = "Unhandled") {
-    super(message, HttpStatus.INTERNAL_SERVER_ERROR);
+    super(message);
     this.name = "UnhandledError";
     this.message = message;
   }
 }
 
-export class DuplicateUsernameError extends APIException {
+export class DuplicateUsernameError extends DomainError {
   constructor(message = "Duplicate Username") {
-    super(message, HttpStatus.UNPROCESSABLE_ENTITY);
+    super(message);
     this.name = "DuplicateUsernameError";
     this.message = message;
   }
 }
 
-export class UserNotFoundError extends APIException {
+export class UserNotFoundError extends DomainError {
   constructor(message = "User Not Found") {
-    super(message, HttpStatus.NOT_FOUND);
+    super(message);
     this.name = "UserNotFoundError";
     this.message = message;
   }
 }
 
-export class PasswordNotMatchError extends APIException {
+export class PasswordNotMatchError extends DomainError {
   constructor(message = "Password Not Match") {
-    super(message, HttpStatus.BAD_REQUEST);
+    super(message);
     this.name = "PasswordNotMatchError";
     this.message = message;
   }
 }
 
-export class InvalidTokenError extends APIException {
+export class InvalidTokenError extends DomainError {
   constructor(message = "Invalid Token") {
-    super(message, HttpStatus.BAD_REQUEST);
+    super(message);
     this.name = "InvalidTokenError";
     this.message = message;
   }
 }
 
-export class RefreshTokenExpiredError extends APIException {
+export class RefreshTokenExpiredError extends DomainError {
   constructor(message = "Refresh Token Expired") {
-    super(message, HttpStatus.UNAUTHORIZED);
+    super(message);
     this.name = "RefreshTokenExpiredError";
     this.message = message;
   }
 }
 
-export class AuthNotFoundError extends APIException {
+export class AuthNotFoundError extends DomainError {
   constructor(message = "Auth Not Found") {
-    super(message, HttpStatus.NOT_FOUND);
+    super(message);
     this.name = "AuthNotFoundError";
     this.message = message;
   }

@@ -78,15 +78,13 @@ async function onSubmit() {
         :aria-invalid="!!fieldErrors?.title"
       />
       <ul>
-        <ul
+        <li
           v-for="error in fieldErrors?.title || []"
           :key="error"
           class="text-destructive"
         >
-          {{
-            error
-          }}
-        </ul>
+          {{ error }}
+        </li>
       </ul>
       <textarea
         id="content"
@@ -98,15 +96,13 @@ async function onSubmit() {
       ></textarea>
 
       <ul>
-        <ul
+        <li
           v-for="error in fieldErrors?.content || []"
           :key="error"
           class="text-destructive"
         >
-          {{
-            error
-          }}
-        </ul>
+          {{ error }}
+        </li>
       </ul>
     </div>
     <MarkdownPreview

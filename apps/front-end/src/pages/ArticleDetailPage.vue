@@ -66,17 +66,26 @@ const nextCommentPage = computed(() => {
 
       <Pagination :total-pages="commentStore.total_pages" class="mx-auto w-fit">
         <template #prev-button>
-          <Button :disabled="commentStore.page <= prevCommentPage">
+          <Button
+            :disabled="commentStore.page <= prevCommentPage"
+            @click="commentStore.prevGetAllArticleComment"
+          >
             <ChevronLeftIcon />
           </Button>
         </template>
         <template #page-item="{ page }">
-          <Button :disabled="commentStore.page === page">
+          <Button
+            :disabled="commentStore.page === page"
+            @click="commentStore.pageGetAllArticleComment(page)"
+          >
             {{ page }}
           </Button>
         </template>
         <template #next-button>
-          <Button :disabled="commentStore.page >= nextCommentPage">
+          <Button
+            :disabled="commentStore.page >= nextCommentPage"
+            @click="commentStore.nextGetAllArticleComment"
+          >
             <ChevronRightIcon />
           </Button>
         </template>

@@ -6,6 +6,7 @@ import {
   Post,
   Req,
   Res,
+  UseFilters,
   UseGuards,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiOperation, ApiResponse } from "@nestjs/swagger";
@@ -34,9 +35,11 @@ import {
   UnhandledError,
   UserNotFoundError,
 } from "./auth.exception";
+import { AuthFilter } from "./auth.filter";
 import { AuthService } from "./auth.service";
 
 @Controller("auth")
+@UseFilters(AuthFilter)
 export class AuthController {
   constructor(
     private configService: ConfigService,

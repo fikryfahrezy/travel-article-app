@@ -10,6 +10,7 @@ import {
   Post,
   Put,
   Query,
+  UseFilters,
   UseGuards,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiOperation, ApiResponse } from "@nestjs/swagger";
@@ -41,9 +42,11 @@ import {
   ArticleCommentNotFoundError,
   ArticleNotFoundError,
 } from "./article.exception";
+import { ArticleFilter } from "./article.filter";
 import { ArticleService } from "./article.service";
 
 @Controller("articles")
+@UseFilters(ArticleFilter)
 export class ArticleController {
   constructor(private articleService: ArticleService) {}
 

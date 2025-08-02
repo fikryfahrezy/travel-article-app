@@ -29,23 +29,23 @@ export class AuthRepository {
   async runQuery<
     TCallback extends () => Promise<unknown>,
     TReturn extends Awaited<ReturnType<TCallback>>,
-  >(callback: TCallback): Promise<TReturn> {
+  >(callback: TCallback): Promise<TReturn | Error> {
     try {
       return (await callback()) as TReturn;
     } catch (error) {
       if (isUniqueConstraintViolationError(error, "user_username_unique")) {
-        throw new DuplicateUsernameError("Username already exist.");
+        return new DuplicateUsernameError();
       }
 
       if (error instanceof Error) {
-        throw error;
+        return error;
       }
 
-      throw new UnhandledError();
+      return new UnhandledError();
     }
   }
 
-  async saveAuth(auth: DeepPartial<Auth>): Promise<Pick<Auth, "id">> {
+  async saveAuth(auth: DeepPartial<Auth>) {
     return await this.runQuery(async () => {
       return await this.authRepository.save(auth);
     });
@@ -73,8 +73,11 @@ export class AuthRepository {
       });
     });
 
+    if (result instanceof Error) {
+      return result;
+    }
     if (result.affected === 0) {
-      throw new AuthNotFoundError();
+      return new AuthNotFoundError();
     }
   }
 
@@ -89,7 +92,7 @@ export class AuthRepository {
     });
   }
 
-  async saveUser(user: DeepPartial<User>): Promise<Pick<User, "id">> {
+  async saveUser(user: DeepPartial<User>) {
     return await this.runQuery(async () => {
       return await this.userRepository.save(user);
     });

@@ -35,7 +35,7 @@ export class ArticleRepository {
   async runQuery<
     TCallback extends () => Promise<unknown>,
     TReturn extends Awaited<ReturnType<TCallback>>,
-  >(callback: TCallback): Promise<TReturn> {
+  >(callback: TCallback): Promise<TReturn | Error> {
     try {
       return (await callback()) as TReturn;
     } catch (error) {
@@ -45,20 +45,18 @@ export class ArticleRepository {
           "article_likes_articles_users_unique",
         )
       ) {
-        throw new ArticleUserUniqueLikeError("User already like the article.");
+        return new ArticleUserUniqueLikeError();
       }
 
       if (error instanceof Error) {
-        throw error;
+        return error;
       }
 
-      throw new UnhandledError();
+      return new UnhandledError();
     }
   }
 
-  async saveArticle(
-    article: DeepPartial<Article>,
-  ): Promise<Pick<Article, "id">> {
+  async saveArticle(article: DeepPartial<Article>) {
     return await this.runQuery(async () => {
       return await this.articleRepository.save(article);
     });
@@ -159,8 +157,13 @@ export class ArticleRepository {
     const result = await this.runQuery(async () => {
       return await this.articleRepository.update(criteria, article);
     });
+
+    if (result instanceof Error) {
+      return result;
+    }
+
     if (result.affected === 0) {
-      throw new ArticleNotFoundError();
+      return new ArticleNotFoundError();
     }
   }
 
@@ -175,14 +178,17 @@ export class ArticleRepository {
           : {}),
       });
     });
+
+    if (result instanceof Error) {
+      return result;
+    }
+
     if (result.affected === 0) {
-      throw new ArticleNotFoundError();
+      return new ArticleNotFoundError();
     }
   }
 
-  async saveArticleComment(
-    comment: DeepPartial<ArticleComment>,
-  ): Promise<Pick<ArticleComment, "id">> {
+  async saveArticleComment(comment: DeepPartial<ArticleComment>) {
     return await this.runQuery(async () => {
       return await this.articleCommentRepository.save(comment);
     });
@@ -300,8 +306,13 @@ export class ArticleRepository {
         articleComment,
       );
     });
+
+    if (result instanceof Error) {
+      return result;
+    }
+
     if (result.affected === 0) {
-      throw new ArticleCommentNotFoundError();
+      return new ArticleCommentNotFoundError();
     }
   }
 
@@ -320,8 +331,12 @@ export class ArticleRepository {
       });
     });
 
+    if (result instanceof Error) {
+      return result;
+    }
+
     if (result.affected === 0) {
-      throw new ArticleCommentNotFoundError();
+      return new ArticleCommentNotFoundError();
     }
   }
 

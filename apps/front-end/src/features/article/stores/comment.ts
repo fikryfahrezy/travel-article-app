@@ -13,7 +13,7 @@ import { acceptHMRUpdate, defineStore } from "pinia";
 import { useArticleStore } from "./article";
 
 export type UseCommentStoreState = GetAllArticleCommentResDto & {
-  latestPagination: PaginationReqDto;
+  latestPagination: Required<PaginationReqDto>;
   latestArticleId: string;
 };
 
@@ -56,7 +56,10 @@ export const useCommentStore = defineStore("comment", {
           return result;
         }
 
-        this.latestPagination = getAllArticleCommentReqDto.pagination;
+        this.latestPagination = {
+          limit: result.data.limit,
+          page: result.data.page,
+        };
         this.data = result.data.data;
         this.limit = result.data.limit;
         this.total_data = result.data.total_data;
@@ -67,6 +70,42 @@ export const useCommentStore = defineStore("comment", {
         return result;
       });
     },
+    async prevGetAllArticleComment() {
+      if (this.latestArticleId && this.latestPagination.page > 1) {
+        return await this.getAllArticleComment({
+          article_id: this.latestArticleId,
+          pagination: {
+            ...this.latestPagination,
+            page: this.latestPagination.page - 1,
+          },
+        });
+      }
+    },
+    async pageGetAllArticleComment(page: number) {
+      if (this.latestArticleId) {
+        return await this.getAllArticleComment({
+          article_id: this.latestArticleId,
+          pagination: {
+            ...this.latestPagination,
+            page: page,
+          },
+        });
+      }
+    },
+    async nextGetAllArticleComment() {
+      if (
+        this.latestArticleId &&
+        this.latestPagination.page < this.total_pages
+      ) {
+        return await this.getAllArticleComment({
+          article_id: this.latestArticleId,
+          pagination: {
+            ...this.latestPagination,
+            page: this.latestPagination.page + 1,
+          },
+        });
+      }
+    },
     async createArticleComment(
       createArticleCommentReqDto: CreateArticleCommentReqDto,
     ) {
@@ -74,7 +113,6 @@ export const useCommentStore = defineStore("comment", {
         const createArticleCommentResult = await apiSdk.createArticleComment(
           createArticleCommentReqDto,
         );
-        console.log();
         if (this.latestArticleId) {
           await this.getAllArticleComment({
             article_id: this.latestArticleId,

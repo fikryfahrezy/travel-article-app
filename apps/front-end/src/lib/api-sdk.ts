@@ -372,7 +372,7 @@ export class ApiSDK {
     });
 
     return await this.autoRefreshRequest<GetAllArticleCommentResDto>(
-      this.baseUrl + `/articles/${article_id}/comments?${params.toString}`,
+      this.baseUrl + `/articles/${article_id}/comments?${params.toString()}`,
       {
         signal,
         method: "GET",

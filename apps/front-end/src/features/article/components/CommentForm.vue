@@ -54,7 +54,17 @@ async function onSubmit() {
       name="content"
       placeholder="Input your comment.."
       rows="5"
+      :aria-invalid="!!fieldErrors?.content"
     />
+    <ul>
+      <li
+        v-for="error in fieldErrors?.content || []"
+        :key="error"
+        class="text-destructive"
+      >
+        {{ error }}
+      </li>
+    </ul>
     <Button type="submit" class="w-full lg:ml-auto lg:w-fit">Comment</Button>
   </form>
 </template>
