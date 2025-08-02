@@ -1,0 +1,37 @@
+services:
+  back-end:
+    build:
+      context: .
+      dockerfile: ./be.Dockerfile
+    restart: unless-stopped
+    env_file:
+      - path: ./.env
+        required: true
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8080/api/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  # This is a naive way to do migration on the author's server, but for now it just works :)
+  migration:
+    build:
+      context: .
+      dockerfile: ./migration.Dockerfile
+    restart: no
+    env_file:
+      - path: ./.env
+        required: true
+    depends_on:
+      back-end:
+        condition: service_healthy
+  db:
+    image: postgres:17.5-bookworm
+    env_file:
+      - path: ./.env
+        required: true
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5

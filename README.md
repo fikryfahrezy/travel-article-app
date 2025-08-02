@@ -70,7 +70,7 @@ npm run dev
 
 ### Run the backend
 
-From the root of the project, first create `.env` file that is similar to the above.
+From the root of the project, first create `.env` file that is similar to the above, and then run:
 
 #### Without
 
@@ -110,11 +110,8 @@ docker compose --progress ./be-with-db.docker-compose.yaml up --build
 
 ### Run the frontend
 
-From the root of the project, first create `.env` file that is similar to the above.
-
-Run:
+From the root of the project, first create `.env` file that is similar to the above, and then run:
 
 ```bash
 docker compose --progress ./fe.docker-compose.yaml up  --build
 ```
-
