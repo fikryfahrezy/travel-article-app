@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
+import { isUUID } from "class-validator";
 import { UnhandledError } from "src/auth/auth.exception";
 import { ArticleComment } from "src/entities/article-comment.entity";
 import { ArticleLike } from "src/entities/article-like.entity";
@@ -77,14 +78,21 @@ export class ArticleRepository {
         "article.updated_at AS updated_at",
         "article.author_id AS author_id",
         "author.username AS author_username",
-        "CASE WHEN article_like.user_id IS NOT NULL THEN true ELSE false END AS liked",
-      ])
-      .leftJoin(
+        userId
+          ? "CASE WHEN article_like.user_id IS NOT NULL THEN true ELSE false END AS liked"
+          : "false AS liked",
+      ]);
+
+    if (userId) {
+      query.leftJoin(
         ArticleLike,
         "article_like",
         "article_like.article_id = article.id AND article_like.user_id = :userId",
         { userId },
-      )
+      );
+    }
+
+    query
       .leftJoin(User, "author", "author.id = article.author_id")
       .where("article.deleted_at IS NULL")
       .orderBy("article.created_at", "DESC")
@@ -112,7 +120,7 @@ export class ArticleRepository {
     });
   }
 
-  async getOneArticleBySlug(articleSlug: string, userId: string) {
+  async getOneArticleBySlug(articleIdOrSlug: string, userId: string) {
     const query = this.articleRepository
       .createQueryBuilder("article")
       .select([
@@ -124,19 +132,33 @@ export class ArticleRepository {
         "article.updated_at AS updated_at",
         "article.author_id AS author_id",
         "author.username AS author_username",
-        "CASE WHEN article_like.user_id IS NOT NULL THEN true ELSE false END AS liked",
-      ])
-      .leftJoin(
+        userId
+          ? "CASE WHEN article_like.user_id IS NOT NULL THEN true ELSE false END AS liked"
+          : "false AS liked",
+      ]);
+
+    if (userId) {
+      query.leftJoin(
         ArticleLike,
         "article_like",
         "article_like.article_id = article.id AND article_like.deleted_at IS NULL AND article_like.user_id = :userId",
         { userId },
-      )
+      );
+    }
+
+    query
       .leftJoin(User, "author", "author.id = article.author_id")
-      .where("article.deleted_at IS NULL")
-      .andWhere("article.slug = :articleSlug", {
-        articleSlug,
+      .where("article.deleted_at IS NULL");
+
+    if (isUUID(articleIdOrSlug)) {
+      query.where("article.id = :articleIdOrSlug", {
+        articleIdOrSlug,
       });
+    } else {
+      query.where("article.slug = :articleIdOrSlug", {
+        articleIdOrSlug,
+      });
+    }
 
     return await this.runQuery(async () => {
       type ReturnType = Pick<Article, "id" | "title" | "slug" | "content"> & {

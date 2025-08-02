@@ -34,6 +34,11 @@ export const routes: RouteRecordRaw[] = [
         component: ArticlesFormPage,
         meta: { requiredAuth: true },
       },
+      {
+        path: "form/:articleId",
+        component: ArticlesFormPage,
+        meta: { requiredAuth: true },
+      },
       { path: ":articleSlug", component: ArticleDetailPage },
       {
         path: "comments/:commentId",

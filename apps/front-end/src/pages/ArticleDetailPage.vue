@@ -4,87 +4,165 @@ import ChevronLeftIcon from "@/components/ChevronLeftIcon.vue";
 import ChevronRightIcon from "@/components/ChevronRightIcon.vue";
 import MarkdownPreview from "@/components/MarkdownPreview.vue";
 import Pagination from "@/components/Pagination.vue";
+import ArticleLikeButton from "@/features/article/components/ArticleLikeButton.vue";
 import Comment from "@/features/article/components/Comment.vue";
-import CommentForm from "@/features/article/components/CommentForm.vue";
+import CommentFormCreate from "@/features/article/components/CommentFormCreate.vue";
 import { useArticleStore } from "@/features/article/stores/article";
 import { useCommentStore } from "@/features/article/stores/comment";
-import { computed } from "vue";
+import { useUserStore } from "@/features/auth/stores/user";
+import type { PaginationReqDto } from "@/lib/api-sdk.types";
+import { computed, reactive, watch } from "vue";
 import { useRoute } from "vue-router";
 
 const route = useRoute();
+const userStore = useUserStore();
 const articleStore = useArticleStore();
 const commentStore = useCommentStore();
 
-const article = await articleStore.getArticle({
-  slug: String(route.params.articleSlug),
+const articleSlug = String(route.params.articleSlug);
+
+const paginationCommentReq = reactive<Required<PaginationReqDto>>({
+  limit: 10,
+  page: 1,
 });
 
-if (article.success) {
+articleStore.getArticle({
+  idOrSlug: articleSlug,
+});
+
+function getAllArticleComment(page: number) {
+  if (!articleStore.detail) {
+    return;
+  }
   commentStore.getAllArticleComment({
-    article_id: article.data.id,
-    pagination: { page: 1 },
+    article_id: articleStore.detail.id,
+    pagination: { ...paginationCommentReq, page },
   });
 }
 
+watch(
+  [() => articleStore.detail, () => paginationCommentReq.page],
+  ([, page]) => {
+    getAllArticleComment(page);
+  },
+);
+
 const prevCommentPage = computed(() => {
-  return commentStore.page <= 1 ? 1 : commentStore.page - 1;
+  return paginationCommentReq.page <= 1 ? 1 : paginationCommentReq.page - 1;
 });
 
 const nextCommentPage = computed(() => {
-  return commentStore.page >= commentStore.total_pages
-    ? commentStore.total_pages
-    : commentStore.page + 1;
+  return paginationCommentReq.page >= commentStore.allArticleComment.total_pages
+    ? commentStore.allArticleComment.total_pages
+    : paginationCommentReq.page + 1;
+});
+
+const allowedToModifyArticle = computed(() => {
+  return (
+    !!userStore.profile &&
+    !!articleStore.detail &&
+    userStore.profile.user_id === articleStore.detail.author_id
+  );
 });
 </script>
 <template>
   <div
-    v-if="!article.success"
+    v-if="articleStore.detailError"
     class="flex h-full w-full items-center justify-center"
   >
     <h2 class="text-destructive text-4xl font-bold italic">
-      🚨 {{ article.error.message }} 🚨
+      🚨 {{ articleStore.detailError.message }} 🚨
     </h2>
   </div>
-  <div v-else>
+  <div v-if="articleStore.detail">
+    <div class="flex items-start justify-between">
+      <p>
+        {{
+          new Intl.DateTimeFormat().format(
+            new Date(articleStore.detail.created_at),
+          )
+        }}
+      </p>
+      <div class="flex gap-2">
+        <ArticleLikeButton
+          v-if="userStore.isAuthenticated"
+          :article-id="articleStore.detail.id"
+          :liked="articleStore.detail.liked"
+          @like-change="articleStore.getArticle({ idOrSlug: articleSlug })"
+        />
+        <RouterLink
+          v-if="allowedToModifyArticle"
+          v-slot="{ href, navigate }"
+          custom
+          :to="'/articles/form/' + articleStore.detail.id"
+        >
+          <Button background="text" as="a" :href="href" @click="navigate"
+            >Edit</Button
+          >
+        </RouterLink>
+
+        <Button
+          v-if="allowedToModifyArticle"
+          background="text"
+          variant="destructive"
+          >Delete</Button
+        >
+      </div>
+    </div>
     <MarkdownPreview
-      :markdown-title="article.data.title"
-      :markdown-content="article.data.content"
+      :markdown-title="articleStore.detail.title"
+      :markdown-content="articleStore.detail.content"
     />
-    <CommentForm class="mb-4" :article-id="article.data.id" />
-    <div v-if="commentStore.data.length === 0">
+
+    <CommentFormCreate
+      v-if="userStore.isAuthenticated"
+      class="mb-4"
+      :article-id="articleStore.detail.id"
+      @submit-success="getAllArticleComment"
+    />
+    <div v-if="commentStore.allArticleComment.data.length === 0">
       <p>No comment yet, become the first one!</p>
     </div>
     <div v-else>
       <Comment
-        v-for="comment in commentStore.data"
+        v-for="comment in commentStore.allArticleComment.data"
         :key="comment.id"
+        :comment-id="comment.id"
         :author-name="comment.author_username"
         :content="comment.content"
         :created-at="comment.created_at"
+        :show-action="
+          !!userStore.profile && comment.author_id === userStore.profile.user_id
+        "
         class="mb-4"
+        @comment-change="getAllArticleComment(paginationCommentReq.page)"
       />
 
-      <Pagination :total-pages="commentStore.total_pages" class="mx-auto w-fit">
+      <Pagination
+        v-if="articleStore.detail"
+        :total-pages="commentStore.allArticleComment.total_pages"
+        class="mx-auto w-fit"
+      >
         <template #prev-button>
           <Button
-            :disabled="commentStore.page <= prevCommentPage"
-            @click="commentStore.prevGetAllArticleComment"
+            :disabled="commentStore.allArticleComment.page <= prevCommentPage"
+            @click="paginationCommentReq.page--"
           >
             <ChevronLeftIcon />
           </Button>
         </template>
         <template #page-item="{ page }">
           <Button
-            :disabled="commentStore.page === page"
-            @click="commentStore.pageGetAllArticleComment(page)"
+            :disabled="commentStore.allArticleComment.page === page"
+            @click="paginationCommentReq.page = page"
           >
             {{ page }}
           </Button>
         </template>
         <template #next-button>
           <Button
-            :disabled="commentStore.page >= nextCommentPage"
-            @click="commentStore.nextGetAllArticleComment"
+            :disabled="commentStore.allArticleComment.page >= nextCommentPage"
+            @click="paginationCommentReq.page++"
           >
             <ChevronRightIcon />
           </Button>

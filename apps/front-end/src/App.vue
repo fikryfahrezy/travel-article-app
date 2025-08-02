@@ -53,7 +53,7 @@ function logout() {
         Logout
       </Button>
     </nav>
-    <main class="flex h-full flex-[1] flex-col overflow-scroll">
+    <main class="overflow--y-scroll flex h-full flex-[1] flex-col">
       <Suspense>
         <RouterView />
         <template #fallback> Loading ... </template>

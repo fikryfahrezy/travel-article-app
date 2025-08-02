@@ -107,10 +107,10 @@ export class GetAllArticleResDto extends PaginationResDto {
 }
 
 export class GetArticleReqDto {
-  articleSlug: string;
+  articleIdOrSlug: string;
 
   constructor(obj: GetArticleReqDto) {
-    this.articleSlug = obj.articleSlug;
+    this.articleIdOrSlug = obj.articleIdOrSlug;
   }
 }
 

@@ -4,6 +4,7 @@ import type {
   DeleteArticleReqDto,
   GetAllArticleResDto,
   GetArticleReqDto,
+  GetArticleResDto,
   LikeArticleReqDto,
   PaginationReqDto,
   UpdateArticleReqDto,
@@ -11,23 +12,34 @@ import type {
 import { useLoadingStore } from "@/stores/loading";
 import { acceptHMRUpdate, defineStore } from "pinia";
 
-export type UseArticleStoreState = GetAllArticleResDto & {
-  latestPagination: PaginationReqDto;
+export type UseArticleStoreState = {
+  all: GetAllArticleResDto | null;
+  allError: Error | null;
+  detail: GetArticleResDto | null;
+  detailError: Error | null;
 };
 
 export const useArticleStore = defineStore("article", {
   state: (): UseArticleStoreState => {
     return {
-      total_data: 0,
-      total_pages: 0,
-      limit: 0,
-      page: 1,
-      data: [],
-      latestPagination: {
-        limit: 10,
-        page: 1,
-      },
+      allError: null,
+      all: null,
+      detailError: null,
+      detail: null,
     };
+  },
+  getters: {
+    allArticle: (state) => {
+      return (
+        state.all || {
+          total_data: 0,
+          total_pages: 0,
+          limit: 0,
+          page: 1,
+          data: [],
+        }
+      );
+    },
   },
   actions: {
     async apiCall<
@@ -46,15 +58,17 @@ export const useArticleStore = defineStore("article", {
       return await this.apiCall(async () => {
         const result = await apiSdk.getAllArticle(paginationReqDto);
         if (!result.success) {
+          this.allError = result.error;
           return result;
         }
 
-        this.latestPagination = paginationReqDto;
-        this.data = result.data.data;
-        this.limit = result.data.limit;
-        this.total_data = result.data.total_data;
-        this.total_pages = result.data.total_pages;
-        this.page = result.data.page;
+        this.all = {
+          data: result.data.data,
+          limit: result.data.limit,
+          total_data: result.data.total_data,
+          total_pages: result.data.total_pages,
+          page: result.data.page,
+        };
 
         return result;
       });
@@ -62,19 +76,22 @@ export const useArticleStore = defineStore("article", {
     async createArticle(createArticleReqDto: CreateArticleReqDto) {
       return await this.apiCall(async () => {
         const result = await apiSdk.createArticle(createArticleReqDto);
-        await this.getAllArticle({ ...this.latestPagination, page: 1 });
         return result;
       });
     },
     async getArticle(getArticleReqDto: GetArticleReqDto) {
       return await this.apiCall(async () => {
         const result = await apiSdk.getArticle(getArticleReqDto);
+        if (result.success) {
+          this.detail = result.data;
+        }
         return result;
       });
     },
     async updateArticle(updateArticleReqDto: UpdateArticleReqDto) {
       return await this.apiCall(async () => {
         const result = await apiSdk.updateArticle(updateArticleReqDto);
+
         return result;
       });
     },
@@ -87,10 +104,6 @@ export const useArticleStore = defineStore("article", {
     async likeArticle(likeArticleReqDto: LikeArticleReqDto) {
       return await this.apiCall(async () => {
         const result = await apiSdk.likeArticle(likeArticleReqDto);
-        if (!result.success) {
-          return result;
-        }
-        await this.getAllArticle(this.latestPagination);
         return result;
       });
     },

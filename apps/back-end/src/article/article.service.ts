@@ -96,7 +96,7 @@ export class ArticleService {
     getArticleReqDto: GetArticleReqDto,
   ): Promise<GetArticleResDto> {
     const article = await this.articleRespository.getOneArticleBySlug(
-      getArticleReqDto.articleSlug,
+      getArticleReqDto.articleIdOrSlug,
       auth.userId,
     );
 
@@ -229,7 +229,6 @@ export class ArticleService {
   }
 
   async getAllArticleComment(
-    auth: AuthReqDto,
     getAllArticleCommentReqDto: GetAllArticleCommentReqDto,
   ): Promise<GetAllArticleCommentResDto> {
     const articles = await this.articleRespository.getAllArticleComment(
@@ -267,7 +266,6 @@ export class ArticleService {
   }
 
   async getArticleComment(
-    _: AuthReqDto,
     getArticleCommentReqDto: GetArticleCommentReqDto,
   ): Promise<GetArticleCommentResDto> {
     const comment = await this.articleRespository.getOneArticleCommentById(

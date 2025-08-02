@@ -42,7 +42,7 @@ export type PaginationReqDto = {
 };
 
 export type GetArticleReqDto = {
-  slug: string;
+  idOrSlug: string;
 };
 
 export type UpdateArticleReqDto = {
@@ -71,18 +71,15 @@ export type GetAllArticleCommentReqDto = {
 };
 
 export type GetArticleCommentReqDto = {
-  article_id: string;
   comment_id: string;
 };
 
 export type UpdateArticleCommentReqDto = {
   content: string;
-  article_id: string;
   comment_id: string;
 };
 
 export type DeleteArticleCommentReqDto = {
-  article_id: string;
   comment_id: string;
 };
 
@@ -116,7 +113,7 @@ export type GetArticleResDto = GetAllArticleItemResDto & {
 export type GetAllArticleCommentItemResDto = {
   id: string;
   content: string;
-  article_td: string;
+  article_id: string;
   article_title: string;
   article_slug: string;
   article_author_id: string;

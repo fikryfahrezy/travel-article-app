@@ -103,7 +103,7 @@ renderer.heading = ({ text, depth }) => {
 
   /* Blockquotes */
   blockquote {
-    @apply my-4 border-l-4 border-gray-300 pl-4 text-gray-600 italic;
+    @apply my-4 border-l-4 border-neutral-300 pl-4 text-neutral-600 italic;
   }
 
   /* Code blocks (inline and multiline) */
@@ -119,7 +119,7 @@ renderer.heading = ({ text, depth }) => {
 
   pre {
     /* Multiline code block */
-    @apply overflow-x-auto rounded-lg bg-gray-900 p-4 text-white;
+    @apply overflow-x-auto rounded-lg bg-neutral-900 p-4 text-white;
   }
 
   /* Images */
@@ -147,7 +147,7 @@ renderer.heading = ({ text, depth }) => {
 
   /* Horizontal Rule */
   hr {
-    @apply my-8 border-t-2 border-gray-200;
+    @apply my-8 border-t-2 border-neutral-200;
   }
 }
 </style>

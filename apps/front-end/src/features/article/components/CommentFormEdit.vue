@@ -7,10 +7,16 @@ import z from "zod";
 import { commentFormSchema, type CommentFormFieldErrors } from "../schemas";
 import { useCommentStore } from "../stores/comment";
 
+const emit = defineEmits(["submitSuccess"]);
+
 const props = defineProps({
-  articleId: {
+  commentId: {
     type: String,
-    required: true,
+    default: "",
+  },
+  content: {
+    type: String,
+    default: "",
   },
 });
 
@@ -35,16 +41,18 @@ async function onSubmit() {
     return;
   }
 
-  const loginResult = await commentStore.createArticleComment({
+  const commentResult = await commentStore.updateArticleComment({
     ...commentForm.data,
-    article_id: props.articleId,
+    comment_id: props.commentId,
   });
-  if (!loginResult.success) {
-    toastStore.showToast("error", loginResult.error.message);
+
+  if (!commentResult.success) {
+    toastStore.showToast("error", commentResult.error.message);
     return;
   }
-  toastStore.showToast("success", "Successfully create comment.");
+  toastStore.showToast("success", "Successfully update comment.");
   formElement.reset();
+  emit("submitSuccess");
 }
 </script>
 <template>
@@ -54,6 +62,7 @@ async function onSubmit() {
       name="content"
       placeholder="Input your comment.."
       rows="5"
+      :value="content"
       :aria-invalid="!!fieldErrors?.content"
     />
     <ul>
@@ -65,6 +74,8 @@ async function onSubmit() {
         {{ error }}
       </li>
     </ul>
-    <Button type="submit" class="w-full lg:ml-auto lg:w-fit">Comment</Button>
+    <Button type="submit" class="w-full lg:ml-auto lg:w-fit">
+      Update Comment
+    </Button>
   </form>
 </template>

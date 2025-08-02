@@ -6,7 +6,8 @@ import Pagination from "@/components/Pagination.vue";
 import Article from "@/features/article/components/Article.vue";
 import { useArticleStore } from "@/features/article/stores/article";
 import { useUserStore } from "@/features/auth/stores/user";
-import { computed, ref, watch } from "vue";
+import type { PaginationReqDto } from "@/lib/api-sdk.types";
+import { computed, reactive, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 
 const route = useRoute();
@@ -15,7 +16,12 @@ const articleStore = useArticleStore();
 
 const currentPage = ref(1);
 
-articleStore.getAllArticle({});
+const paginationReq = reactive<Required<PaginationReqDto>>({
+  limit: 10,
+  page: 1,
+});
+
+articleStore.getAllArticle(paginationReq);
 
 watch(
   () => route.query.page,
@@ -24,6 +30,7 @@ watch(
 
     currentPage.value = newPageNumber;
     articleStore.getAllArticle({
+      ...paginationReq,
       page: newPageNumber,
     });
   },
@@ -34,14 +41,14 @@ const prevPage = computed(() => {
 });
 
 const nextPage = computed(() => {
-  return currentPage.value >= articleStore.total_pages
-    ? articleStore.total_pages
+  return currentPage.value >= articleStore.allArticle.total_pages
+    ? articleStore.allArticle.total_pages
     : currentPage.value + 1;
 });
 </script>
 
 <template>
-  <div v-if="!!userStore.profile" class="flex justify-end">
+  <div v-if="userStore.isAuthenticated" class="flex justify-end">
     <RouterLink v-slot="{ href, navigate }" custom to="/articles/form">
       <Button as="a" :href="href" class="w-full lg:w-fit" @click="navigate">
         Contribute Your Story
@@ -50,23 +57,30 @@ const nextPage = computed(() => {
   </div>
 
   <div
-    v-if="articleStore.data.length !== 0"
-    class="flex h-full flex-col flex-wrap content-start gap-4 p-2 lg:flex-row"
+    v-if="articleStore.allArticle.data.length !== 0"
+    class="flex h-full flex-col content-start gap-4 overflow-y-scroll p-2 lg:flex-row lg:flex-wrap"
   >
     <Article
-      v-for="article in articleStore.data"
+      v-for="article in articleStore.allArticle.data"
       :key="article.id"
       class="w-full lg:h-44 lg:w-fit lg:max-w-96"
+      :show-like-button="userStore.isAuthenticated"
+      :article-id="article.id"
+      :liked="article.liked"
       :title="article.title"
       :slug="article.slug"
       :author-name="article.author_username"
       :created-at="article.created_at"
+      @like-change="articleStore.getAllArticle(paginationReq)"
     />
   </div>
   <div v-else class="flex h-full items-center justify-center">
     <h2 class="text-primary text-4xl font-bold italic">Empty Articles... 🍃</h2>
   </div>
-  <Pagination :total-pages="articleStore.total_pages" class="mx-auto w-fit">
+  <Pagination
+    :total-pages="articleStore.allArticle.total_pages"
+    class="mx-auto w-fit"
+  >
     <template #prev-button>
       <RouterLink
         v-slot="{ href, navigate }"

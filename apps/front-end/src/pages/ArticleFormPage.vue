@@ -6,19 +6,37 @@ import {
   type ArticleFormFieldErrors,
 } from "@/features/article/schemas";
 import { useArticleStore } from "@/features/article/stores/article";
+import type { MutationResDto, Result } from "@/lib/api-sdk.types";
 import { useToastStore } from "@/stores/toast";
 import { ref } from "vue";
+import { useRoute } from "vue-router";
 import z from "zod";
 import router from "./router";
 
 const articleStore = useArticleStore();
 const toastStore = useToastStore();
 
+const route = useRoute();
+const articleId = String(route.params.articleId);
+
+let initialTitle = "";
+let initialMarkdownContent = "";
+if (articleId) {
+  const article = await articleStore.getArticle({
+    idOrSlug: articleId,
+  });
+
+  if (article.success) {
+    initialTitle = article.data.title;
+    initialMarkdownContent = article.data.content;
+  }
+}
+
 const tabs = ["editor", "preview"] as const;
 const activeTab = ref<(typeof tabs)[number]>("editor");
 
-const title = ref("");
-const markdownContent = ref("");
+const title = ref(initialTitle);
+const markdownContent = ref(initialMarkdownContent);
 
 const fieldErrors = ref<ArticleFormFieldErrors>();
 
@@ -33,13 +51,24 @@ async function onSubmit() {
     return;
   }
 
-  const loginResult = await articleStore.createArticle(articleForm.data);
-  if (!loginResult.success) {
-    toastStore.showToast("error", loginResult.error.message);
+  let articleResult: Result<MutationResDto> | null = null;
+  if (articleId) {
+    articleResult = await articleStore.updateArticle({
+      ...articleForm.data,
+      article_id: articleId,
+    });
+  } else {
+    articleResult = await articleStore.createArticle(articleForm.data);
+  }
+  if (!articleResult.success) {
+    toastStore.showToast("error", articleResult.error.message);
     return;
   }
 
-  toastStore.showToast("success", "Successfully create article.");
+  toastStore.showToast(
+    "success",
+    articleId ? "Successfully edit article." : "Successfully create article.",
+  );
   router.push("/articles");
 }
 </script>
@@ -62,7 +91,7 @@ async function onSubmit() {
     <Button background="text"></Button>
   </div>
   <form
-    class="flex h-full w-full flex-col gap-4 overflow-scroll"
+    class="flex h-full w-full flex-col gap-4 overflow-y-scroll"
     @submit.prevent="onSubmit"
   >
     <div
@@ -109,8 +138,10 @@ async function onSubmit() {
       v-if="activeTab === 'preview'"
       :markdown-title="title"
       :markdown-content="markdownContent"
-      class="overflow-scroll"
+      class="overflow--y-scroll"
     />
-    <Button type="submit" class="w-full lg:ml-auto lg:w-fit">Post</Button>
+    <Button type="submit" class="w-full lg:ml-auto lg:w-fit">{{
+      articleId ? "Edit" : "Post"
+    }}</Button>
   </form>
 </template>

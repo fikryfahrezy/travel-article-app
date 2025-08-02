@@ -9,13 +9,20 @@ import { acceptHMRUpdate, defineStore } from "pinia";
 
 export type UseUserStoreState = {
   profile: ProfileResDto | null;
+  profileError: Error | null;
 };
 
 export const useUserStore = defineStore("user", {
   state: (): UseUserStoreState => {
     return {
+      profileError: null,
       profile: null,
     };
+  },
+  getters: {
+    isAuthenticated: (state) => {
+      return !!state.profile;
+    },
   },
   actions: {
     async apiCall<
@@ -34,6 +41,7 @@ export const useUserStore = defineStore("user", {
       return await this.apiCall(async () => {
         const result = await apiSdk.profile();
         this.profile = result.success ? result.data : null;
+        this.profileError = result.success ? null : result.error;
         return result;
       });
     },

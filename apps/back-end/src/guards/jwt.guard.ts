@@ -1,7 +1,9 @@
 import {
   CanActivate,
   ExecutionContext,
-  Injectable,
+  Inject,
+  mixin,
+  Type,
   UnauthorizedException,
 } from "@nestjs/common";
 import { Request } from "express";
@@ -28,29 +30,41 @@ export function extractJwtTokenFromHeaderOrCookie(
   return type === "Bearer" ? token : undefined;
 }
 
-@Injectable()
-export class JwtAuthGuard implements CanActivate {
-  constructor(
-    private configService: ConfigService,
-    private jwtService: JwtService,
-  ) {}
+export function JwtGuard(force = true): Type<CanActivate> {
+  class JwtAuthGuard implements CanActivate {
+    constructor(
+      @Inject(ConfigService) private configService: ConfigService,
+      @Inject(JwtService) private jwtService: JwtService,
+    ) {}
 
-  async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request: Request = context.switchToHttp().getRequest();
-    const token = extractJwtTokenFromHeaderOrCookie(
-      request,
-      this.configService.static.ACCESS_TOKEN_COOKIE_KEY,
-    );
-    if (!token) {
-      throw new UnauthorizedException();
+    async canActivate(context: ExecutionContext): Promise<boolean> {
+      const request: Request = context.switchToHttp().getRequest();
+      const token = extractJwtTokenFromHeaderOrCookie(
+        request,
+        this.configService.static.ACCESS_TOKEN_COOKIE_KEY,
+      );
+
+      // For some API that accept need auth or don't need at the same time like list of article
+      // API accessible publicly but there are some fields that missing
+      if (!token && !force) {
+        return true;
+      }
+
+      if (!token) {
+        throw new UnauthorizedException();
+      }
+      try {
+        const payload = await this.jwtService.verify(token);
+        (request as unknown as Record<string, unknown>)["jwt"] = payload;
+        (request as unknown as Record<string, unknown>)["jwt_token"] = token;
+      } catch {
+        if (force) {
+          throw new UnauthorizedException();
+        }
+      }
+      return true;
     }
-    try {
-      const payload = await this.jwtService.verify(token);
-      (request as unknown as Record<string, unknown>)["jwt"] = payload;
-      (request as unknown as Record<string, unknown>)["jwt_token"] = token;
-    } catch {
-      throw new UnauthorizedException();
-    }
-    return true;
   }
+
+  return mixin(JwtAuthGuard);
 }

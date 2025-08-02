@@ -5,32 +5,36 @@ import type {
   GetAllArticleCommentReqDto,
   GetAllArticleCommentResDto,
   GetArticleCommentReqDto,
-  PaginationReqDto,
   UpdateArticleCommentReqDto,
 } from "@/lib/api-sdk.types";
 import { useLoadingStore } from "@/stores/loading";
 import { acceptHMRUpdate, defineStore } from "pinia";
 import { useArticleStore } from "./article";
 
-export type UseCommentStoreState = GetAllArticleCommentResDto & {
-  latestPagination: Required<PaginationReqDto>;
-  latestArticleId: string;
+export type UseCommentStoreState = {
+  allError: Error | null;
+  all: GetAllArticleCommentResDto | null;
 };
 
 export const useCommentStore = defineStore("comment", {
   state: (): UseCommentStoreState => {
     return {
-      total_data: 0,
-      total_pages: 0,
-      limit: 0,
-      page: 1,
-      data: [],
-      latestArticleId: "",
-      latestPagination: {
-        limit: 10,
-        page: 1,
-      },
+      allError: null,
+      all: null,
     };
+  },
+  getters: {
+    allArticleComment: (state) => {
+      return (
+        state.all || {
+          total_data: 0,
+          total_pages: 0,
+          limit: 0,
+          page: 1,
+          data: [],
+        }
+      );
+    },
   },
   actions: {
     async apiCall<
@@ -56,55 +60,16 @@ export const useCommentStore = defineStore("comment", {
           return result;
         }
 
-        this.latestPagination = {
+        this.all = {
+          data: result.data.data,
           limit: result.data.limit,
+          total_data: result.data.total_data,
+          total_pages: result.data.total_pages,
           page: result.data.page,
         };
-        this.data = result.data.data;
-        this.limit = result.data.limit;
-        this.total_data = result.data.total_data;
-        this.total_pages = result.data.total_pages;
-        this.page = result.data.page;
-        this.latestArticleId = getAllArticleCommentReqDto.article_id;
 
         return result;
       });
-    },
-    async prevGetAllArticleComment() {
-      if (this.latestArticleId && this.latestPagination.page > 1) {
-        return await this.getAllArticleComment({
-          article_id: this.latestArticleId,
-          pagination: {
-            ...this.latestPagination,
-            page: this.latestPagination.page - 1,
-          },
-        });
-      }
-    },
-    async pageGetAllArticleComment(page: number) {
-      if (this.latestArticleId) {
-        return await this.getAllArticleComment({
-          article_id: this.latestArticleId,
-          pagination: {
-            ...this.latestPagination,
-            page: page,
-          },
-        });
-      }
-    },
-    async nextGetAllArticleComment() {
-      if (
-        this.latestArticleId &&
-        this.latestPagination.page < this.total_pages
-      ) {
-        return await this.getAllArticleComment({
-          article_id: this.latestArticleId,
-          pagination: {
-            ...this.latestPagination,
-            page: this.latestPagination.page + 1,
-          },
-        });
-      }
     },
     async createArticleComment(
       createArticleCommentReqDto: CreateArticleCommentReqDto,
@@ -113,13 +78,6 @@ export const useCommentStore = defineStore("comment", {
         const createArticleCommentResult = await apiSdk.createArticleComment(
           createArticleCommentReqDto,
         );
-        if (this.latestArticleId) {
-          await this.getAllArticleComment({
-            article_id: this.latestArticleId,
-            pagination: { ...this.latestPagination, page: 1 },
-          });
-        }
-
         return createArticleCommentResult;
       });
     },
@@ -140,13 +98,6 @@ export const useCommentStore = defineStore("comment", {
           return result;
         }
 
-        if (this.latestArticleId) {
-          await this.getAllArticleComment({
-            article_id: this.latestArticleId,
-            pagination: this.latestPagination,
-          });
-        }
-
         return result;
       });
     },
@@ -159,13 +110,6 @@ export const useCommentStore = defineStore("comment", {
         );
         if (!result.success) {
           return result;
-        }
-
-        if (this.latestArticleId) {
-          await this.getAllArticleComment({
-            article_id: this.latestArticleId,
-            pagination: this.latestPagination,
-          });
         }
 
         return result;

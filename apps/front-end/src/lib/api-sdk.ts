@@ -263,7 +263,7 @@ export class ApiSDK {
       page: String(page),
     });
 
-    return await this.autoRefreshRequest<GetAllArticleResDto>(
+    return await this.request<GetAllArticleResDto>(
       this.baseUrl + `/articles?${params.toString()}`,
       {
         signal,
@@ -277,9 +277,9 @@ export class ApiSDK {
     getArticleReqDto: GetArticleReqDto,
     signal?: AbortSignal,
   ): Promise<Result<GetArticleResDto>> {
-    const { slug } = getArticleReqDto;
-    return await this.autoRefreshRequest<GetArticleResDto>(
-      this.baseUrl + `/articles/${slug}`,
+    const { idOrSlug } = getArticleReqDto;
+    return await this.request<GetArticleResDto>(
+      this.baseUrl + `/articles/${idOrSlug}`,
       {
         signal,
         method: "GET",
@@ -371,7 +371,7 @@ export class ApiSDK {
       page: String(page),
     });
 
-    return await this.autoRefreshRequest<GetAllArticleCommentResDto>(
+    return await this.request<GetAllArticleCommentResDto>(
       this.baseUrl + `/articles/${article_id}/comments?${params.toString()}`,
       {
         signal,
@@ -385,9 +385,9 @@ export class ApiSDK {
     getArticleCommentReqDto: GetArticleCommentReqDto,
     signal?: AbortSignal,
   ): Promise<Result<GetArticleCommentResDto>> {
-    const { article_id, comment_id } = getArticleCommentReqDto;
-    return await this.autoRefreshRequest<GetArticleCommentResDto>(
-      this.baseUrl + `/articles/${article_id}/comments/${comment_id}`,
+    const { comment_id } = getArticleCommentReqDto;
+    return await this.request<GetArticleCommentResDto>(
+      this.baseUrl + `/articles/comments/${comment_id}`,
       {
         signal,
         method: "GET",
@@ -400,9 +400,9 @@ export class ApiSDK {
     updateArticleCommentReqDto: UpdateArticleCommentReqDto,
     signal?: AbortSignal,
   ): Promise<Result<MutationResDto>> {
-    const { article_id, comment_id, ...restDto } = updateArticleCommentReqDto;
+    const { comment_id, ...restDto } = updateArticleCommentReqDto;
     return await this.autoRefreshRequest<MutationResDto>(
-      this.baseUrl + `/articles/${article_id}/comments/${comment_id}`,
+      this.baseUrl + `/articles/comments/${comment_id}`,
       {
         signal,
         method: "PATCH",
@@ -419,9 +419,9 @@ export class ApiSDK {
     deleteArticleCommentReqDto: DeleteArticleCommentReqDto,
     signal?: AbortSignal,
   ): Promise<Result<MutationResDto>> {
-    const { article_id, comment_id } = deleteArticleCommentReqDto;
+    const { comment_id } = deleteArticleCommentReqDto;
     return await this.autoRefreshRequest<MutationResDto>(
-      this.baseUrl + `/articles/${article_id}/comments/${comment_id}`,
+      this.baseUrl + `/articles/comments/${comment_id}`,
       {
         signal,
         method: "DELETE",

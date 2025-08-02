@@ -14,6 +14,7 @@ const variantToken = {
 const sizeToken = {
   default: "py-1 px-3",
   md: "py-1 text-xl px-3",
+  icon: "h-10 w-10",
 };
 
 export type ButtonProps = {

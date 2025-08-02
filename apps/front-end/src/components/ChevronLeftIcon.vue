@@ -9,6 +9,7 @@
     stroke-width="2"
     stroke-linecap="round"
     stroke-linejoin="round"
+    class="lucide lucide-chevron-left-icon lucide-chevron-left"
   >
     <path d="m15 18-6-6 6-6" />
   </svg>

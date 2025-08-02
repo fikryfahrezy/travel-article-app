@@ -15,7 +15,7 @@ import { ConfigService } from "src/config/config.service";
 import { JwtPayload } from "src/core/jwt.service";
 import { Jwt, JwtToken } from "src/decorators/jwt.decorator";
 import { UnauthorizedError } from "src/exceptions/api.exception";
-import { extractJwtTokenFromCookie, JwtAuthGuard } from "src/guards/jwt.guard";
+import { extractJwtTokenFromCookie, JwtGuard } from "src/guards/jwt.guard";
 import {
   AuthResDto,
   LoginReqDto,
@@ -161,7 +161,7 @@ export class AuthController {
   @ApiResponse({ status: 401, type: UnauthorizedError })
   @ApiResponse({ status: 404, type: AuthNotFoundError })
   @ApiResponse({ status: 500, type: UnhandledError })
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtGuard())
   async logout(
     @Jwt() jwt: JwtPayload,
     @JwtToken() jwtToken: string,
@@ -184,7 +184,7 @@ export class AuthController {
   @ApiResponse({ status: 401, type: UnauthorizedError })
   @ApiResponse({ status: 404, type: UserNotFoundError })
   @ApiResponse({ status: 500, type: UnhandledError })
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtGuard())
   async profile(@Jwt() jwt: JwtPayload) {
     const profileReqDto = new ProfileReqDto({
       userId: jwt.sub,

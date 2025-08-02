@@ -1,7 +1,22 @@
 <script setup lang="ts">
 import ArrowRightIcon from "@/components/ArrowRightIcon.vue";
+import ArticleLikeButton from "./ArticleLikeButton.vue";
+
+const emit = defineEmits(["likeChange"]);
 
 defineProps({
+  showLikeButton: {
+    type: Boolean,
+    default: false,
+  },
+  articleId: {
+    type: String,
+    required: true,
+  },
+  liked: {
+    type: Boolean,
+    default: false,
+  },
   title: {
     type: String,
     default: "",
@@ -27,9 +42,17 @@ defineProps({
       $attrs.class,
     ]"
   >
-    <h3 class="text-primary line-clamp-2 h-full text-2xl font-bold">
-      {{ title }}
-    </h3>
+    <div class="flex items-start justify-between gap-4">
+      <h3 class="text-primary line-clamp-2 h-full text-2xl font-bold">
+        {{ title }}
+      </h3>
+      <ArticleLikeButton
+        v-if="showLikeButton"
+        :article-id="articleId"
+        :liked="liked"
+        @like-change="emit('likeChange')"
+      />
+    </div>
     <p class="font-medium">{{ authorName }}</p>
     <p class="text-xs">
       {{ new Intl.DateTimeFormat().format(new Date(createdAt)) }}
