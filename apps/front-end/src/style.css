@@ -4,6 +4,7 @@
 :root {
   --primary: oklch(0.7025 0.132 160.37);
   --destructive: oklch(63.7% 0.237 25.331);
+  --neutral: oklch(26.9% 0 0);
 }
 
 @theme inline {

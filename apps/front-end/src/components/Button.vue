@@ -2,11 +2,13 @@
 const backgroundToken = {
   solid: "bg-(--bg) text-(--text) hover:bg-(--bg)/90",
   link: "text-(--bg) underline-offset-4 hover:underline",
+  text: "text-(--bg)",
 };
 
 const variantToken = {
   primary: "[--bg:var(--primary)] [--text:var(--color-white)]",
   destructive: "[--bg:var(--destructive)] [--text:var(--color-white)]",
+  neutral: "[--bg:var(--neutral)] [--text:var(--color-white)]",
 };
 
 const sizeToken = {
