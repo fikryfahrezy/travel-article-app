@@ -41,34 +41,6 @@ TOKEN_COOKIE_DOMAIN=.domain.com                                             # Th
 CORS_ORIGINS=http://localhost:5173,https://domain.com,https://domain.co     # The origin for the `Access-Control-Allow-Origin` header
 ```
 
-### Install dependencies
-
-```bash
-# in project root
-pnpm install
-```
-
-### Run database migration
-
-```bash
-# cd apps/backend-end
-npm run migrate:up:env
-```
-
-### Run the apps
-
-```bash
-# in project root
-npm run fe:dev
-npm run be:dev
-
-# or `cd apps/front-end`
-npm run dev
-
-# or `cd apps/backend-end`
-npm run dev
-```
-
 ## Run using Docker
 
 ### Run the backend
@@ -585,4 +557,78 @@ Response (200):
 {
   "id": "6c6eb292-e487-4e95-bdbd-cb1248619151"
 }
+```
+
+## Install dependencies
+
+```bash
+# in project root
+pnpm install
+```
+
+### Run database migration
+
+```bash
+# cd apps/backend-end
+npm run migrate:up:env
+```
+
+### Run the apps
+
+```bash
+# in project root
+npm run fe:dev
+npm run be:dev
+
+# or `cd apps/front-end`
+npm run dev
+
+# or `cd apps/backend-end`
+npm run dev
+```
+
+## Project Structure
+
+The project using [`pnpm Workspace`](https://pnpm.io/workspaces) to be able to use commit hooks for 2 project in 1 `.git`.
+
+### apps/front-end
+
+The folder for all front-end code
+
+```bash
+src/                            # the root of project codes
+|__assets/                      # all static assets used by the web
+|__components/                  # all generic shareable components
+|__layouts/                     # all global layouts or shareable layouts across features or pages
+|__lib/                         # utils or helper code
+|__pages/                       # all pages in the web
+|__stores/                      # global or shareable pinia store
+|__[features]/                  # domain related codes
+|____[feature-name]/            # domain name
+|______components/              # domain related component
+|______stores/                  # domain related pinia store
+|______schemas.ts               # zod schema related to the domain
+```
+
+### apps/back-end
+
+The folder for all back-end code
+
+```bash
+src/                            # the root of project codes
+|__config/                      # codes that provide any config or env used by the project
+|__core/                        # codes that bridge to any 3rd party library or dependencies
+|__decorators/                  # custom Nest decorator shared across the project
+|__entities/                    # all database entities in TypeORM entity
+|__exceptions/                  # common exceptions across the project
+|__filters/                     # global filter used by the project
+|__guards/                      # shareable guards across the project
+|__[domain]/                    # domain specific code
+|____[domain].controller.ts     # presentation layer of the domain
+|____[domain].dto.ts            # input/output contract data from and to presentation in the domain
+|____[domain].exception.ts      # domain related exceptions
+|____[domain].filter.ts         # spesific filter related to the domain
+|____[domain].module.ts         # Nest module for the domain
+|____[domain].repository.ts     # data layer related to the domain
+|____[domain].service.ts        # orchastration layer between presentation and data layer
 ```
