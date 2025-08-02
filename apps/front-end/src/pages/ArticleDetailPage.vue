@@ -87,13 +87,18 @@ async function deleteArticle() {
   </div>
   <div v-if="articleStore.detail">
     <div class="flex items-start justify-between">
-      <p>
-        {{
-          new Intl.DateTimeFormat().format(
-            new Date(articleStore.detail.created_at),
-          )
-        }}
-      </p>
+      <div class="flex gap-2">
+        <p>
+          {{ articleStore.detail.author_username }}
+        </p>
+        <p>
+          {{
+            new Intl.DateTimeFormat().format(
+              new Date(articleStore.detail.created_at),
+            )
+          }}
+        </p>
+      </div>
       <div class="flex gap-2">
         <ArticleLikeButton
           v-if="userStore.isAuthenticated"
