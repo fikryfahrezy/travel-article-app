@@ -33,7 +33,7 @@ export class AuthRepository {
     try {
       return (await callback()) as TReturn;
     } catch (error) {
-      if (isUniqueConstraintViolationError(error, "user_username_unique")) {
+      if (isUniqueConstraintViolationError(error, "users_username_unique")) {
         return new DuplicateUsernameError();
       }
 
