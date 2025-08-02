@@ -352,3 +352,237 @@ Response (200):
   "content": "string"
 }
 ```
+
+#### Update Article
+
+Request:
+
+```bash
+curl -X 'PATCH' \
+  'https://travel-article-app-be.fahrezy.work/api/articles/45a68fea-566f-4e0d-a13f-b73189718f9a' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "title": "string",
+  "content": "string"
+}'
+```
+
+Response (200):
+
+```bash
+{
+  "id": "45a68fea-566f-4e0d-a13f-b73189718f9a"
+}
+```
+
+#### Update Article
+
+Request:
+
+```bash
+curl -X 'PATCH' \
+  'https://travel-article-app-be.fahrezy.work/api/articles/45a68fea-566f-4e0d-a13f-b73189718f9a' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "title": "string",
+  "content": "string"
+}'
+```
+
+Response (200):
+
+```bash
+{
+  "id": "45a68fea-566f-4e0d-a13f-b73189718f9a"
+}
+```
+
+#### Delete Article
+
+Request:
+
+```bash
+curl -X 'DELETE' \
+  'https://travel-article-app-be.fahrezy.work/api/articles/45a68fea-566f-4e0d-a13f-b73189718f9a' \
+  -H 'accept: application/json'
+```
+
+Response (200):
+
+```bash
+{
+  "id": "45a68fea-566f-4e0d-a13f-b73189718f9a"
+}
+```
+
+#### Like Article
+
+Request:
+
+```bash
+curl -X 'PUT' \
+  'https://travel-article-app-be.fahrezy.work/api/articles/3c4b8d7d-e2fb-464f-bb56-5995f4fc53af/likes' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "like": true
+}'
+```
+
+Response (200):
+
+```bash
+{
+  "id": "88021991-cecd-4c8e-932d-f381f3961e4c"
+}
+```
+
+#### Create Article Comment
+
+Request:
+
+```bash
+curl -X 'POST' \
+  'https://travel-article-app-be.fahrezy.work/api/articles/3c4b8d7d-e2fb-464f-bb56-5995f4fc53af/comments' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "content": "string"
+}'
+```
+
+Response (200):
+
+```bash
+{
+  "id": "6c6eb292-e487-4e95-bdbd-cb1248619151"
+}
+```
+
+#### Create Article Comment
+
+Request:
+
+```bash
+curl -X 'POST' \
+  'https://travel-article-app-be.fahrezy.work/api/articles/3c4b8d7d-e2fb-464f-bb56-5995f4fc53af/comments' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "content": "string"
+}'
+```
+
+Response (200):
+
+```bash
+{
+  "id": "6c6eb292-e487-4e95-bdbd-cb1248619151"
+}
+```
+
+#### Get All Article Comments
+
+Request:
+
+```bash
+curl -X 'GET' \
+  'https://travel-article-app-be.fahrezy.work/api/articles/3c4b8d7d-e2fb-464f-bb56-5995f4fc53af/comments?page=1&limit=10' \
+  -H 'accept: application/json'
+```
+
+Response (200):
+
+```bash
+{
+  "page": 1,
+  "limit": 10,
+  "total_data": 1,
+  "total_pages": 1,
+  "data": [
+    {
+      "id": "6c6eb292-e487-4e95-bdbd-cb1248619151",
+      "content": "string",
+      "article_id": "3c4b8d7d-e2fb-464f-bb56-5995f4fc53af",
+      "article_title": "string",
+      "article_slug": "string-xg0172cb0kk",
+      "article_author_id": "fc1c9f91-af07-41cb-90ac-e088adfbdf30",
+      "article_author_username": "username",
+      "author_id": "fc1c9f91-af07-41cb-90ac-e088adfbdf30",
+      "author_username": "username",
+      "updated_at": "2025-08-02T13:40:01.961Z",
+      "created_at": "2025-08-02T13:40:01.961Z"
+    }
+  ]
+}
+```
+
+#### Get One Article Comment
+
+Request:
+
+```bash
+curl -X 'GET' \
+  'https://travel-article-app-be.fahrezy.work/api/articles/comments/6c6eb292-e487-4e95-bdbd-cb1248619151' \
+  -H 'accept: application/json'
+```
+
+Response (200):
+
+```bash
+{
+  "id": "6c6eb292-e487-4e95-bdbd-cb1248619151",
+  "content": "string",
+  "article_id": "3c4b8d7d-e2fb-464f-bb56-5995f4fc53af",
+  "article_title": "string",
+  "article_slug": "string-xg0172cb0kk",
+  "article_author_id": "fc1c9f91-af07-41cb-90ac-e088adfbdf30",
+  "article_author_username": "(fc1c9f91-af07-41cb-90ac-e088adfbdf30,username,\"$argon2id$v=19$m=19456,t=2,p=1$ZWDcFRDbsthC2evNplGShQ$LURaIQ9MxdzmpDEHkUVD4LvmCs3dQvpilG/DVPUagiQ\",\"2025-08-02 13:22:27.74138+00\",\"2025-08-02 13:22:27.74138+00\",)",
+  "author_id": "fc1c9f91-af07-41cb-90ac-e088adfbdf30",
+  "author_username": "username",
+  "updated_at": "2025-08-02T13:40:01.961Z",
+  "created_at": "2025-08-02T13:40:01.961Z"
+}
+```
+
+#### Update Article Comment
+
+Request:
+
+```bash
+curl -X 'PATCH' \
+  'https://travel-article-app-be.fahrezy.work/api/articles/comments/6c6eb292-e487-4e95-bdbd-cb1248619151' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "content": "string"
+}'
+```
+
+Response (200):
+
+```bash
+{
+  "id": "6c6eb292-e487-4e95-bdbd-cb1248619151"
+}
+```
+
+#### Delete Article Comment
+
+Request:
+
+```bash
+curl -X 'DELETE' \
+  'https://travel-article-app-be.fahrezy.work/api/articles/comments/6c6eb292-e487-4e95-bdbd-cb1248619151' \
+  -H 'accept: application/json'
+```
+
+Response (200):
+
+```bash
+{
+  "id": "6c6eb292-e487-4e95-bdbd-cb1248619151"
+}
+```
