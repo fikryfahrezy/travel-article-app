@@ -138,7 +138,7 @@ async function onSubmit() {
       v-if="activeTab === 'preview'"
       :markdown-title="title"
       :markdown-content="markdownContent"
-      class="overflow--y-scroll"
+      class="overflow-y-scroll"
     />
     <Button type="submit" class="w-full lg:ml-auto lg:w-fit">{{
       articleId ? "Edit" : "Post"

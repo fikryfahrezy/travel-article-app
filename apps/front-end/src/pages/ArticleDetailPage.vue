@@ -3,6 +3,7 @@ import Button from "@/components/Button.vue";
 import ChevronLeftIcon from "@/components/ChevronLeftIcon.vue";
 import ChevronRightIcon from "@/components/ChevronRightIcon.vue";
 import MarkdownPreview from "@/components/MarkdownPreview.vue";
+import Modal from "@/components/Modal.vue";
 import Pagination from "@/components/Pagination.vue";
 import ArticleLikeButton from "@/features/article/components/ArticleLikeButton.vue";
 import Comment from "@/features/article/components/Comment.vue";
@@ -11,13 +12,16 @@ import { useArticleStore } from "@/features/article/stores/article";
 import { useCommentStore } from "@/features/article/stores/comment";
 import { useUserStore } from "@/features/auth/stores/user";
 import type { PaginationReqDto } from "@/lib/api-sdk.types";
-import { computed, reactive, watch } from "vue";
-import { useRoute } from "vue-router";
+import { computed, reactive, ref, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 
 const route = useRoute();
+const router = useRouter();
 const userStore = useUserStore();
 const articleStore = useArticleStore();
 const commentStore = useCommentStore();
+
+const showDeleteConfirmation = ref(false);
 
 const articleSlug = String(route.params.articleSlug);
 
@@ -64,6 +68,13 @@ const allowedToModifyArticle = computed(() => {
     userStore.profile.user_id === articleStore.detail.author_id
   );
 });
+
+async function deleteArticle() {
+  if (articleStore.detail) {
+    await articleStore.deleteArticle({ article_id: articleStore.detail.id });
+    router.replace("/");
+  }
+}
 </script>
 <template>
   <div
@@ -105,8 +116,10 @@ const allowedToModifyArticle = computed(() => {
           v-if="allowedToModifyArticle"
           background="text"
           variant="destructive"
-          >Delete</Button
+          @click="showDeleteConfirmation = true"
         >
+          Delete
+        </Button>
       </div>
     </div>
     <MarkdownPreview
@@ -123,7 +136,7 @@ const allowedToModifyArticle = computed(() => {
     <div v-if="commentStore.allArticleComment.data.length === 0">
       <p>No comment yet, become the first one!</p>
     </div>
-    <div v-else>
+    <div v-else class="p-2">
       <Comment
         v-for="comment in commentStore.allArticleComment.data"
         :key="comment.id"
@@ -170,4 +183,30 @@ const allowedToModifyArticle = computed(() => {
       </Pagination>
     </div>
   </div>
+  <Modal
+    v-if="showDeleteConfirmation"
+    title="🚨 Alert"
+    @close="showDeleteConfirmation = false"
+  >
+    <template #content>
+      <p class="font-medium">Are you sure want to delete the article?</p>
+    </template>
+    <template #cancel-button>
+      <Button
+        class="w-full lg:w-fit"
+        variant="neutral"
+        @click="showDeleteConfirmation = false"
+        >Cancel</Button
+      >
+    </template>
+    <template #confirm-button>
+      <Button
+        class="w-full lg:w-fit"
+        variant="destructive"
+        @click="deleteArticle"
+      >
+        Confirm</Button
+      >
+    </template>
+  </Modal>
 </template>

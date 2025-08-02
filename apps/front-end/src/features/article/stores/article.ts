@@ -82,9 +82,11 @@ export const useArticleStore = defineStore("article", {
     async getArticle(getArticleReqDto: GetArticleReqDto) {
       return await this.apiCall(async () => {
         const result = await apiSdk.getArticle(getArticleReqDto);
-        if (result.success) {
-          this.detail = result.data;
+        if (!result.success) {
+          this.detailError = result.error;
+          return result;
         }
+        this.detail = result.data;
         return result;
       });
     },

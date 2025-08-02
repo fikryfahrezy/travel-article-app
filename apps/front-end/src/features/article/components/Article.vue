@@ -38,7 +38,7 @@ defineProps({
 <template>
   <article
     :class="[
-      'hover:ring-primary flex flex-col space-y-2 p-2 hover:ring-2',
+      'hover:ring-primary flex flex-col gap-2 p-2 hover:ring-2',
       $attrs.class,
     ]"
   >
@@ -59,7 +59,7 @@ defineProps({
     </p>
     <RouterLink
       :to="'/articles/' + slug"
-      class="text-primary flex items-center space-x-4 text-sm"
+      class="text-primary flex items-center gap-4 text-sm"
     >
       <span>Continue Reading </span>
       <ArrowRightIcon class="size-5" />

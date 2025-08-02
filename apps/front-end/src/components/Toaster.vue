@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useToastStore, type ToastItem } from "@/stores/toast";
 import Button, { type ButtonProps } from "./Button.vue";
+import ModalCard from "./ModalCard.vue";
 import XIcon from "./XIcon.vue";
 
 const globalToastStore = useToastStore();
@@ -25,13 +26,10 @@ const buttonVariantToken: Record<
   <div
     class="fixed right-10 bottom-10 left-10 z-[9999] space-y-4 lg:left-auto lg:w-fit lg:max-w-xs"
   >
-    <div
+    <ModalCard
       v-for="errorItem in globalToastStore.items"
       :key="errorItem.id"
-      :class="[
-        'flex items-center justify-between space-x-4 bg-(--bg) px-4 py-2 text-(--text) shadow-[5px_5px_black]',
-        variantToken[errorItem.type],
-      ]"
+      :class="['bg-(--bg) text-(--text)', variantToken[errorItem.type]]"
     >
       <span class="font-bold">{{ errorItem.message }}</span>
       <Button
@@ -40,6 +38,6 @@ const buttonVariantToken: Record<
       >
         <XIcon />
       </Button>
-    </div>
+    </ModalCard>
   </div>
 </template>

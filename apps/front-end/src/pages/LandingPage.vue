@@ -12,7 +12,7 @@ import ArrowRightIcon from "@/components/ArrowRightIcon.vue";
   <div class="flex h-full flex-col items-end justify-end">
     <RouterLink
       to="/articles"
-      class="text-primary flex items-center space-x-4 text-2xl"
+      class="text-primary flex items-center gap-4 text-2xl"
     >
       <span>Get inspired</span>
       <ArrowRightIcon />
