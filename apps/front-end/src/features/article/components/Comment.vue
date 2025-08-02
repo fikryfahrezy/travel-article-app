@@ -10,7 +10,7 @@ const showDeleteConfirmation = ref(false);
 
 const commentStore = useCommentStore();
 
-const emit = defineEmits(["commentChange"]);
+const emit = defineEmits(["commentChange", "commentDeleted"]);
 
 const props = defineProps({
   commentId: {
@@ -44,7 +44,7 @@ async function deleteComment() {
   await commentStore.deleteArticleComment({
     comment_id: props.commentId,
   });
-  emit("commentChange");
+  emit("commentDeleted");
 }
 </script>
 <template>

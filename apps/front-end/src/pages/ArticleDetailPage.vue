@@ -75,6 +75,22 @@ async function deleteArticle() {
     router.replace("/");
   }
 }
+function commentChange() {
+  getAllArticleComment(paginationCommentReq.page);
+}
+
+function commentDeleted() {
+  // When last comment on the page other that 1 deleted
+  //  we should back to the previous page to avoid acessing empty page
+  if (
+    paginationCommentReq.page !== 1 &&
+    commentStore.allArticleComment.data.length === 1
+  ) {
+    paginationCommentReq.page--;
+    return;
+  }
+  commentChange();
+}
 </script>
 <template>
   <div
@@ -112,9 +128,9 @@ async function deleteArticle() {
           custom
           :to="'/articles/form/' + articleStore.detail.id"
         >
-          <Button background="text" as="a" :href="href" @click="navigate"
-            >Edit</Button
-          >
+          <Button background="text" as="a" :href="href" @click="navigate">
+            Edit
+          </Button>
         </RouterLink>
 
         <Button
@@ -153,7 +169,8 @@ async function deleteArticle() {
           !!userStore.profile && comment.author_id === userStore.profile.user_id
         "
         class="mb-4"
-        @comment-change="getAllArticleComment(paginationCommentReq.page)"
+        @comment-change="commentChange"
+        @comment-deleted="commentDeleted"
       />
 
       <Pagination
@@ -201,8 +218,9 @@ async function deleteArticle() {
         class="w-full lg:w-fit"
         variant="neutral"
         @click="showDeleteConfirmation = false"
-        >Cancel</Button
       >
+        Cancel
+      </Button>
     </template>
     <template #confirm-button>
       <Button
@@ -210,8 +228,8 @@ async function deleteArticle() {
         variant="destructive"
         @click="deleteArticle"
       >
-        Confirm</Button
-      >
+        Confirm
+      </Button>
     </template>
   </Modal>
 </template>
