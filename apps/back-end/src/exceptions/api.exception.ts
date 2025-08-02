@@ -26,14 +26,3 @@ export class UnauthorizedError extends APIError {
     this.message = message;
   }
 }
-
-export class DomainError extends Error {
-  @ApiProperty()
-  name: string;
-
-  @ApiProperty()
-  message: string;
-
-  @ApiProperty()
-  errors: string[];
-}

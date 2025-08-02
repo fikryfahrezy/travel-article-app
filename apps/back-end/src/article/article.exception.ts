@@ -1,4 +1,4 @@
-import { DomainError } from "src/exceptions/api.exception";
+import { DomainError } from "src/exceptions/domain.exception";
 
 export class ArticleNotFoundError extends DomainError {
   constructor(message = "Article Not Found") {
