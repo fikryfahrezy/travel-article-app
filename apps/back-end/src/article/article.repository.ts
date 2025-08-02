@@ -36,7 +36,7 @@ export class ArticleRepository {
   async runQuery<
     TCallback extends () => Promise<unknown>,
     TReturn extends Awaited<ReturnType<TCallback>>,
-  >(callback: TCallback): Promise<TReturn | Error> {
+  >(callback: TCallback): Promise<TReturn> {
     try {
       return (await callback()) as TReturn;
     } catch (error) {
@@ -46,14 +46,14 @@ export class ArticleRepository {
           "article_likes_articles_users_unique",
         )
       ) {
-        return new ArticleUserUniqueLikeError();
+        throw new ArticleUserUniqueLikeError();
       }
 
       if (error instanceof Error) {
-        return error;
+        throw error;
       }
 
-      return new UnhandledError();
+      throw new UnhandledError();
     }
   }
 
@@ -180,12 +180,8 @@ export class ArticleRepository {
       return await this.articleRepository.update(criteria, article);
     });
 
-    if (result instanceof Error) {
-      return result;
-    }
-
     if (result.affected === 0) {
-      return new ArticleNotFoundError();
+      throw new ArticleNotFoundError();
     }
   }
 
@@ -201,12 +197,8 @@ export class ArticleRepository {
       });
     });
 
-    if (result instanceof Error) {
-      return result;
-    }
-
     if (result.affected === 0) {
-      return new ArticleNotFoundError();
+      throw new ArticleNotFoundError();
     }
   }
 
@@ -329,12 +321,8 @@ export class ArticleRepository {
       );
     });
 
-    if (result instanceof Error) {
-      return result;
-    }
-
     if (result.affected === 0) {
-      return new ArticleCommentNotFoundError();
+      throw new ArticleCommentNotFoundError();
     }
   }
 
@@ -353,12 +341,8 @@ export class ArticleRepository {
       });
     });
 
-    if (result instanceof Error) {
-      return result;
-    }
-
     if (result.affected === 0) {
-      return new ArticleCommentNotFoundError();
+      throw new ArticleCommentNotFoundError();
     }
   }
 

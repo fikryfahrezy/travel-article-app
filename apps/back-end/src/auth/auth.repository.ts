@@ -29,19 +29,19 @@ export class AuthRepository {
   async runQuery<
     TCallback extends () => Promise<unknown>,
     TReturn extends Awaited<ReturnType<TCallback>>,
-  >(callback: TCallback): Promise<TReturn | Error> {
+  >(callback: TCallback): Promise<TReturn> {
     try {
       return (await callback()) as TReturn;
     } catch (error) {
       if (isUniqueConstraintViolationError(error, "users_username_unique")) {
-        return new DuplicateUsernameError();
+        throw new DuplicateUsernameError();
       }
 
       if (error instanceof Error) {
-        return error;
+        throw error;
       }
 
-      return new UnhandledError();
+      throw new UnhandledError();
     }
   }
 
@@ -73,11 +73,8 @@ export class AuthRepository {
       });
     });
 
-    if (result instanceof Error) {
-      return result;
-    }
     if (result.affected === 0) {
-      return new AuthNotFoundError();
+      throw new AuthNotFoundError();
     }
   }
 

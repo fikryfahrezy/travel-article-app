@@ -61,20 +61,15 @@ export class AuthService {
     auth.expiresAt = expiresAt;
     auth.user = authUser;
 
-    let result: unknown = null;
     if (params.mode === "new") {
-      result = await this.authRepository.saveAuth(auth);
+      await this.authRepository.saveAuth(auth);
     } else {
-      result = await this.authRepository.updateAuth(
+      await this.authRepository.updateAuth(
         {
           id: params.prevAuthId,
         },
         auth,
       );
-    }
-
-    if (result instanceof Error) {
-      throw result;
     }
 
     return refreshToken;
@@ -84,10 +79,6 @@ export class AuthService {
       password: await passwordHash(registerReqDto.password),
       username: registerReqDto.username,
     });
-
-    if (newUser instanceof Error) {
-      throw newUser;
-    }
 
     const accessToken = await this.jwtService.sign(
       {
@@ -115,10 +106,6 @@ export class AuthService {
     const user = await this.authRepository.getOneUser({
       username: loginReqDto.username,
     });
-
-    if (user instanceof Error) {
-      throw user;
-    }
 
     if (!user) {
       throw new UserNotFoundError();
@@ -160,10 +147,6 @@ export class AuthService {
       refreshToken: refreshReqDto.refreshToken,
     });
 
-    if (auth instanceof Error) {
-      throw auth;
-    }
-
     if (!auth) {
       throw new InvalidTokenError();
     }
@@ -197,7 +180,7 @@ export class AuthService {
 
   async logout(logoutReqDto: LogoutReqDto) {
     const skipDeleted = true;
-    const result = await this.authRepository.deleteAuth(
+    await this.authRepository.deleteAuth(
       {
         token: logoutReqDto.token,
         user: {
@@ -206,10 +189,6 @@ export class AuthService {
       },
       skipDeleted,
     );
-
-    if (result instanceof Error) {
-      throw result;
-    }
 
     return new LogoutResDto({
       success: true,
@@ -220,10 +199,6 @@ export class AuthService {
     const user = await this.authRepository.getOneUser({
       id: profileReqDto.userId,
     });
-
-    if (user instanceof Error) {
-      throw user;
-    }
 
     if (!user) {
       throw new UserNotFoundError();

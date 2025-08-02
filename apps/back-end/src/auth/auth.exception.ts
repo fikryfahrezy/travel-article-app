@@ -1,4 +1,4 @@
-import { DomainError } from "src/exceptions/api.exception";
+import { DomainError } from "src/exceptions/domain.exception";
 
 export class UnhandledError extends DomainError {
   constructor(message = "Unhandled") {
