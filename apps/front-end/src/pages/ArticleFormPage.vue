@@ -17,7 +17,7 @@ const articleStore = useArticleStore();
 const toastStore = useToastStore();
 
 const route = useRoute();
-const articleId = String(route.params.articleId);
+const articleId = String(route.params.articleId || "");
 
 let initialTitle = "";
 let initialMarkdownContent = "";

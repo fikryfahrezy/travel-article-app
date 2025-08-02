@@ -21,9 +21,9 @@ const publicRoutes = computed(() => {
   });
 });
 
-function logout() {
+async function logout() {
+  await userStore.logout();
   router.push("/");
-  userStore.logout();
 }
 </script>
 
