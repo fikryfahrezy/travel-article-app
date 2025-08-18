@@ -2,7 +2,7 @@
 import { computed } from "vue";
 import Button from "./components/Button.vue";
 import Toaster from "./components/Toaster.vue";
-
+import { useLoadingStore } from "@/stores/loading";
 import { useRouter } from "vue-router";
 import LoadingOverlay from "./components/LoadingOverlay.vue";
 import { useUserStore } from "./features/auth/stores/user";
@@ -10,6 +10,7 @@ import { navItems } from "./pages/router";
 
 const router = useRouter();
 const userStore = useUserStore();
+const globalLoadingStore = useLoadingStore();
 
 const publicRoutes = computed(() => {
   if (!userStore.profile) {
@@ -61,5 +62,5 @@ async function logout() {
     </main>
   </div>
   <Toaster />
-  <LoadingOverlay />
+  <LoadingOverlay v-if="globalLoadingStore.isLoading" />
 </template>

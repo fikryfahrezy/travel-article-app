@@ -8,18 +8,15 @@ import Pagination from "@/components/Pagination.vue";
 import ArticleLikeButton from "@/features/article/components/ArticleLikeButton.vue";
 import Comment from "@/features/article/components/Comment.vue";
 import CommentFormCreate from "@/features/article/components/CommentFormCreate.vue";
-import { useArticleStore } from "@/features/article/stores/article";
-import { useCommentStore } from "@/features/article/stores/comment";
+import { useQuery } from "@tanstack/vue-query";
+import { apiSdk } from "@/lib/api-sdk";
 import { useUserStore } from "@/features/auth/stores/user";
-import type { PaginationReqDto } from "@/lib/api-sdk.types";
-import { computed, reactive, ref, watch } from "vue";
+import { computed, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 const route = useRoute();
 const router = useRouter();
 const userStore = useUserStore();
-const articleStore = useArticleStore();
-const commentStore = useCommentStore();
 
 const showDeleteConfirmation = ref(false);
 
@@ -27,78 +24,110 @@ const articleSlug = computed(() => {
   return String(route.params.articleSlug);
 });
 
-const paginationCommentReq = reactive<Required<PaginationReqDto>>({
-  limit: 10,
-  page: 1,
+const articleDetailQuery = useQuery({
+  queryKey: computed(() => {
+    return ["article-detail", articleSlug];
+  }),
+  queryFn: async () => {
+    const result = await apiSdk.getArticle({ idOrSlug: articleSlug.value });
+    if (!result.success)
+      throw result.error ?? new Error("Failed to fetch article");
+    return result.data;
+  },
+  enabled: !!articleSlug.value,
 });
 
-function getCurrentArticle() {
-  articleStore.getArticle({
-    idOrSlug: articleSlug.value,
-  });
-}
+const articleDetail = computed(() => articleDetailQuery.data.value);
 
-function getAllArticleComment(page: number) {
-  if (!articleStore.detail) {
-    return;
-  }
-  commentStore.getAllArticleComment({
-    article_id: articleStore.detail.id,
-    pagination: { ...paginationCommentReq, page },
-  });
-}
+const paginationCommentLimit = 10;
+const paginationCommentPage = ref(1);
 
-watch(
-  () => articleSlug,
-  () => {
-    getCurrentArticle();
+const articleCommentsQuery = useQuery({
+  queryKey: computed(() => {
+    return [
+      "article-comments",
+      articleDetail.value?.id,
+      paginationCommentPage.value,
+      paginationCommentLimit,
+    ];
+  }),
+  queryFn: async () => {
+    if (!articleDetail.value?.id) {
+      return {
+        data: [],
+        page: 1,
+        total_pages: 1,
+        total_data: 0,
+        limit: paginationCommentLimit,
+      };
+    }
+
+    const result = await apiSdk.getAllArticleComment({
+      article_id: articleDetail.value.id,
+      pagination: {
+        limit: paginationCommentLimit,
+        page: paginationCommentPage.value,
+      },
+    });
+
+    if (!result.success) {
+      throw result.error ?? new Error("Failed to fetch comments");
+    }
+    return result.data;
   },
-  { immediate: true },
-);
+  enabled: computed(() => !!articleDetail.value?.id),
+});
 
-watch(
-  [() => articleStore.detail, () => paginationCommentReq.page],
-  ([, page]) => {
-    getAllArticleComment(page);
-  },
-);
+// No need to watch articleSlug for fetching, handled by vue-query
+
+// No need to watch articleDetail or paginationCommentPage.value for fetching, handled by vue-query
 
 const prevCommentPage = computed(() => {
-  return paginationCommentReq.page <= 1 ? 1 : paginationCommentReq.page - 1;
+  return paginationCommentPage.value <= 1 ? 1 : paginationCommentPage.value - 1;
 });
 
 const nextCommentPage = computed(() => {
-  return paginationCommentReq.page >= commentStore.allArticleComment.total_pages
-    ? commentStore.allArticleComment.total_pages
-    : paginationCommentReq.page + 1;
+  return paginationCommentPage.value >=
+    (articleCommentsQuery.data.value?.total_pages ?? 1)
+    ? (articleCommentsQuery.data.value?.total_pages ?? 1)
+    : paginationCommentPage.value + 1;
 });
 
 const allowedToModifyArticle = computed(() => {
   return (
     !!userStore.profile &&
-    !!articleStore.detail &&
-    userStore.profile.user_id === articleStore.detail.author_id
+    !!articleDetail.value &&
+    userStore.profile.user_id === articleDetail.value.author_id
   );
 });
 
 async function deleteArticle() {
-  if (articleStore.detail) {
-    await articleStore.deleteArticle({ article_id: articleStore.detail.id });
+  if (articleDetail.value) {
+    await apiSdk.deleteArticle({ article_id: articleDetail.value.id });
     router.replace("/");
   }
 }
+function getCurrentArticle() {
+  articleDetailQuery.refetch();
+}
+
 function commentChange() {
-  getAllArticleComment(paginationCommentReq.page);
+  articleCommentsQuery.refetch();
+}
+
+function commentAdded() {
+  paginationCommentPage.value = 1;
+  commentChange();
 }
 
 function commentDeleted() {
-  // When last comment on the page other that 1 deleted
-  //  we should back to the previous page to avoid acessing empty page
+  // When last comment on the page other than 1 deleted
+  // we should go back to the previous page to avoid accessing empty page
   if (
-    paginationCommentReq.page !== 1 &&
-    commentStore.allArticleComment.data.length === 1
+    paginationCommentPage.value !== 1 &&
+    (articleCommentsQuery.data.value?.data.length ?? 0) === 1
   ) {
-    paginationCommentReq.page--;
+    paginationCommentPage.value--;
     return;
   }
   commentChange();
@@ -106,39 +135,43 @@ function commentDeleted() {
 </script>
 <template>
   <div
-    v-if="articleStore.detailError"
+    v-if="articleDetailQuery.isError.value"
     class="flex h-full w-full items-center justify-center"
   >
     <h2 class="text-destructive text-4xl font-bold italic">
-      🚨 {{ articleStore.detailError.message }} 🚨
+      🚨
+      {{
+        articleDetailQuery.error.value instanceof Error
+          ? articleDetailQuery.error.value.message
+          : "Failed to load article"
+      }}
+      🚨
     </h2>
   </div>
-  <div v-if="articleStore.detail">
+  <div v-if="articleDetail">
     <div class="flex items-start justify-between">
       <div class="flex gap-2">
         <p>
-          {{ articleStore.detail.author_username }}
+          {{ articleDetail.author_username }}
         </p>
         <p>
           {{
-            new Intl.DateTimeFormat().format(
-              new Date(articleStore.detail.created_at),
-            )
+            new Intl.DateTimeFormat().format(new Date(articleDetail.created_at))
           }}
         </p>
       </div>
       <div class="flex gap-2">
         <ArticleLikeButton
           v-if="userStore.isAuthenticated"
-          :article-id="articleStore.detail.id"
-          :liked="articleStore.detail.liked"
+          :article-id="articleDetail.id"
+          :liked="articleDetail.liked"
           @like-change="getCurrentArticle"
         />
         <RouterLink
           v-if="allowedToModifyArticle"
           v-slot="{ href, navigate }"
           custom
-          :to="'/articles/form/' + articleStore.detail.id"
+          :to="'/articles/form/' + articleDetail.id"
         >
           <Button background="text" as="a" :href="href" @click="navigate">
             Edit
@@ -156,22 +189,25 @@ function commentDeleted() {
       </div>
     </div>
     <MarkdownPreview
-      :markdown-title="articleStore.detail.title"
-      :markdown-content="articleStore.detail.content"
+      :markdown-title="articleDetail.title"
+      :markdown-content="articleDetail.content"
     />
 
     <CommentFormCreate
       v-if="userStore.isAuthenticated"
       class="mb-4"
-      :article-id="articleStore.detail.id"
-      @submit-success="getAllArticleComment"
+      :article-id="articleDetail.id"
+      @submit-success="commentAdded"
     />
-    <div v-if="commentStore.allArticleComment.data.length === 0">
+    <div v-if="articleCommentsQuery.isLoading.value">
+      <p>Loading comments...</p>
+    </div>
+    <div v-else-if="(articleCommentsQuery.data.value?.data.length ?? 0) === 0">
       <p>No comment yet, become the first one!</p>
     </div>
     <div v-else class="p-2">
       <Comment
-        v-for="comment in commentStore.allArticleComment.data"
+        v-for="comment in articleCommentsQuery.data.value?.data"
         :key="comment.id"
         :comment-id="comment.id"
         :author-name="comment.author_username"
@@ -186,30 +222,30 @@ function commentDeleted() {
       />
 
       <Pagination
-        v-if="articleStore.detail"
-        :total-pages="commentStore.allArticleComment.total_pages"
+        v-if="articleDetail"
+        :total-pages="articleCommentsQuery.data.value?.total_pages"
         class="mx-auto w-fit"
       >
         <template #prev-button>
           <Button
-            :disabled="commentStore.allArticleComment.page <= prevCommentPage"
-            @click="paginationCommentReq.page--"
+            :disabled="paginationCommentPage <= prevCommentPage"
+            @click="paginationCommentPage--"
           >
             <ChevronLeftIcon />
           </Button>
         </template>
         <template #page-item="{ page }">
           <Button
-            :disabled="commentStore.allArticleComment.page === page"
-            @click="paginationCommentReq.page = page"
+            :disabled="paginationCommentPage === page"
+            @click="paginationCommentPage = page"
           >
             {{ page }}
           </Button>
         </template>
         <template #next-button>
           <Button
-            :disabled="commentStore.allArticleComment.page >= nextCommentPage"
-            @click="paginationCommentReq.page++"
+            :disabled="paginationCommentPage >= nextCommentPage"
+            @click="paginationCommentPage++"
           >
             <ChevronRightIcon />
           </Button>

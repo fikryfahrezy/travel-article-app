@@ -4,43 +4,50 @@ import ChevronLeftIcon from "@/components/ChevronLeftIcon.vue";
 import ChevronRightIcon from "@/components/ChevronRightIcon.vue";
 import Pagination from "@/components/Pagination.vue";
 import Article from "@/features/article/components/Article.vue";
-import { useArticleStore } from "@/features/article/stores/article";
 import { useUserStore } from "@/features/auth/stores/user";
-import type { PaginationReqDto } from "@/lib/api-sdk.types";
-import { computed, reactive, watch } from "vue";
+import { computed } from "vue";
 import { useRoute } from "vue-router";
+import { useQuery } from "@tanstack/vue-query";
+import { apiSdk } from "@/lib/api-sdk";
+import type { Result, GetAllArticleResDto } from "@/lib/api-sdk.types";
+import LoadingOverlay from "@/components/LoadingOverlay.vue";
 
 const route = useRoute();
 const userStore = useUserStore();
-const articleStore = useArticleStore();
 
-const paginationReq = reactive<Required<PaginationReqDto>>({
-  limit: 10,
-  page: Number(route.query.page || 1),
+const paginationLimit = 10;
+const paginationPage = computed(() => {
+  return Number(route.query.page || 1);
 });
 
-watch(
-  () => route.query.page,
-  (newPage) => {
-    const newPageNumber = Number(String(newPage || 1));
-
-    paginationReq.page = newPageNumber;
-    articleStore.getAllArticle({
-      ...paginationReq,
-      page: newPageNumber,
+const {
+  data: articlesData,
+  isLoading,
+  isError,
+  error,
+  refetch,
+} = useQuery<Result<GetAllArticleResDto>>({
+  queryKey: computed(() => {
+    return ["articles", paginationPage.value, paginationLimit];
+  }),
+  queryFn: () => {
+    return apiSdk.getAllArticle({
+      limit: paginationLimit,
+      page: paginationPage.value,
     });
   },
-  { immediate: true },
-);
+});
 
 const prevPage = computed(() => {
-  return paginationReq.page <= 1 ? 1 : paginationReq.page - 1;
+  return paginationPage.value <= 1 ? 1 : paginationPage.value - 1;
 });
 
 const nextPage = computed(() => {
-  return paginationReq.page >= articleStore.allArticle.total_pages
-    ? articleStore.allArticle.total_pages
-    : paginationReq.page + 1;
+  const result = articlesData.value;
+  const totalPages = result && result.success ? result.data.total_pages : 1;
+  return paginationPage.value >= totalPages
+    ? totalPages
+    : paginationPage.value + 1;
 });
 </script>
 
@@ -53,12 +60,21 @@ const nextPage = computed(() => {
     </RouterLink>
   </div>
 
+  <LoadingOverlay v-if="isLoading" />
+
+  <div v-else-if="isError" class="flex h-full items-center justify-center">
+    <h2 class="text-2xl font-bold text-red-500 italic">
+      Error: {{ error?.message || "Failed to load articles." }}
+    </h2>
+  </div>
   <div
-    v-if="articleStore.allArticle.data.length !== 0"
+    v-else-if="
+      articlesData && articlesData.success && articlesData.data.data.length
+    "
     class="flex h-full flex-col content-start gap-4 overflow-y-scroll p-2 lg:flex-row lg:flex-wrap"
   >
     <Article
-      v-for="article in articleStore.allArticle.data"
+      v-for="article in articlesData.data.data"
       :key="article.id"
       class="w-full lg:h-44 lg:w-fit lg:max-w-96"
       :show-like-button="userStore.isAuthenticated"
@@ -68,14 +84,16 @@ const nextPage = computed(() => {
       :slug="article.slug"
       :author-name="article.author_username"
       :created-at="article.created_at"
-      @like-change="articleStore.getAllArticle(paginationReq)"
+      @like-change="refetch()"
     />
   </div>
   <div v-else class="flex h-full items-center justify-center">
     <h2 class="text-primary text-4xl font-bold italic">Empty Articles... 🍃</h2>
   </div>
   <Pagination
-    :total-pages="articleStore.allArticle.total_pages"
+    :total-pages="
+      articlesData && articlesData.success ? articlesData.data.total_pages : 1
+    "
     class="mx-auto w-fit"
   >
     <template #prev-button>
@@ -87,7 +105,7 @@ const nextPage = computed(() => {
         <Button
           as="a"
           :href="href"
-          :disabled="paginationReq.page <= prevPage"
+          :disabled="paginationPage <= prevPage"
           @click="navigate"
         >
           <ChevronLeftIcon />
@@ -103,7 +121,7 @@ const nextPage = computed(() => {
         <Button
           as="a"
           :href="href"
-          :disabled="paginationReq.page === page"
+          :disabled="paginationPage === page"
           @click="navigate"
         >
           {{ page }}
@@ -119,7 +137,7 @@ const nextPage = computed(() => {
         <Button
           as="a"
           :href="href"
-          :disabled="paginationReq.page >= nextPage"
+          :disabled="paginationPage >= nextPage"
           @click="navigate"
         >
           <ChevronRightIcon />
