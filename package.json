@@ -10,7 +10,7 @@
     "fe:ts:check": "cd apps/front-end && npm run ts:check",
     "migrate:up": "cd apps/back-end && npm run migrate:up",
     "ts:check": "npm run be:ts:check && npm run fe:ts:check",
-    "prepare": "node -e \"if (process.env.NODE_ENV === 'production' || process.env.CI === 'true') process.exit(0); \" || husky"
+    "prepare": "node -e \"if (process.env.NODE_ENV === 'production' || process.env.CI === 'true') process.exit(0); else process.exit(1);\" || husky"
   },
   "devDependencies": {
     "@eslint/eslintrc": "3.2.0",
