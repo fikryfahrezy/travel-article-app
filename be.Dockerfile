@@ -1,8 +1,8 @@
 FROM node:22.17.1-bookworm AS base
 
-RUN npm install -g corepack@latest
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
-RUN corepack prepare pnpm --activate
 
 FROM base AS builder
 WORKDIR /app
@@ -23,6 +23,7 @@ COPY pnpm-workspace.yaml ./
 COPY package*json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
 COPY ./apps/back-end/package*json ./apps/back-end/
 
+ENV NODE_ENV=production
 RUN pnpm install --frozen-lockfile --prod
 
 FROM base AS runner
