@@ -37,9 +37,9 @@ withDefaults(defineProps<ButtonProps>(), {
     :is="as"
     :data-disabled="$attrs.disabled"
     :class="[
-      'text-md inline-flex cursor-pointer items-center justify-center transition-colors',
-      'disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50',
-      'data-[disabled=true]:pointer-events-none data-[disabled=true]:cursor-not-allowed data-[disabled=true]:opacity-50',
+      'text-md inline-flex h-fit cursor-pointer items-center justify-center transition-colors',
+      'disabled:pointer-events-none disabled:cursor-not-allowed disabled:brightness-75',
+      'data-[disabled=true]:pointer-events-none data-[disabled=true]:cursor-not-allowed data-[disabled=true]:brightness-75',
       sizeToken[size],
       variantToken[variant],
       backgroundToken[background],

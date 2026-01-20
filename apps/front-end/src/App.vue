@@ -29,31 +29,36 @@ async function logout() {
 
 <template>
   <div
-    class="mx-auto flex h-dvh max-w-7xl flex-col px-4 py-4 lg:px-20 lg:py-10"
+    id="page-layout"
+    class="mx-auto flex min-h-dvh max-w-7xl flex-col px-4 lg:px-20"
   >
-    <nav class="flex flex-row items-center justify-between">
-      <div class="flex flex-row gap-3 py-3 lg:py-10">
-        <template v-for="route in publicRoutes" :key="route.path">
-          <RouterLink
-            :to="route.path"
-            class="hover:text-primary text-base hover:brightness-90 lg:text-xl"
-            active-class="text-primary"
-            exact-active-class="text-primary"
-          >
-            {{ route.name }}
-          </RouterLink>
-        </template>
-      </div>
-      <Button
-        v-if="userStore.profile !== null"
-        variant="destructive"
-        background="solid"
-        @click="logout"
+    <nav id="nav-bar" class="bg-background sticky top-0 z-20">
+      <div
+        class="flex flex-row items-center justify-between gap-3 py-3 lg:py-7"
       >
-        Logout
-      </Button>
+        <div class="flex flex-row gap-3">
+          <template v-for="route in publicRoutes" :key="route.path">
+            <RouterLink
+              :to="route.path"
+              class="hover:text-primary text-base hover:brightness-90 lg:text-xl"
+              active-class="text-primary"
+              exact-active-class="text-primary"
+            >
+              {{ route.name }}
+            </RouterLink>
+          </template>
+        </div>
+        <Button
+          v-if="userStore.profile !== null"
+          variant="destructive"
+          background="solid"
+          @click="logout"
+        >
+          Logout
+        </Button>
+      </div>
     </nav>
-    <main class="flex h-full flex-[1] flex-col overflow-y-scroll">
+    <main class="flex h-full flex-[1] flex-col">
       <Suspense>
         <RouterView />
         <template #fallback> Loading ... </template>

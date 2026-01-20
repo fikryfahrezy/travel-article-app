@@ -199,58 +199,59 @@ function commentDeleted() {
       :article-id="articleDetail.id"
       @submit-success="commentAdded"
     />
-    <div v-if="articleCommentsQuery.isLoading.value">
-      <p>Loading comments...</p>
-    </div>
-    <div v-else-if="(articleCommentsQuery.data.value?.data.length ?? 0) === 0">
-      <p>No comment yet, become the first one!</p>
-    </div>
-    <div v-else class="p-2">
-      <Comment
-        v-for="comment in articleCommentsQuery.data.value?.data"
-        :key="comment.id"
-        :comment-id="comment.id"
-        :author-name="comment.author_username"
-        :content="comment.content"
-        :created-at="comment.created_at"
-        :show-action="
-          !!userStore.profile && comment.author_id === userStore.profile.user_id
-        "
-        class="mb-4"
-        @comment-change="commentChange"
-        @comment-deleted="commentDeleted"
-      />
+    <div class="p-2">
+      <p v-if="articleCommentsQuery.isLoading.value">Loading comments...</p>
+      <p v-else-if="(articleCommentsQuery.data.value?.data.length ?? 0) === 0">
+        No comment yet, become the first one!
+      </p>
+      <template v-else>
+        <Comment
+          v-for="comment in articleCommentsQuery.data.value?.data"
+          :key="comment.id"
+          :comment-id="comment.id"
+          :author-name="comment.author_username"
+          :content="comment.content"
+          :created-at="comment.created_at"
+          :show-action="
+            !!userStore.profile &&
+            comment.author_id === userStore.profile.user_id
+          "
+          class="mb-4"
+          @comment-change="commentChange"
+          @comment-deleted="commentDeleted"
+        />
 
-      <Pagination
-        v-if="articleDetail"
-        :total-pages="articleCommentsQuery.data.value?.total_pages"
-        class="mx-auto w-fit"
-      >
-        <template #prev-button>
-          <Button
-            :disabled="paginationCommentPage <= prevCommentPage"
-            @click="paginationCommentPage--"
-          >
-            <ChevronLeftIcon />
-          </Button>
-        </template>
-        <template #page-item="{ page }">
-          <Button
-            :disabled="paginationCommentPage === page"
-            @click="paginationCommentPage = page"
-          >
-            {{ page }}
-          </Button>
-        </template>
-        <template #next-button>
-          <Button
-            :disabled="paginationCommentPage >= nextCommentPage"
-            @click="paginationCommentPage++"
-          >
-            <ChevronRightIcon />
-          </Button>
-        </template>
-      </Pagination>
+        <Pagination
+          v-if="articleDetail"
+          :total-pages="articleCommentsQuery.data.value?.total_pages"
+          class="mx-auto w-fit"
+        >
+          <template #prev-button>
+            <Button
+              :disabled="paginationCommentPage <= prevCommentPage"
+              @click="paginationCommentPage--"
+            >
+              <ChevronLeftIcon />
+            </Button>
+          </template>
+          <template #page-item="{ page }">
+            <Button
+              :disabled="paginationCommentPage === page"
+              @click="paginationCommentPage = page"
+            >
+              {{ page }}
+            </Button>
+          </template>
+          <template #next-button>
+            <Button
+              :disabled="paginationCommentPage >= nextCommentPage"
+              @click="paginationCommentPage++"
+            >
+              <ChevronRightIcon />
+            </Button>
+          </template>
+        </Pagination>
+      </template>
     </div>
   </div>
   <Modal

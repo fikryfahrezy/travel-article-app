@@ -52,13 +52,15 @@ const nextPage = computed(() => {
 </script>
 
 <template>
-  <div v-if="userStore.isAuthenticated" class="flex justify-end">
-    <RouterLink v-slot="{ href, navigate }" custom to="/articles/form">
-      <Button as="a" :href="href" class="w-full lg:w-fit" @click="navigate">
-        Contribute Your Story
-      </Button>
-    </RouterLink>
-  </div>
+  <Teleport v-if="userStore.isAuthenticated" to="#nav-bar">
+    <div class="flex justify-end py-3">
+      <RouterLink v-slot="{ href, navigate }" custom to="/articles/form">
+        <Button as="a" :href="href" class="w-full lg:w-fit" @click="navigate">
+          Contribute Your Story
+        </Button>
+      </RouterLink>
+    </div>
+  </Teleport>
 
   <LoadingOverlay v-if="isLoading" />
 
@@ -71,7 +73,7 @@ const nextPage = computed(() => {
     v-else-if="
       articlesData && articlesData.success && articlesData.data.data.length
     "
-    class="flex h-full flex-col content-start gap-4 overflow-y-scroll p-2 lg:flex-row lg:flex-wrap"
+    class="grid h-full grid-cols-1 gap-4 p-2 lg:grid-cols-3"
   >
     <Article
       v-for="article in articlesData.data.data"
@@ -90,59 +92,61 @@ const nextPage = computed(() => {
   <div v-else class="flex h-full items-center justify-center">
     <h2 class="text-primary text-4xl font-bold italic">Empty Articles... 🍃</h2>
   </div>
-  <Pagination
-    :total-pages="
-      articlesData && articlesData.success ? articlesData.data.total_pages : 1
-    "
-    class="mx-auto w-fit"
-  >
-    <template #prev-button>
-      <RouterLink
-        v-slot="{ href, navigate }"
-        custom
-        :to="{ query: { ...$route.query, page: prevPage } }"
-      >
-        <Button
-          as="a"
-          :href="href"
-          :disabled="paginationPage <= prevPage"
-          @click="navigate"
+  <Teleport to="#page-layout">
+    <Pagination
+      :total-pages="
+        articlesData && articlesData.success ? articlesData.data.total_pages : 1
+      "
+      class="sticky bottom-0 mx-auto w-fit py-5"
+    >
+      <template #prev-button>
+        <RouterLink
+          v-slot="{ href, navigate }"
+          custom
+          :to="{ query: { ...$route.query, page: prevPage } }"
         >
-          <ChevronLeftIcon />
-        </Button>
-      </RouterLink>
-    </template>
-    <template #page-item="{ page }">
-      <RouterLink
-        v-slot="{ href, navigate }"
-        custom
-        :to="{ query: { ...$route.query, page } }"
-      >
-        <Button
-          as="a"
-          :href="href"
-          :disabled="paginationPage === page"
-          @click="navigate"
+          <Button
+            as="a"
+            :href="href"
+            :disabled="paginationPage <= prevPage"
+            @click="navigate"
+          >
+            <ChevronLeftIcon />
+          </Button>
+        </RouterLink>
+      </template>
+      <template #page-item="{ page }">
+        <RouterLink
+          v-slot="{ href, navigate }"
+          custom
+          :to="{ query: { ...$route.query, page } }"
         >
-          {{ page }}
-        </Button>
-      </RouterLink>
-    </template>
-    <template #next-button>
-      <RouterLink
-        v-slot="{ href, navigate }"
-        custom
-        :to="{ query: { ...$route.query, page: nextPage } }"
-      >
-        <Button
-          as="a"
-          :href="href"
-          :disabled="paginationPage >= nextPage"
-          @click="navigate"
+          <Button
+            as="a"
+            :href="href"
+            :disabled="paginationPage === page"
+            @click="navigate"
+          >
+            {{ page }}
+          </Button>
+        </RouterLink>
+      </template>
+      <template #next-button>
+        <RouterLink
+          v-slot="{ href, navigate }"
+          custom
+          :to="{ query: { ...$route.query, page: nextPage } }"
         >
-          <ChevronRightIcon />
-        </Button>
-      </RouterLink>
-    </template>
-  </Pagination>
+          <Button
+            as="a"
+            :href="href"
+            :disabled="paginationPage >= nextPage"
+            @click="navigate"
+          >
+            <ChevronRightIcon />
+          </Button>
+        </RouterLink>
+      </template>
+    </Pagination>
+  </Teleport>
 </template>

@@ -5,11 +5,14 @@
   --primary: oklch(0.7025 0.132 160.37);
   --destructive: oklch(63.7% 0.237 25.331);
   --neutral: oklch(26.9% 0 0);
+  --background: oklch(0.9734 0.0013 286.37);
 }
 
 @theme inline {
   --color-primary: var(--primary);
   --color-destructive: var(--destructive);
+  --color-neutral: var(--neutral);
+  --color-background: var(--background);
 }
 
 :root {
@@ -19,7 +22,7 @@
 
   color-scheme: light dark;
   color: rgb(0, 0, 0);
-  background-color: oklch(0.9734 0.0013 286.37);
+  background-color: var(--background);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;

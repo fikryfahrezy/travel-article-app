@@ -166,55 +166,58 @@ function commentDeleted() {
       :article-id="articleStore.detail.id"
       @submit-success="getAllArticleComment"
     />
-    <div v-if="commentStore.allArticleComment.data.length === 0">
-      <p>No comment yet, become the first one!</p>
-    </div>
-    <div v-else class="p-2">
-      <Comment
-        v-for="comment in commentStore.allArticleComment.data"
-        :key="comment.id"
-        :comment-id="comment.id"
-        :author-name="comment.author_username"
-        :content="comment.content"
-        :created-at="comment.created_at"
-        :show-action="
-          !!userStore.profile && comment.author_id === userStore.profile.user_id
-        "
-        class="mb-4"
-        @comment-change="commentChange"
-        @comment-deleted="commentDeleted"
-      />
+    <div class="p-2">
+      <p v-if="commentStore.allArticleComment.data.length === 0">
+        No comment yet, become the first one!
+      </p>
+      <template v-else>
+        <Comment
+          v-for="comment in commentStore.allArticleComment.data"
+          :key="comment.id"
+          :comment-id="comment.id"
+          :author-name="comment.author_username"
+          :content="comment.content"
+          :created-at="comment.created_at"
+          :show-action="
+            !!userStore.profile &&
+            comment.author_id === userStore.profile.user_id
+          "
+          class="mb-4"
+          @comment-change="commentChange"
+          @comment-deleted="commentDeleted"
+        />
 
-      <Pagination
-        v-if="articleStore.detail"
-        :total-pages="commentStore.allArticleComment.total_pages"
-        class="mx-auto w-fit"
-      >
-        <template #prev-button>
-          <Button
-            :disabled="commentStore.allArticleComment.page <= prevCommentPage"
-            @click="paginationCommentReq.page--"
-          >
-            <ChevronLeftIcon />
-          </Button>
-        </template>
-        <template #page-item="{ page }">
-          <Button
-            :disabled="commentStore.allArticleComment.page === page"
-            @click="paginationCommentReq.page = page"
-          >
-            {{ page }}
-          </Button>
-        </template>
-        <template #next-button>
-          <Button
-            :disabled="commentStore.allArticleComment.page >= nextCommentPage"
-            @click="paginationCommentReq.page++"
-          >
-            <ChevronRightIcon />
-          </Button>
-        </template>
-      </Pagination>
+        <Pagination
+          v-if="articleStore.detail"
+          :total-pages="commentStore.allArticleComment.total_pages"
+          class="mx-auto w-fit"
+        >
+          <template #prev-button>
+            <Button
+              :disabled="commentStore.allArticleComment.page <= prevCommentPage"
+              @click="paginationCommentReq.page--"
+            >
+              <ChevronLeftIcon />
+            </Button>
+          </template>
+          <template #page-item="{ page }">
+            <Button
+              :disabled="commentStore.allArticleComment.page === page"
+              @click="paginationCommentReq.page = page"
+            >
+              {{ page }}
+            </Button>
+          </template>
+          <template #next-button>
+            <Button
+              :disabled="commentStore.allArticleComment.page >= nextCommentPage"
+              @click="paginationCommentReq.page++"
+            >
+              <ChevronRightIcon />
+            </Button>
+          </template>
+        </Pagination>
+      </template>
     </div>
   </div>
   <Modal
