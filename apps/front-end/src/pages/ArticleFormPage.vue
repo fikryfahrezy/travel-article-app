@@ -74,29 +74,29 @@ async function onSubmit() {
 </script>
 
 <template>
-  <div>
-    <Button
-      v-for="tab in tabs"
-      :key="tab"
-      background="text"
-      :variant="activeTab === tab ? 'primary' : 'neutral'"
-      :class="[
-        'w-1/2 border-b-2 capitalize',
-        activeTab === tab ? 'border-b-primary' : 'border-b-neutral-400',
-      ]"
-      @click="activeTab = tab"
-    >
-      {{ tab }}
-    </Button>
-    <Button background="text"></Button>
-  </div>
-  <form
-    class="flex h-full w-full flex-col gap-4 overflow-y-scroll"
-    @submit.prevent="onSubmit"
-  >
+  <Teleport to="#nav-bar">
+    <div>
+      <Button
+        v-for="tab in tabs"
+        :key="tab"
+        background="text"
+        :variant="activeTab === tab ? 'primary' : 'neutral'"
+        :class="[
+          'w-1/2 border-b-2 capitalize',
+          activeTab === tab ? 'border-b-primary' : 'border-b-neutral-400',
+        ]"
+        @click="activeTab = tab"
+      >
+        {{ tab }}
+      </Button>
+      <Button background="text"></Button>
+    </div>
+  </Teleport>
+
+  <form class="flex flex-[1] w-full flex-col gap-4" @submit.prevent="onSubmit">
     <div
       v-if="activeTab === 'editor'"
-      class="flex h-full w-full flex-col gap-4"
+      class="flex flex-[1] w-full flex-col gap-4"
     >
       <input
         id="title"
@@ -119,7 +119,7 @@ async function onSubmit() {
         id="content"
         v-model="markdownContent"
         name="content"
-        class="h-full outline-none"
+        class="flex-[1] outline-none"
         placeholder=" Write markdown here"
         :aria-invalid="!!fieldErrors?.content"
       ></textarea>

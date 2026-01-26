@@ -25,55 +25,53 @@ export const useUserStore = defineStore("user", {
     },
   },
   actions: {
-    async apiCall<
-      TCallback extends () => Promise<unknown>,
-      TReturn extends Awaited<ReturnType<TCallback>>,
-    >(callback: TCallback) {
+    async getProfile() {
       const globalLoadingStore = useLoadingStore();
       const loadingId = globalLoadingStore.startLoading();
-
-      const result = await callback();
+      const result = await apiSdk.profile();
       globalLoadingStore.stopLoading(loadingId);
 
-      return result as TReturn;
-    },
-    async getProfile() {
-      return await this.apiCall(async () => {
-        const result = await apiSdk.profile();
-        this.profile = result.success ? result.data : null;
-        this.profileError = result.success ? null : result.error;
-        return result;
-      });
+      this.profile = result.success ? result.data : null;
+      this.profileError = result.success ? null : result.error;
+
+      return result;
     },
     async login(loginReqDto: LoginReqDto) {
-      return await this.apiCall(async () => {
-        const result = await apiSdk.login(loginReqDto);
-        if (!result.success) {
-          return result;
-        }
-        await this.getProfile();
+      const globalLoadingStore = useLoadingStore();
+      const loadingId = globalLoadingStore.startLoading();
+      const result = await apiSdk.login(loginReqDto);
+      globalLoadingStore.stopLoading(loadingId);
+
+      if (!result.success) {
         return result;
-      });
+      }
+
+      await this.getProfile();
+      return result;
     },
     async register(registerReqDto: RegisterReqDto) {
-      return await this.apiCall(async () => {
-        const result = await apiSdk.register(registerReqDto);
-        if (!result.success) {
-          return result;
-        }
-        await this.getProfile();
+      const globalLoadingStore = useLoadingStore();
+      const loadingId = globalLoadingStore.startLoading();
+      const result = await apiSdk.register(registerReqDto);
+      globalLoadingStore.stopLoading(loadingId);
+
+      if (!result.success) {
         return result;
-      });
+      }
+      await this.getProfile();
+      return result;
     },
     async logout() {
-      return await this.apiCall(async () => {
-        const result = await apiSdk.logout();
-        if (!result.success) {
-          return result;
-        }
-        this.profile = null;
+      const globalLoadingStore = useLoadingStore();
+      const loadingId = globalLoadingStore.startLoading();
+      const result = await apiSdk.logout();
+      globalLoadingStore.stopLoading(loadingId);
+
+      if (!result.success) {
         return result;
-      });
+      }
+      this.profile = null;
+      return result;
     },
   },
 });

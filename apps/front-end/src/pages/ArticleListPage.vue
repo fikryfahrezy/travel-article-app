@@ -15,7 +15,7 @@ const userStore = useUserStore();
 const articleStore = useArticleStore();
 
 const paginationReq = reactive<Required<PaginationReqDto>>({
-  limit: 10,
+  limit: 36,
   page: Number(route.query.page || 1),
 });
 
@@ -57,7 +57,7 @@ const nextPage = computed(() => {
 
   <div
     v-if="articleStore.allArticle.data.length !== 0"
-    class="grid h-full grid-cols-1 gap-4 p-2 lg:grid-cols-3"
+    class="grid grid-cols-1 gap-4 p-2 lg:grid-cols-3"
   >
     <Article
       v-for="article in articleStore.allArticle.data"
@@ -73,7 +73,7 @@ const nextPage = computed(() => {
       @like-change="articleStore.getAllArticle(paginationReq)"
     />
   </div>
-  <div v-else class="flex h-full items-center justify-center">
+  <div v-else class="flex flex-[1] items-center justify-center">
     <h2 class="text-primary text-4xl font-bold italic">Empty Articles... 🍃</h2>
   </div>
   <Teleport to="#page-layout">

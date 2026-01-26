@@ -8,79 +8,38 @@ import Pagination from "@/components/Pagination.vue";
 import ArticleLikeButton from "@/features/article/components/ArticleLikeButton.vue";
 import Comment from "@/features/article/components/Comment.vue";
 import CommentFormCreate from "@/features/article/components/CommentFormCreate.vue";
-import { useQuery } from "@tanstack/vue-query";
 import { apiSdk } from "@/lib/api-sdk";
 import { useUserStore } from "@/features/auth/stores/user";
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { useArticleDetail } from "@/features/article/stores/article";
+import {
+  commentKeys,
+  useArticleComments,
+} from "@/features/article/stores/comment";
+import { useMutationState } from "@tanstack/vue-query";
 
 const route = useRoute();
 const router = useRouter();
 const userStore = useUserStore();
+const articleSlug = computed(() => {
+  return String(route.params.articleSlug || "");
+});
 
 const showDeleteConfirmation = ref(false);
-
-const articleSlug = computed(() => {
-  return String(route.params.articleSlug);
-});
-
-const articleDetailQuery = useQuery({
-  queryKey: computed(() => {
-    return ["article-detail", articleSlug];
-  }),
-  queryFn: async () => {
-    const result = await apiSdk.getArticle({ idOrSlug: articleSlug.value });
-    if (!result.success)
-      throw result.error ?? new Error("Failed to fetch article");
-    return result.data;
-  },
-  enabled: !!articleSlug.value,
-});
-
-const articleDetail = computed(() => articleDetailQuery.data.value);
-
-const paginationCommentLimit = 10;
 const paginationCommentPage = ref(1);
 
-const articleCommentsQuery = useQuery({
-  queryKey: computed(() => {
-    return [
-      "article-comments",
-      articleDetail.value?.id,
-      paginationCommentPage.value,
-      paginationCommentLimit,
-    ];
-  }),
-  queryFn: async () => {
-    if (!articleDetail.value?.id) {
-      return {
-        data: [],
-        page: 1,
-        total_pages: 1,
-        total_data: 0,
-        limit: paginationCommentLimit,
-      };
-    }
+const {
+  data: articleDetail,
+  isError: articleDetailIsError,
+  error: articleDetailError,
+} = useArticleDetail(articleSlug);
 
-    const result = await apiSdk.getAllArticleComment({
-      article_id: articleDetail.value.id,
-      pagination: {
-        limit: paginationCommentLimit,
-        page: paginationCommentPage.value,
-      },
-    });
-
-    if (!result.success) {
-      throw result.error ?? new Error("Failed to fetch comments");
-    }
-    return result.data;
-  },
-  enabled: computed(() => !!articleDetail.value?.id),
-});
-
-// No need to watch articleSlug for fetching, handled by vue-query
-
-// No need to watch articleDetail or paginationCommentPage.value for fetching, handled by vue-query
+const { data: articleComments, isLoading: articleCommentsIsLoading } =
+  useArticleComments(
+    computed(() => articleDetail.value?.id || ""),
+    paginationCommentPage,
+  );
 
 const prevCommentPage = computed(() => {
   return paginationCommentPage.value <= 1 ? 1 : paginationCommentPage.value - 1;
@@ -88,8 +47,8 @@ const prevCommentPage = computed(() => {
 
 const nextCommentPage = computed(() => {
   return paginationCommentPage.value >=
-    (articleCommentsQuery.data.value?.total_pages ?? 1)
-    ? (articleCommentsQuery.data.value?.total_pages ?? 1)
+    (articleComments.value?.total_pages ?? 1)
+    ? (articleComments.value?.total_pages ?? 1)
     : paginationCommentPage.value + 1;
 });
 
@@ -107,48 +66,69 @@ async function deleteArticle() {
     router.replace("/");
   }
 }
-function getCurrentArticle() {
-  articleDetailQuery.refetch();
-}
-
-function commentChange() {
-  articleCommentsQuery.refetch();
-}
 
 function commentAdded() {
   paginationCommentPage.value = 1;
-  commentChange();
 }
+
+const commentCreateStatus = useMutationState({
+  filters: { mutationKey: commentKeys.create() },
+  select: (mutation) => {
+    return mutation.state.status;
+  },
+});
+
+const lastCommentCreateStatus = computed(() => {
+  const status = commentCreateStatus.value;
+  return status[status.length - 1];
+});
+
+watch(lastCommentCreateStatus, (lastStatus) => {
+  if (lastStatus === "success") {
+    commentAdded();
+  }
+});
 
 function commentDeleted() {
   // When last comment on the page other than 1 deleted
   // we should go back to the previous page to avoid accessing empty page
   if (
     paginationCommentPage.value !== 1 &&
-    (articleCommentsQuery.data.value?.data.length ?? 0) === 1
+    (articleComments.value?.data.length ?? 0) === 0
   ) {
     paginationCommentPage.value--;
     return;
   }
-  commentChange();
 }
+
+const commentDeletionStatus = useMutationState({
+  filters: { mutationKey: commentKeys.delete() },
+  select: (mutation) => {
+    return mutation.state.status;
+  },
+});
+
+const lastCommentDeleteStatus = computed(() => {
+  const status = commentDeletionStatus.value;
+  return status[status.length - 1];
+});
+
+watch(lastCommentDeleteStatus, (lastStatus) => {
+  if (lastStatus === "success") {
+    commentDeleted();
+  }
+});
 </script>
 <template>
   <div
-    v-if="articleDetailQuery.isError.value"
-    class="flex h-full w-full items-center justify-center"
+    v-if="articleDetailIsError"
+    class="flex w-full flex-[1] items-center justify-center"
   >
     <h2 class="text-destructive text-4xl font-bold italic">
-      🚨
-      {{
-        articleDetailQuery.error.value instanceof Error
-          ? articleDetailQuery.error.value.message
-          : "Failed to load article"
-      }}
-      🚨
+      🚨 {{ articleDetailError?.message }} 🚨
     </h2>
   </div>
-  <div v-if="articleDetail">
+  <div v-else-if="articleDetail">
     <div class="flex items-start justify-between">
       <div class="flex gap-2">
         <p>
@@ -165,7 +145,6 @@ function commentDeleted() {
           v-if="userStore.isAuthenticated"
           :article-id="articleDetail.id"
           :liked="articleDetail.liked"
-          @like-change="getCurrentArticle"
         />
         <RouterLink
           v-if="allowedToModifyArticle"
@@ -197,16 +176,15 @@ function commentDeleted() {
       v-if="userStore.isAuthenticated"
       class="mb-4"
       :article-id="articleDetail.id"
-      @submit-success="commentAdded"
     />
     <div class="p-2">
-      <p v-if="articleCommentsQuery.isLoading.value">Loading comments...</p>
-      <p v-else-if="(articleCommentsQuery.data.value?.data.length ?? 0) === 0">
+      <p v-if="articleCommentsIsLoading">Loading comments...</p>
+      <p v-else-if="(articleComments?.data.length ?? 0) === 0">
         No comment yet, become the first one!
       </p>
       <template v-else>
         <Comment
-          v-for="comment in articleCommentsQuery.data.value?.data"
+          v-for="comment in articleComments?.data"
           :key="comment.id"
           :comment-id="comment.id"
           :author-name="comment.author_username"
@@ -216,14 +194,11 @@ function commentDeleted() {
             !!userStore.profile &&
             comment.author_id === userStore.profile.user_id
           "
-          class="mb-4"
-          @comment-change="commentChange"
-          @comment-deleted="commentDeleted"
         />
 
         <Pagination
           v-if="articleDetail"
-          :total-pages="articleCommentsQuery.data.value?.total_pages"
+          :total-pages="articleComments?.total_pages"
           class="mx-auto w-fit"
         >
           <template #prev-button>

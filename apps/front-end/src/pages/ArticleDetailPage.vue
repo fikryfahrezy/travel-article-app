@@ -107,13 +107,13 @@ function commentDeleted() {
 <template>
   <div
     v-if="articleStore.detailError"
-    class="flex h-full w-full items-center justify-center"
+    class="flex flex-[1] w-full items-center justify-center"
   >
     <h2 class="text-destructive text-4xl font-bold italic">
       🚨 {{ articleStore.detailError.message }} 🚨
     </h2>
   </div>
-  <div v-if="articleStore.detail">
+  <div v-else-if="articleStore.detail">
     <div class="flex items-start justify-between">
       <div class="flex gap-2">
         <p>
@@ -182,7 +182,6 @@ function commentDeleted() {
             !!userStore.profile &&
             comment.author_id === userStore.profile.user_id
           "
-          class="mb-4"
           @comment-change="commentChange"
           @comment-deleted="commentDeleted"
         />

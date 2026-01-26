@@ -58,7 +58,7 @@ async function logout() {
         </Button>
       </div>
     </nav>
-    <main class="flex h-full flex-[1] flex-col">
+    <main class="flex flex-[1] flex-col">
       <Suspense>
         <RouterView />
         <template #fallback> Loading ... </template>

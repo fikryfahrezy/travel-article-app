@@ -7,36 +7,20 @@ import Article from "@/features/article/components/Article.vue";
 import { useUserStore } from "@/features/auth/stores/user";
 import { computed } from "vue";
 import { useRoute } from "vue-router";
-import { useQuery } from "@tanstack/vue-query";
-import { apiSdk } from "@/lib/api-sdk";
-import type { Result, GetAllArticleResDto } from "@/lib/api-sdk.types";
-import LoadingOverlay from "@/components/LoadingOverlay.vue";
+import { useArticles } from "@/features/article/stores/article";
 
 const route = useRoute();
 const userStore = useUserStore();
 
-const paginationLimit = 10;
 const paginationPage = computed(() => {
   return Number(route.query.page || 1);
 });
 
 const {
   data: articlesData,
-  isLoading,
-  isError,
-  error,
-  refetch,
-} = useQuery<Result<GetAllArticleResDto>>({
-  queryKey: computed(() => {
-    return ["articles", paginationPage.value, paginationLimit];
-  }),
-  queryFn: () => {
-    return apiSdk.getAllArticle({
-      limit: paginationLimit,
-      page: paginationPage.value,
-    });
-  },
-});
+  isError: articlesIsError,
+  error: articlesError,
+} = useArticles(paginationPage, 36);
 
 const prevPage = computed(() => {
   return paginationPage.value <= 1 ? 1 : paginationPage.value - 1;
@@ -44,7 +28,7 @@ const prevPage = computed(() => {
 
 const nextPage = computed(() => {
   const result = articlesData.value;
-  const totalPages = result && result.success ? result.data.total_pages : 1;
+  const totalPages = result ? result.total_pages : 1;
   return paginationPage.value >= totalPages
     ? totalPages
     : paginationPage.value + 1;
@@ -62,21 +46,17 @@ const nextPage = computed(() => {
     </div>
   </Teleport>
 
-  <LoadingOverlay v-if="isLoading" />
-
-  <div v-else-if="isError" class="flex h-full items-center justify-center">
+  <div v-if="articlesIsError" class="flex flex-[1] items-center justify-center">
     <h2 class="text-2xl font-bold text-red-500 italic">
-      Error: {{ error?.message || "Failed to load articles." }}
+      Error: {{ articlesError?.message || "Failed to load articles." }}
     </h2>
   </div>
   <div
-    v-else-if="
-      articlesData && articlesData.success && articlesData.data.data.length
-    "
-    class="grid h-full grid-cols-1 gap-4 p-2 lg:grid-cols-3"
+    v-else-if="articlesData"
+    class="grid grid-cols-1 gap-4 p-2 lg:grid-cols-3"
   >
     <Article
-      v-for="article in articlesData.data.data"
+      v-for="article in articlesData.data"
       :key="article.id"
       class="w-full lg:h-44 lg:w-fit lg:max-w-96"
       :show-like-button="userStore.isAuthenticated"
@@ -86,17 +66,14 @@ const nextPage = computed(() => {
       :slug="article.slug"
       :author-name="article.author_username"
       :created-at="article.created_at"
-      @like-change="refetch()"
     />
   </div>
-  <div v-else class="flex h-full items-center justify-center">
+  <div v-else class="flex flex-[1] items-center justify-center">
     <h2 class="text-primary text-4xl font-bold italic">Empty Articles... 🍃</h2>
   </div>
   <Teleport to="#page-layout">
     <Pagination
-      :total-pages="
-        articlesData && articlesData.success ? articlesData.data.total_pages : 1
-      "
+      :total-pages="articlesData && articlesData.total_pages"
       class="sticky bottom-0 mx-auto w-fit py-5"
     >
       <template #prev-button>

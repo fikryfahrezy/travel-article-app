@@ -2,8 +2,6 @@
 import ArrowRightIcon from "@/components/ArrowRightIcon.vue";
 import ArticleLikeButton from "./ArticleLikeButton.vue";
 
-const emit = defineEmits(["likeChange"]);
-
 defineProps({
   showLikeButton: {
     type: Boolean,
@@ -43,14 +41,13 @@ defineProps({
     ]"
   >
     <div class="flex items-start justify-between gap-4">
-      <h3 class="text-primary line-clamp-2 h-full text-2xl font-bold">
+      <h3 class="text-primary line-clamp-2 text-2xl font-bold">
         {{ title }}
       </h3>
       <ArticleLikeButton
         v-if="showLikeButton"
         :article-id="articleId"
         :liked="liked"
-        @like-change="emit('likeChange')"
       />
     </div>
     <p class="font-medium">{{ authorName }}</p>

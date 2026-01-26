@@ -1,117 +1,129 @@
 import { apiSdk } from "@/lib/api-sdk";
 import type {
   CreateArticleReqDto,
-  DeleteArticleReqDto,
-  GetAllArticleResDto,
-  GetArticleReqDto,
-  GetArticleResDto,
   LikeArticleReqDto,
-  PaginationReqDto,
+  MutationResDto,
   UpdateArticleReqDto,
 } from "@/lib/api-sdk.types";
-import { useLoadingStore } from "@/stores/loading";
-import { acceptHMRUpdate, defineStore } from "pinia";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/vue-query";
+import type { Ref } from "vue";
 
-export type UseArticleStoreState = {
-  all: GetAllArticleResDto | null;
-  allError: Error | null;
-  detail: GetArticleResDto | null;
-  detailError: Error | null;
+export const articleKeys = {
+  all: ["article"] as const,
+  list: (paginationPage: Ref<number>, paginationLimit: number) => {
+    return [...articleKeys.all, paginationPage, paginationLimit] as const;
+  },
+  detail: (articleIdOrSlug: Ref<string>) => {
+    return [...articleKeys.all, "detail", articleIdOrSlug] as const;
+  },
+  like: () => {
+    return [...articleKeys.all, "like"] as const;
+  },
+  create: () => {
+    return [...articleKeys.all, "create"] as const;
+  },
+  update: () => {
+    return [...articleKeys.all, "update"] as const;
+  },
 };
 
-export const useArticleStore = defineStore("article", {
-  state: (): UseArticleStoreState => {
-    return {
-      allError: null,
-      all: null,
-      detailError: null,
-      detail: null,
-    };
-  },
-  getters: {
-    allArticle: (state) => {
-      return (
-        state.all || {
-          total_data: 0,
-          total_pages: 0,
-          limit: 0,
-          page: 1,
-          data: [],
-        }
-      );
+export function useArticles(paginationPage: Ref<number>, paginationLimit = 10) {
+  return useQuery({
+    queryKey: articleKeys.list(paginationPage, paginationLimit),
+    queryFn: async () => {
+      const result = await apiSdk.getAllArticle({
+        limit: paginationLimit,
+        page: paginationPage.value,
+      });
+      if (!result.success) {
+        throw result.error;
+      }
+      return result.data;
     },
-  },
-  actions: {
-    async apiCall<
-      TCallback extends () => Promise<unknown>,
-      TReturn extends Awaited<ReturnType<TCallback>>,
-    >(callback: TCallback) {
-      const globalLoadingStore = useLoadingStore();
-      const loadingId = globalLoadingStore.startLoading();
-
-      const result = await callback();
-      globalLoadingStore.stopLoading(loadingId);
-
-      return result as TReturn;
+    initialData: {
+      data: [],
+      page: 1,
+      limit: paginationLimit,
+      total_data: 0,
+      total_pages: 0,
     },
-    async getAllArticle(paginationReqDto: PaginationReqDto) {
-      return await this.apiCall(async () => {
-        const result = await apiSdk.getAllArticle(paginationReqDto);
-        if (!result.success) {
-          this.allError = result.error;
-          return result;
-        }
+  });
+}
 
-        this.all = {
-          data: result.data.data,
-          limit: result.data.limit,
-          total_data: result.data.total_data,
-          total_pages: result.data.total_pages,
-          page: result.data.page,
-        };
+export function useArticleDetail(articleIdOrSlug: Ref<string>) {
+  return useQuery({
+    queryKey: articleKeys.detail(articleIdOrSlug),
+    queryFn: async () => {
+      const result = await apiSdk.getArticle({
+        idOrSlug: articleIdOrSlug.value,
+      });
+      if (!result.success) {
+        throw result.error;
+      }
+      return result.data;
+    },
+    enabled: () => {
+      return !!articleIdOrSlug.value;
+    },
+  });
+}
 
-        return result;
+export function useLikeArticle() {
+  const queryClient = useQueryClient();
+
+  return useMutation<MutationResDto, Error, LikeArticleReqDto>({
+    mutationKey: articleKeys.like(),
+    mutationFn: async (likeArticleReqDto) => {
+      const result = await apiSdk.likeArticle(likeArticleReqDto);
+      if (!result.success) {
+        throw result.error;
+      }
+      return result.data;
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: articleKeys.all,
       });
     },
-    async createArticle(createArticleReqDto: CreateArticleReqDto) {
-      return await this.apiCall(async () => {
-        const result = await apiSdk.createArticle(createArticleReqDto);
-        return result;
-      });
-    },
-    async getArticle(getArticleReqDto: GetArticleReqDto) {
-      return await this.apiCall(async () => {
-        const result = await apiSdk.getArticle(getArticleReqDto);
-        if (!result.success) {
-          this.detailError = result.error;
-          return result;
-        }
-        this.detail = result.data;
-        return result;
-      });
-    },
-    async updateArticle(updateArticleReqDto: UpdateArticleReqDto) {
-      return await this.apiCall(async () => {
-        const result = await apiSdk.updateArticle(updateArticleReqDto);
+  });
+}
 
-        return result;
-      });
-    },
-    async deleteArticle(deleteArticleReqDto: DeleteArticleReqDto) {
-      return await this.apiCall(async () => {
-        const result = await apiSdk.deleteArticle(deleteArticleReqDto);
-        return result;
-      });
-    },
-    async likeArticle(likeArticleReqDto: LikeArticleReqDto) {
-      return await this.apiCall(async () => {
-        const result = await apiSdk.likeArticle(likeArticleReqDto);
-        return result;
-      });
-    },
-  },
-});
+export function useCreateArticle() {
+  const queryClient = useQueryClient();
 
-if (import.meta.hot) {
-  import.meta.hot.accept(acceptHMRUpdate(useArticleStore, import.meta.hot));
+  return useMutation<MutationResDto, Error, CreateArticleReqDto>({
+    mutationKey: articleKeys.create(),
+    mutationFn: async (createArticleReqDto) => {
+      const result = await apiSdk.createArticle(createArticleReqDto);
+      if (!result.success) {
+        throw result.error;
+      }
+      return result.data;
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: articleKeys.all,
+      });
+    },
+  });
+}
+
+export function useUpdateArticle() {
+  const queryClient = useQueryClient();
+
+  return useMutation<MutationResDto, Error, UpdateArticleReqDto>({
+    mutationKey: articleKeys.update(),
+    mutationFn: async (updateArticleReqDto) => {
+      const result = await apiSdk.updateArticle(updateArticleReqDto);
+      if (!result.success) {
+        throw result.error;
+      }
+      return result.data;
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: articleKeys.all,
+      });
+    },
+  });
 }

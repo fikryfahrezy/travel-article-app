@@ -55,13 +55,13 @@ async function deleteComment() {
     :content="content"
     @submit-success="commentChange"
   />
-  <div v-else :class="['flex flex-col', $attrs.class]">
+  <div v-else class="flex flex-col">
     <p class="font-medium">{{ authorName }}</p>
 
     <p class="text-xs">
       {{ new Intl.DateTimeFormat().format(new Date(createdAt)) }}
     </p>
-    <p class="line-clamp-2 h-full">
+    <p class="line-clamp-2">
       {{ content }}
     </p>
     <div v-if="showAction" class="ml-auto">
@@ -70,8 +70,9 @@ async function deleteComment() {
         background="text"
         variant="destructive"
         @click="showDeleteConfirmation = true"
-        >Delete</Button
       >
+        Delete
+      </Button>
     </div>
   </div>
   <Modal

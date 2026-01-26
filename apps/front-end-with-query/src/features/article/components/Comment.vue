@@ -1,16 +1,14 @@
 <script setup lang="ts">
 import Button from "@/components/Button.vue";
 import Modal from "@/components/Modal.vue";
-import { ref } from "vue";
-import { useCommentStore } from "../stores/comment";
+import { computed, ref, watch } from "vue";
 import CommentFormEdit from "./CommentFormEdit.vue";
+import { commentKeys, useDeleteComment } from "../stores/comment";
+import { useMutationState } from "@tanstack/vue-query";
 
 const editMode = ref(false);
 const showDeleteConfirmation = ref(false);
-
-const commentStore = useCommentStore();
-
-const emit = defineEmits(["commentChange", "commentDeleted"]);
+const { mutateAsync: deleteComment } = useDeleteComment();
 
 const props = defineProps({
   commentId: {
@@ -37,14 +35,30 @@ const props = defineProps({
 
 function commentChange() {
   editMode.value = false;
-  emit("commentChange");
 }
 
-async function deleteComment() {
-  await commentStore.deleteArticleComment({
+const commentUpdateStatus = useMutationState({
+  filters: { mutationKey: commentKeys.update() },
+  select: (mutation) => {
+    return mutation.state.status;
+  },
+});
+
+const lastCommentUpdateStatus = computed(() => {
+  const status = commentUpdateStatus.value;
+  return status[status.length - 1];
+});
+
+watch(lastCommentUpdateStatus, (lastStatus) => {
+  if (lastStatus === "success") {
+    commentChange();
+  }
+});
+
+async function onDeleteComment() {
+  await deleteComment({
     comment_id: props.commentId,
   });
-  emit("commentDeleted");
 }
 </script>
 <template>
@@ -53,15 +67,14 @@ async function deleteComment() {
     class="mb-4"
     :comment-id="commentId"
     :content="content"
-    @submit-success="commentChange"
   />
-  <div v-else :class="['flex flex-col', $attrs.class]">
+  <div v-else class="flex flex-col">
     <p class="font-medium">{{ authorName }}</p>
 
     <p class="text-xs">
       {{ new Intl.DateTimeFormat().format(new Date(createdAt)) }}
     </p>
-    <p class="line-clamp-2 h-full">
+    <p class="line-clamp-2">
       {{ content }}
     </p>
     <div v-if="showAction" class="ml-auto">
@@ -70,8 +83,9 @@ async function deleteComment() {
         background="text"
         variant="destructive"
         @click="showDeleteConfirmation = true"
-        >Delete</Button
       >
+        Delete
+      </Button>
     </div>
   </div>
   <Modal
@@ -96,7 +110,7 @@ async function deleteComment() {
       <Button
         class="w-full lg:w-fit"
         variant="destructive"
-        @click="deleteComment"
+        @click="onDeleteComment"
       >
         Confirm</Button
       >

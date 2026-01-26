@@ -9,7 +9,7 @@ import ArrowRightIcon from "@/components/ArrowRightIcon.vue";
     Wanderlust calling.
   </h1>
   <img :src="backgroundImage" class="h-64 w-full object-cover lg:h-96" />
-  <div class="flex h-full flex-col items-end justify-end">
+  <div class="flex flex-[1] flex-col items-end justify-end">
     <RouterLink
       to="/articles"
       class="text-primary flex items-center gap-4 text-2xl"

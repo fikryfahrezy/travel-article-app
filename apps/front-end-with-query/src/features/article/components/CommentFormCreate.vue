@@ -5,9 +5,7 @@ import { useToastStore } from "@/stores/toast";
 import { ref, useTemplateRef } from "vue";
 import z from "zod";
 import { commentFormSchema, type CommentFormFieldErrors } from "../schemas";
-import { useCommentStore } from "../stores/comment";
-
-const emit = defineEmits(["submitSuccess"]);
+import { useCreateComment } from "../stores/comment";
 
 const props = defineProps({
   articleId: {
@@ -16,7 +14,7 @@ const props = defineProps({
   },
 });
 
-const commentStore = useCommentStore();
+const { mutateAsync: createComment } = useCreateComment();
 const toastStore = useToastStore();
 const formRef = useTemplateRef("form-ref");
 
@@ -37,18 +35,16 @@ async function onSubmit() {
     return;
   }
 
-  const commentResult = await commentStore.createArticleComment({
-    ...commentForm.data,
-    article_id: props.articleId,
-  });
-
-  if (!commentResult.success) {
-    toastStore.showToast("error", commentResult.error.message);
-    return;
+  try {
+    await createComment({
+      ...commentForm.data,
+      article_id: props.articleId,
+    });
+    toastStore.showToast("success", "Successfully create comment.");
+    formElement.reset();
+  } catch (error) {
+    toastStore.showToast("error", String(error));
   }
-  toastStore.showToast("success", "Successfully create comment.");
-  formElement.reset();
-  emit("submitSuccess");
 }
 </script>
 <template>

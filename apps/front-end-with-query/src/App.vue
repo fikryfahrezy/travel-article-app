@@ -2,7 +2,6 @@
 import { computed } from "vue";
 import Button from "./components/Button.vue";
 import Toaster from "./components/Toaster.vue";
-import { useLoadingStore } from "@/stores/loading";
 import { useRouter } from "vue-router";
 import LoadingOverlay from "./components/LoadingOverlay.vue";
 import { useUserStore } from "./features/auth/stores/user";
@@ -10,7 +9,6 @@ import { navItems } from "./pages/router";
 
 const router = useRouter();
 const userStore = useUserStore();
-const globalLoadingStore = useLoadingStore();
 
 const publicRoutes = computed(() => {
   if (!userStore.profile) {
@@ -59,7 +57,7 @@ async function logout() {
         </Button>
       </div>
     </nav>
-    <main class="flex h-full flex-[1] flex-col">
+    <main class="flex flex-[1] flex-col">
       <Suspense>
         <RouterView />
         <template #fallback> Loading ... </template>
@@ -67,5 +65,5 @@ async function logout() {
     </main>
   </div>
   <Toaster />
-  <LoadingOverlay v-if="globalLoadingStore.isLoading" />
+  <LoadingOverlay />
 </template>
