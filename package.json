@@ -8,6 +8,12 @@
     "fe:build": "cd apps/front-end && npm run build",
     "fe:dev": "cd apps/front-end && npm run dev",
     "fe:ts:check": "cd apps/front-end && npm run ts:check",
+    "fe:query:build": "cd apps/front-end-with-query && npm run build",
+    "fe:query:dev": "cd apps/front-end-with-query && npm run dev",
+    "fe:query:ts:check": "cd apps/front-end-with-query && npm run ts:check",
+    "fe:nuxt:build": "cd apps/front-end-nuxt && npm run build",
+    "fe:nuxt:dev": "cd apps/front-end-nuxt && npm run dev",
+    "fe:nuxt:ts:check": "cd apps/front-end-nuxt && npm run ts:check",
     "migrate:up": "cd apps/back-end && npm run migrate:up",
     "ts:check": "npm run be:ts:check && npm run fe:ts:check",
     "prepare": "node -e \"if (process.env.NODE_ENV === 'production' || process.env.CI === 'true') process.exit(0); else process.exit(1);\" || husky"

@@ -1,0 +1,16 @@
+services:
+  front-end:
+    build:
+      context: .
+      dockerfile: ./fe-query.Dockerfile
+      args:
+        - VITE_API_BASE_URL=${VITE_API_BASE_URL}
+    restart: unless-stopped
+    env_file:
+      - path: ./.env
+        required: true
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
