@@ -1,6 +1,8 @@
 <template>
-  <div>
-    <NuxtRouteAnnouncer />
-    <NuxtWelcome />
-  </div>
+  <Suspense>
+    <NuxtLayout>
+      <NuxtPage />
+      <template #fallback> Loading ... </template>
+    </NuxtLayout>
+  </Suspense>
 </template>

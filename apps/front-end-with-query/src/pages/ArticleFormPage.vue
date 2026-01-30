@@ -7,15 +7,15 @@ import {
 } from "@/features/article/schemas";
 import { useToastStore } from "@/stores/toast";
 import { computed, ref } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import z from "zod";
-import router from "./router";
 import {
   useCreateArticle,
   useUpdateArticle,
   useArticleDetail,
-} from "@/features/article/stores/article";
+} from "@/features/article/composables/article";
 
+const router = useRouter();
 const route = useRoute();
 const articleId = computed(() => {
   return String(route.params.articleId || "");
@@ -102,7 +102,6 @@ async function onSubmit() {
       >
         {{ tab }}
       </Button>
-      <Button background="text"></Button>
     </div>
   </Teleport>
   <form

@@ -84,7 +84,7 @@ const allowedToModifyArticle = computed(() => {
 async function deleteArticle() {
   if (articleStore.detail) {
     await articleStore.deleteArticle({ article_id: articleStore.detail.id });
-    router.replace("/");
+    router.replace("/articles");
   }
 }
 function commentChange() {

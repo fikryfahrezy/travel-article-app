@@ -12,11 +12,11 @@ import { apiSdk } from "@/lib/api-sdk";
 import { useUserStore } from "@/features/auth/stores/user";
 import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { useArticleDetail } from "@/features/article/stores/article";
+import { useArticleDetail } from "@/features/article/composables/article";
 import {
   commentKeys,
   useArticleComments,
-} from "@/features/article/stores/comment";
+} from "@/features/article/composables/comment";
 import { useMutationState } from "@tanstack/vue-query";
 
 const route = useRoute();
@@ -63,7 +63,7 @@ const allowedToModifyArticle = computed(() => {
 async function deleteArticle() {
   if (articleDetail.value) {
     await apiSdk.deleteArticle({ article_id: articleDetail.value.id });
-    router.replace("/");
+    router.replace("/acticles");
   }
 }
 

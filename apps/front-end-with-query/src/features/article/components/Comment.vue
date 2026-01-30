@@ -3,7 +3,7 @@ import Button from "@/components/Button.vue";
 import Modal from "@/components/Modal.vue";
 import { computed, ref, watch } from "vue";
 import CommentFormEdit from "./CommentFormEdit.vue";
-import { commentKeys, useDeleteComment } from "../stores/comment";
+import { commentKeys, useDeleteComment } from "../composables/comment";
 import { useMutationState } from "@tanstack/vue-query";
 
 const editMode = ref(false);

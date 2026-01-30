@@ -9,10 +9,10 @@ import { useArticleStore } from "@/features/article/stores/article";
 import type { MutationResDto, Result } from "@/lib/api-sdk.types";
 import { useToastStore } from "@/stores/toast";
 import { ref } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import z from "zod";
-import router from "./router";
 
+const router = useRouter();
 const articleStore = useArticleStore();
 const toastStore = useToastStore();
 
@@ -89,7 +89,6 @@ async function onSubmit() {
       >
         {{ tab }}
       </Button>
-      <Button background="text"></Button>
     </div>
   </Teleport>
 

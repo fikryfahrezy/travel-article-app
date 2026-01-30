@@ -1,0 +1,9 @@
+import z from "zod";
+
+export const loginFormSchema = z.object({
+  username: z.string().min(1),
+  password: z.string().min(1),
+});
+
+export type LoginFormSchema = z.infer<typeof loginFormSchema>;
+export type LoginFormFieldErrors = { [P in keyof LoginFormSchema]?: string[] };

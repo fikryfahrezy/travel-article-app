@@ -7,7 +7,7 @@ import Article from "@/features/article/components/Article.vue";
 import { useUserStore } from "@/features/auth/stores/user";
 import { computed } from "vue";
 import { useRoute } from "vue-router";
-import { useArticles } from "@/features/article/stores/article";
+import { useArticles } from "@/features/article/composables/article";
 
 const route = useRoute();
 const userStore = useUserStore();

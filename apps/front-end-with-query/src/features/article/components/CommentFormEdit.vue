@@ -5,7 +5,7 @@ import { useToastStore } from "@/stores/toast";
 import { ref, useTemplateRef } from "vue";
 import z from "zod";
 import { commentFormSchema, type CommentFormFieldErrors } from "../schemas";
-import { useUpdateComment } from "../stores/comment";
+import { useUpdateComment } from "../composables/comment";
 
 const props = defineProps({
   commentId: {

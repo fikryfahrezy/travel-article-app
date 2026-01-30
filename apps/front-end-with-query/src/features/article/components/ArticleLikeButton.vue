@@ -2,7 +2,7 @@
 import Button from "@/components/Button.vue";
 import HeartIcon from "@/components/HeartIcon.vue";
 import HeartOffIcon from "@/components/HeartOffIcon.vue";
-import { useLikeArticle } from "../stores/article";
+import { useLikeArticle } from "../composables/article";
 
 const { mutateAsync: likeArticle } = useLikeArticle();
 

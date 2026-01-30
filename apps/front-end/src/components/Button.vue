@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { ButtonHTMLAttributes } from 'vue';
+
 const backgroundToken = {
   solid: "bg-(--bg) text-(--text) hover:bg-(--bg)/90",
   link: "text-(--bg) underline-offset-4 hover:underline",
@@ -17,7 +19,7 @@ const sizeToken = {
   icon: "h-10 w-10",
 };
 
-export type ButtonProps = {
+export type ButtonProps = ButtonHTMLAttributes & {
   background?: keyof typeof backgroundToken;
   variant?: keyof typeof variantToken;
   size?: keyof typeof sizeToken;
