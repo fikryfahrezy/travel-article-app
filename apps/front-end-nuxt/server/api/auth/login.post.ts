@@ -1,13 +1,20 @@
-import { ApiSDK } from "~/libs/api-sdk";
-import { loginFormSchema } from "~/schemas/login.schema"
+import { ApiSDK } from "#layers/my-base/app/libs/api-sdk";
+import { loginFormSchema } from "#layers/my-auth/app/schemas/login.schema";
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
   const baseUrl = config.apiBaseURL;
   const apiSdk = new ApiSDK(baseUrl + "/api");
 
-  const loginReqDto = await readValidatedBody(event, loginFormSchema.parse)
-  const auth = await apiSdk.login(loginReqDto);
+  const loginReqDto = await readValidatedBody(event, loginFormSchema.safeParse)
+  if (!loginReqDto.success) {
+    throw createError({
+      status: 422,
+      message: "Invalid login data",
+    })
+  }
+
+  const auth = await apiSdk.login(loginReqDto.data);
   if (!auth.success) {
     return auth.error;
   }

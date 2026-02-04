@@ -1,13 +1,20 @@
-import { ApiSDK } from "~/libs/api-sdk";
-import { registerFormSchema } from "~/schemas/register.schema"
+import { ApiSDK } from "#layers/my-base/app/libs/api-sdk";
+import { registerFormSchema } from "#layers/my-auth/app/schemas/register.schema";
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
   const baseUrl = config.apiBaseURL;
   const apiSdk = new ApiSDK(baseUrl + "/api");
 
-  const registerReqDto = await readValidatedBody(event, registerFormSchema.parse)
-  const auth = await apiSdk.register(registerReqDto);
+  const registerReqDto = await readValidatedBody(event, registerFormSchema.safeParse)
+  if (!registerReqDto.success) {
+    throw createError({
+      status: 422,
+      message: "Invalid register data",
+    })
+  }
+
+  const auth = await apiSdk.register(registerReqDto.data);
   if (!auth.success) {
     return auth.error;
   }

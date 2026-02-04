@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import MyButton from "@/components/MyButton.vue";
-import MyToaster from "@/components/MyToaster.vue";
-import LoadingOverlay from "@/components/LoadingOverlay.vue";
+import MyButton from "#layers/my-base/app/components/MyButton.vue";
+import MyToaster from "#layers/my-base/app/components/MyToaster.vue";
+import LoadingOverlay from "#layers/my-base/app/components/LoadingOverlay.vue";
 
 const { loggedIn, clear: clearSession } = useUserSession();
 
@@ -15,8 +15,8 @@ const navItems = computed(() => {
   return [
     { name: "Home", path: "/", show: true },
     // { name: "Articles", path: "/articles", show: true },
-    { name: "Register", path: "/auth/register", show: !loggedIn.value },
-    { name: "Login", path: "/auth/login", show: !loggedIn.value },
+    { name: "Register", path: "/register", show: !loggedIn.value },
+    { name: "Login", path: "/login", show: !loggedIn.value },
   ];
 });
 </script>

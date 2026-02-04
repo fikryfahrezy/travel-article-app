@@ -1,29 +1,21 @@
 <script setup lang="ts">
-import Button from "@/components/Button.vue";
-import ChevronLeftIcon from "@/components/ChevronLeftIcon.vue";
-import ChevronRightIcon from "@/components/ChevronRightIcon.vue";
-import MarkdownPreview from "@/components/MarkdownPreview.vue";
-import Modal from "@/components/Modal.vue";
-import Pagination from "@/components/Pagination.vue";
-import ArticleLikeButton from "@/features/article/components/ArticleLikeButton.vue";
-import Comment from "@/features/article/components/Comment.vue";
-import CommentFormCreate from "@/features/article/components/CommentFormCreate.vue";
-import { useUserStore } from "@/features/auth/stores/user";
+import MyButton from "#layers/my-base/app/components/MyButton.vue";
+import ChevronLeftIcon from "#layers/my-base/app/components/ChevronLeftIcon.vue";
+import ChevronRightIcon from "#layers/my-base/app/components/ChevronRightIcon.vue";
+import MarkdownPreview from "#layers/my-base/app/components/MarkdownPreview.vue";
+import MyModal from "#layers/my-base/app/components/MyModal.vue";
+import MyPagination from "#layers/my-base/app/components/MyPagination.vue";
+import ArticleLikeButton from "#layers/my-article/app/components/ArticleLikeButton.vue";
+import Comment from "#layers/my-article/app/components/Comment.vue";
+import CommentFormCreate from "#layers/my-article/app/components/CommentFormCreate.vue";
 import { computed, ref, watch } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import {
-  useArticleDetail,
-  useDeleteArticle,
-} from "@/features/article/composables/article";
-import {
-  commentKeys,
-  useArticleComments,
-} from "@/features/article/composables/comment";
+import { useArticleDetail, useDeleteArticle } from "#layers/my-article/app/composables/article";
+import { commentKeys, useArticleComments } from "#layers/my-article/app/composables/comment";
 import { useMutationState } from "@tanstack/vue-query";
 
 const route = useRoute();
-const router = useRouter();
-const userStore = useUserStore();
+const { user, loggedIn } = useUserSession();
+
 const articleSlug = computed(() => {
   return String(route.params.articleSlug || "");
 });
@@ -57,16 +49,16 @@ const nextCommentPage = computed(() => {
 
 const allowedToModifyArticle = computed(() => {
   return (
-    !!userStore.profile &&
+    !!user.value &&
     !!articleDetail.value &&
-    userStore.profile.user_id === articleDetail.value.author_id
+    user.value.user_id === articleDetail.value.author_id
   );
 });
 
 async function onDeleteArticle() {
   if (articleDetail.value) {
     await deleteArticle({ article_id: articleDetail.value.id });
-    router.replace("/acticles");
+    await navigateTo("/articles");
   }
 }
 
@@ -145,7 +137,7 @@ watch(lastCommentDeleteStatus, (lastStatus) => {
       </div>
       <div class="flex gap-2">
         <ArticleLikeButton
-          v-if="userStore.isAuthenticated"
+          v-if="loggedIn"
           :article-id="articleDetail.id"
           :liked="articleDetail.liked"
         />
@@ -155,19 +147,19 @@ watch(lastCommentDeleteStatus, (lastStatus) => {
           custom
           :to="'/articles/form/' + articleDetail.id"
         >
-          <Button background="text" as="a" :href="href" @click="navigate">
+          <MyButton background="text" as="a" :href="href" @click="navigate">
             Edit
-          </Button>
+          </MyButton>
         </RouterLink>
 
-        <Button
+        <MyButton
           v-if="allowedToModifyArticle"
           background="text"
           variant="destructive"
           @click="showDeleteConfirmation = true"
         >
           Delete
-        </Button>
+        </MyButton>
       </div>
     </div>
     <MarkdownPreview
@@ -176,7 +168,7 @@ watch(lastCommentDeleteStatus, (lastStatus) => {
     />
 
     <CommentFormCreate
-      v-if="userStore.isAuthenticated"
+      v-if="loggedIn"
       class="mb-4"
       :article-id="articleDetail.id"
     />
@@ -193,46 +185,43 @@ watch(lastCommentDeleteStatus, (lastStatus) => {
           :author-name="comment.author_username"
           :content="comment.content"
           :created-at="comment.created_at"
-          :show-action="
-            !!userStore.profile &&
-            comment.author_id === userStore.profile.user_id
-          "
+          :show-action="!!user && comment.author_id === user.user_id"
         />
 
-        <Pagination
+        <MyPagination
           v-if="articleDetail"
           :total-pages="articleComments?.total_pages"
           class="mx-auto w-fit"
         >
           <template #prev-button>
-            <Button
+            <MyButton
               :disabled="paginationCommentPage <= prevCommentPage"
               @click="paginationCommentPage--"
             >
               <ChevronLeftIcon />
-            </Button>
+            </MyButton>
           </template>
           <template #page-item="{ page }">
-            <Button
+            <MyButton
               :disabled="paginationCommentPage === page"
               @click="paginationCommentPage = page"
             >
               {{ page }}
-            </Button>
+            </MyButton>
           </template>
           <template #next-button>
-            <Button
+            <MyButton
               :disabled="paginationCommentPage >= nextCommentPage"
               @click="paginationCommentPage++"
             >
               <ChevronRightIcon />
-            </Button>
+            </MyButton>
           </template>
-        </Pagination>
+        </MyPagination>
       </template>
     </div>
   </div>
-  <Modal
+  <MyModal
     v-if="showDeleteConfirmation"
     title="🚨 Alert"
     @close="showDeleteConfirmation = false"
@@ -241,22 +230,22 @@ watch(lastCommentDeleteStatus, (lastStatus) => {
       <p class="font-medium">Are you sure want to delete the article?</p>
     </template>
     <template #cancel-button>
-      <Button
+      <MyButton
         class="w-full lg:w-fit"
         variant="neutral"
         @click="showDeleteConfirmation = false"
       >
         Cancel
-      </Button>
+      </MyButton>
     </template>
     <template #confirm-button>
-      <Button
+      <MyButton
         class="w-full lg:w-fit"
         variant="destructive"
         @click="onDeleteArticle"
       >
         Confirm
-      </Button>
+      </MyButton>
     </template>
-  </Modal>
+  </MyModal>
 </template>

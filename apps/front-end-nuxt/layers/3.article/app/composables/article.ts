@@ -1,11 +1,11 @@
-import { apiSdk } from "@/lib/api-sdk";
+import { apiSdk } from "#layers/my-base/app/libs/api-sdk";
 import type {
   CreateArticleReqDto,
   DeleteArticleReqDto,
   LikeArticleReqDto,
   MutationResDto,
   UpdateArticleReqDto,
-} from "@/lib/api-sdk.types";
+} from "#layers/my-base/app/libs/api-sdk.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/vue-query";
 import type { Ref } from "vue";
 

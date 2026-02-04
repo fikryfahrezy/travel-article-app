@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import backgroundImage from "@/assets/images/kalen-emsley-Bkci_8qcdvQ-unsplash.jpg";
-import ArrowRightIcon from "@/components/ArrowRightIcon.vue";
+import backgroundImage from "#layers/my-base/app/assets/images/kalen-emsley-Bkci_8qcdvQ-unsplash.jpg";
+import ArrowRightIcon from "#layers/my-base/app/components/ArrowRightIcon.vue";
 </script>
 <template>
   <h1

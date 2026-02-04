@@ -27,7 +27,7 @@ export default defineNuxtConfig({
     ]
   },
   css: [
-    './app/assets/css/main.css'
+    '#layers/my-base/app/assets/css/main.css',
   ],
   vite: {
     plugins: [

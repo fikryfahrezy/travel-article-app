@@ -1,4 +1,4 @@
-import { ApiSDK } from "~/libs/api-sdk";
+import { ApiSDK } from "#layers/my-base/app/libs/api-sdk";
 
 export default defineEventHandler(async (event) => {
   const { secure } = await requireUserSession(event);
