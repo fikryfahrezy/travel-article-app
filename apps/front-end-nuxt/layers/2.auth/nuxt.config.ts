@@ -4,12 +4,4 @@ export default defineNuxtConfig({
     name: 'my-auth',
   },
   srcDir: 'app/',
-  // Disable component auto-imports to maintain explicit imports
-  components: {
-    dirs: [],
-  },
-  // Disable auto-imports
-  imports: {
-    autoImport: false,
-  },
 })

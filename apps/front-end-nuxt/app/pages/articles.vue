@@ -4,9 +4,7 @@ import ChevronLeftIcon from "@/components/ChevronLeftIcon.vue";
 import ChevronRightIcon from "@/components/ChevronRightIcon.vue";
 import MyPagination from "@/components/MyPagination.vue";
 import Article from "@/features/article/components/Article.vue";
-import { useUserSession } from "#imports";
 import { computed } from "vue";
-import { useRoute } from "#app";
 import { useArticles } from "@/composables/article";
 
 const route = useRoute();

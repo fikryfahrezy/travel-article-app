@@ -13,9 +13,11 @@ import type {
   GetArticleResDto,
   LikeArticleReqDto,
   LoginReqDto,
+  LogoutReqDto,
   LogoutResDto,
   MutationResDto,
   PaginationReqDto,
+  ProfileReqDto,
   ProfileResDto,
   RegisterReqDto,
   ResponseError,
@@ -57,7 +59,7 @@ export class ApiSDK {
   private failedQueue: FailedRequest[] = [];
 
   constructor(baseUrl: string) {
-    this.baseUrl = baseUrl + "/api";
+    this.baseUrl = baseUrl;
   }
 
   private processFailedQueue(): void {
@@ -67,42 +69,30 @@ export class ApiSDK {
     this.failedQueue = [];
   }
 
-  private async request<TData>(
+  async request<TData>(
     url: string,
-    options: RequestInit,
+    options: Parameters<typeof $fetch>[1],
   ): Promise<Result<TData>> {
     try {
-      const response = await fetch(url, options);
-
-      if (response.ok) {
-        const responseBody = (await response.json()) as TData;
-        return {
-          success: true,
-          data: responseBody,
-        };
-      }
-
-      const responseBody = (await response.json()) as ResponseError;
-      if (response.status === 401) {
+      const requestUrl = this.baseUrl + url;
+      const responseBody = await $fetch<TData>(requestUrl, options);
+      return {
+        success: true,
+        data: responseBody,
+      };
+    } catch (error) {
+      if (error instanceof Error && error.name === "FetchError" && 'data' in error) {
+        const errorData = error.data as ResponseError
         return {
           success: false,
-          error: new UnauthorizedError(
-            responseBody.name,
-            responseBody.message,
-            responseBody.errors,
+          error: new ApiError(
+            errorData.name,
+            errorData.message,
+            errorData.errors,
           ),
         };
       }
 
-      return {
-        success: false,
-        error: new ApiError(
-          responseBody.name,
-          responseBody.message,
-          responseBody.errors,
-        ),
-      };
-    } catch (error) {
       if (error instanceof Error) {
         return {
           success: false,
@@ -126,7 +116,7 @@ export class ApiSDK {
    */
   private async autoRefreshRequest<TData>(
     url: string,
-    options: RequestInit,
+    options: Parameters<typeof $fetch>[1],
     isRetry = false,
     signal?: AbortSignal,
   ): Promise<Result<TData>> {
@@ -179,7 +169,7 @@ export class ApiSDK {
     registerReqDto: RegisterReqDto,
     signal?: AbortSignal,
   ): Promise<Result<AuthResDto>> {
-    return await this.request<AuthResDto>(this.baseUrl + "/auth/register", {
+    return await this.request<AuthResDto>("/auth/register", {
       signal,
       method: "POST",
       body: JSON.stringify(registerReqDto),
@@ -193,7 +183,7 @@ export class ApiSDK {
     loginReqDto: LoginReqDto,
     signal?: AbortSignal,
   ): Promise<Result<AuthResDto>> {
-    return await this.request<AuthResDto>(this.baseUrl + "/auth/login", {
+    return await this.request<AuthResDto>("/auth/login", {
       signal,
       method: "POST",
       body: JSON.stringify(loginReqDto),
@@ -204,28 +194,37 @@ export class ApiSDK {
   }
 
   async refresh(signal?: AbortSignal): Promise<Result<AuthResDto>> {
-    return await this.request<AuthResDto>(this.baseUrl + "/auth/refresh", {
+    return await this.request<AuthResDto>("/auth/refresh", {
       signal,
       method: "POST",
+      credentials: "include",
     });
   }
 
-  async logout(signal?: AbortSignal): Promise<Result<LogoutResDto>> {
+  async logout(logoutReqDto: LogoutReqDto, signal?: AbortSignal): Promise<Result<LogoutResDto>> {
     return await this.autoRefreshRequest<LogoutResDto>(
-      this.baseUrl + "/auth/logout",
+      "/auth/logout",
       {
         signal,
         method: "POST",
+        credentials: "include",
+        headers: {
+          "Authorization": logoutReqDto.token ? `Bearer ${logoutReqDto.token}` : '',
+        },
       },
     );
   }
 
-  async profile(signal?: AbortSignal): Promise<Result<ProfileResDto>> {
+  async profile(profileReqDto: ProfileReqDto, signal?: AbortSignal): Promise<Result<ProfileResDto>> {
     return await this.autoRefreshRequest<ProfileResDto>(
-      this.baseUrl + "/auth/profile",
+      "/auth/profile",
       {
         signal,
         method: "GET",
+        credentials: "include",
+        headers: {
+          "Authorization": profileReqDto.token ? `Bearer ${profileReqDto.token}` : '',
+        },
       },
     );
   }
@@ -235,13 +234,15 @@ export class ApiSDK {
     signal?: AbortSignal,
   ): Promise<Result<MutationResDto>> {
     return await this.autoRefreshRequest<MutationResDto>(
-      this.baseUrl + "/articles",
+      "/articles",
       {
         signal,
         method: "POST",
+        credentials: "include",
         body: JSON.stringify(createArticleReqDto),
         headers: {
           "Content-Type": "application/json",
+          "Authorization": createArticleReqDto.token ? `Bearer ${createArticleReqDto.token}` : '',
         },
       },
     );
@@ -258,10 +259,14 @@ export class ApiSDK {
     });
 
     return await this.request<GetAllArticleResDto>(
-      this.baseUrl + `/articles?${params.toString()}`,
+      `/articles?${params.toString()}`,
       {
         signal,
         method: "GET",
+        credentials: "include",
+        headers: {
+          "Authorization": paginationReqDto.token ? `Bearer ${paginationReqDto.token}` : '',
+        },
       },
     );
   }
@@ -272,10 +277,14 @@ export class ApiSDK {
   ): Promise<Result<GetArticleResDto>> {
     const { idOrSlug } = getArticleReqDto;
     return await this.request<GetArticleResDto>(
-      this.baseUrl + `/articles/${idOrSlug}`,
+      `/articles/${idOrSlug}`,
       {
         signal,
         method: "GET",
+        credentials: "include",
+        headers: {
+          "Authorization": getArticleReqDto.token ? `Bearer ${getArticleReqDto.token}` : '',
+        },
       },
     );
   }
@@ -286,13 +295,15 @@ export class ApiSDK {
   ): Promise<Result<MutationResDto>> {
     const { article_id, ...restDto } = updateArticleReqDto;
     return await this.autoRefreshRequest<MutationResDto>(
-      this.baseUrl + `/articles/${article_id}`,
+      `/articles/${article_id}`,
       {
         signal,
         method: "PATCH",
+        credentials: "include",
         body: JSON.stringify(restDto),
         headers: {
           "Content-Type": "application/json",
+          "Authorization": updateArticleReqDto.token ? `Bearer ${updateArticleReqDto.token}` : '',
         },
       },
     );
@@ -304,10 +315,14 @@ export class ApiSDK {
   ): Promise<Result<MutationResDto>> {
     const { article_id } = deleteArticleReqDto;
     return await this.autoRefreshRequest<MutationResDto>(
-      this.baseUrl + `/articles/${article_id}`,
+      `/articles/${article_id}`,
       {
         signal,
         method: "DELETE",
+        credentials: "include",
+        headers: {
+          "Authorization": deleteArticleReqDto.token ? `Bearer ${deleteArticleReqDto.token}` : '',
+        },
       },
     );
   }
@@ -318,13 +333,15 @@ export class ApiSDK {
   ): Promise<Result<MutationResDto>> {
     const { article_id, ...restDto } = likeArticleReqDto;
     return await this.autoRefreshRequest<MutationResDto>(
-      this.baseUrl + `/articles/${article_id}/likes`,
+      `/articles/${article_id}/likes`,
       {
         signal,
         method: "PUT",
+        credentials: "include",
         body: JSON.stringify(restDto),
         headers: {
           "Content-Type": "application/json",
+          "Authorization": likeArticleReqDto.token ? `Bearer ${likeArticleReqDto.token}` : '',
         },
       },
     );
@@ -336,13 +353,15 @@ export class ApiSDK {
   ): Promise<Result<MutationResDto>> {
     const { article_id, ...restDto } = createArticleCommentReqDto;
     return await this.autoRefreshRequest<MutationResDto>(
-      this.baseUrl + `/articles/${article_id}/comments`,
+      `/articles/${article_id}/comments`,
       {
         signal,
         method: "POST",
+        credentials: "include",
         body: JSON.stringify(restDto),
         headers: {
           "Content-Type": "application/json",
+          "Authorization": createArticleCommentReqDto.token ? `Bearer ${createArticleCommentReqDto.token}` : '',
         },
       },
     );
@@ -360,10 +379,14 @@ export class ApiSDK {
     });
 
     return await this.request<GetAllArticleCommentResDto>(
-      this.baseUrl + `/articles/${article_id}/comments?${params.toString()}`,
+      `/articles/${article_id}/comments?${params.toString()}`,
       {
         signal,
         method: "GET",
+        credentials: "include",
+        headers: {
+          "Authorization": getAllArticleCommentReqDto.token ? `Bearer ${getAllArticleCommentReqDto.token}` : '',
+        },
       },
     );
   }
@@ -374,10 +397,14 @@ export class ApiSDK {
   ): Promise<Result<GetArticleCommentResDto>> {
     const { comment_id } = getArticleCommentReqDto;
     return await this.request<GetArticleCommentResDto>(
-      this.baseUrl + `/articles/comments/${comment_id}`,
+      `/articles/comments/${comment_id}`,
       {
         signal,
         method: "GET",
+        credentials: "include",
+        headers: {
+          "Authorization": getArticleCommentReqDto.token ? `Bearer ${getArticleCommentReqDto.token}` : '',
+        },
       },
     );
   }
@@ -388,13 +415,15 @@ export class ApiSDK {
   ): Promise<Result<MutationResDto>> {
     const { comment_id, ...restDto } = updateArticleCommentReqDto;
     return await this.autoRefreshRequest<MutationResDto>(
-      this.baseUrl + `/articles/comments/${comment_id}`,
+      `/articles/comments/${comment_id}`,
       {
         signal,
         method: "PATCH",
+        credentials: "include",
         body: JSON.stringify(restDto),
         headers: {
           "Content-Type": "application/json",
+          "Authorization": updateArticleCommentReqDto.token ? `Bearer ${updateArticleCommentReqDto.token}` : '',
         },
       },
     );
@@ -406,13 +435,15 @@ export class ApiSDK {
   ): Promise<Result<MutationResDto>> {
     const { comment_id } = deleteArticleCommentReqDto;
     return await this.autoRefreshRequest<MutationResDto>(
-      this.baseUrl + `/articles/comments/${comment_id}`,
+      `/articles/comments/${comment_id}`,
       {
         signal,
         method: "DELETE",
+        credentials: "include",
+        headers: {
+          "Authorization": deleteArticleCommentReqDto.token ? `Bearer ${deleteArticleCommentReqDto.token}` : '',
+        },
       },
     );
   }
 }
-
-export const apiSdk = new ApiSDK(process.env.NUXT_API_BASE_URL!);

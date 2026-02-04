@@ -1,8 +1,12 @@
 // shared/types/auth.d.ts
 declare module '#auth-utils' {
+
   interface User {
     user_id: string;
     username: string;
+  }
+
+  interface UserSession {
   }
 
   interface SecureSessionData {

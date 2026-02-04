@@ -7,14 +7,12 @@ import {
 } from "@/schemas/article.schema";
 import { useToastStore } from "@/composables/toast";
 import { computed, ref } from "vue";
-import { navigateTo, useRoute } from "#app";
 import z from "zod";
 import {
   useCreateArticle,
   useUpdateArticle,
   useArticleDetail,
 } from "@/composables/article";
-import { definePageMeta } from "#imports";
 
 definePageMeta({
   middleware: ["authenticated"],

@@ -9,9 +9,7 @@ import ArticleLikeButton from "@/features/article/components/ArticleLikeButton.v
 import Comment from "@/features/article/components/Comment.vue";
 import CommentFormCreate from "@/features/article/components/CommentFormCreate.vue";
 import { apiSdk } from "@/libs/api-sdk";
-import { useUserSession } from "#imports";
 import { computed, ref, watch } from "vue";
-import { navigateTo, useRoute } from "#app";
 import { useArticleDetail } from "@/composables/article";
 import {
   commentKeys,

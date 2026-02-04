@@ -57,7 +57,7 @@ export class ApiSDK {
   private failedQueue: FailedRequest[] = [];
 
   constructor(baseUrl: string) {
-    this.baseUrl = baseUrl + "/api";
+    this.baseUrl = baseUrl;
   }
 
   private processFailedQueue(): void {
@@ -72,7 +72,8 @@ export class ApiSDK {
     options: RequestInit,
   ): Promise<Result<TData>> {
     try {
-      const response = await fetch(url, options);
+      const requestUrl = this.baseUrl + url;
+      const response = await fetch(requestUrl, options);
 
       if (response.ok) {
         const responseBody = (await response.json()) as TData;
@@ -179,7 +180,7 @@ export class ApiSDK {
     registerReqDto: RegisterReqDto,
     signal?: AbortSignal,
   ): Promise<Result<AuthResDto>> {
-    return await this.request<AuthResDto>(this.baseUrl + "/auth/register", {
+    return await this.request<AuthResDto>("/auth/register", {
       signal,
       method: "POST",
       credentials: "include",
@@ -194,7 +195,7 @@ export class ApiSDK {
     loginReqDto: LoginReqDto,
     signal?: AbortSignal,
   ): Promise<Result<AuthResDto>> {
-    return await this.request<AuthResDto>(this.baseUrl + "/auth/login", {
+    return await this.request<AuthResDto>("/auth/login", {
       signal,
       method: "POST",
       credentials: "include",
@@ -206,7 +207,7 @@ export class ApiSDK {
   }
 
   async refresh(signal?: AbortSignal): Promise<Result<AuthResDto>> {
-    return await this.request<AuthResDto>(this.baseUrl + "/auth/refresh", {
+    return await this.request<AuthResDto>("/auth/refresh", {
       signal,
       method: "POST",
       credentials: "include",
@@ -215,7 +216,7 @@ export class ApiSDK {
 
   async logout(signal?: AbortSignal): Promise<Result<LogoutResDto>> {
     return await this.autoRefreshRequest<LogoutResDto>(
-      this.baseUrl + "/auth/logout",
+      "/auth/logout",
       {
         signal,
         method: "POST",
@@ -226,7 +227,7 @@ export class ApiSDK {
 
   async profile(signal?: AbortSignal): Promise<Result<ProfileResDto>> {
     return await this.autoRefreshRequest<ProfileResDto>(
-      this.baseUrl + "/auth/profile",
+      "/auth/profile",
       {
         signal,
         method: "GET",
@@ -240,7 +241,7 @@ export class ApiSDK {
     signal?: AbortSignal,
   ): Promise<Result<MutationResDto>> {
     return await this.autoRefreshRequest<MutationResDto>(
-      this.baseUrl + "/articles",
+      "/articles",
       {
         signal,
         method: "POST",
@@ -264,7 +265,7 @@ export class ApiSDK {
     });
 
     return await this.request<GetAllArticleResDto>(
-      this.baseUrl + `/articles?${params.toString()}`,
+      `/articles?${params.toString()}`,
       {
         signal,
         method: "GET",
@@ -279,7 +280,7 @@ export class ApiSDK {
   ): Promise<Result<GetArticleResDto>> {
     const { idOrSlug } = getArticleReqDto;
     return await this.request<GetArticleResDto>(
-      this.baseUrl + `/articles/${idOrSlug}`,
+      `/articles/${idOrSlug}`,
       {
         signal,
         method: "GET",
@@ -294,7 +295,7 @@ export class ApiSDK {
   ): Promise<Result<MutationResDto>> {
     const { article_id, ...restDto } = updateArticleReqDto;
     return await this.autoRefreshRequest<MutationResDto>(
-      this.baseUrl + `/articles/${article_id}`,
+      `/articles/${article_id}`,
       {
         signal,
         method: "PATCH",
@@ -313,7 +314,7 @@ export class ApiSDK {
   ): Promise<Result<MutationResDto>> {
     const { article_id } = deleteArticleReqDto;
     return await this.autoRefreshRequest<MutationResDto>(
-      this.baseUrl + `/articles/${article_id}`,
+      `/articles/${article_id}`,
       {
         signal,
         method: "DELETE",
@@ -328,7 +329,7 @@ export class ApiSDK {
   ): Promise<Result<MutationResDto>> {
     const { article_id, ...restDto } = likeArticleReqDto;
     return await this.autoRefreshRequest<MutationResDto>(
-      this.baseUrl + `/articles/${article_id}/likes`,
+      `/articles/${article_id}/likes`,
       {
         signal,
         method: "PUT",
@@ -347,7 +348,7 @@ export class ApiSDK {
   ): Promise<Result<MutationResDto>> {
     const { article_id, ...restDto } = createArticleCommentReqDto;
     return await this.autoRefreshRequest<MutationResDto>(
-      this.baseUrl + `/articles/${article_id}/comments`,
+      `/articles/${article_id}/comments`,
       {
         signal,
         method: "POST",
@@ -372,7 +373,7 @@ export class ApiSDK {
     });
 
     return await this.request<GetAllArticleCommentResDto>(
-      this.baseUrl + `/articles/${article_id}/comments?${params.toString()}`,
+      `/articles/${article_id}/comments?${params.toString()}`,
       {
         signal,
         method: "GET",
@@ -387,7 +388,7 @@ export class ApiSDK {
   ): Promise<Result<GetArticleCommentResDto>> {
     const { comment_id } = getArticleCommentReqDto;
     return await this.request<GetArticleCommentResDto>(
-      this.baseUrl + `/articles/comments/${comment_id}`,
+      `/articles/comments/${comment_id}`,
       {
         signal,
         method: "GET",
@@ -402,7 +403,7 @@ export class ApiSDK {
   ): Promise<Result<MutationResDto>> {
     const { comment_id, ...restDto } = updateArticleCommentReqDto;
     return await this.autoRefreshRequest<MutationResDto>(
-      this.baseUrl + `/articles/comments/${comment_id}`,
+      `/articles/comments/${comment_id}`,
       {
         signal,
         method: "PATCH",
@@ -421,7 +422,7 @@ export class ApiSDK {
   ): Promise<Result<MutationResDto>> {
     const { comment_id } = deleteArticleCommentReqDto;
     return await this.autoRefreshRequest<MutationResDto>(
-      this.baseUrl + `/articles/comments/${comment_id}`,
+      `/articles/comments/${comment_id}`,
       {
         signal,
         method: "DELETE",
@@ -431,4 +432,4 @@ export class ApiSDK {
   }
 }
 
-export const apiSdk = new ApiSDK(import.meta.env.VITE_API_BASE_URL);
+export const apiSdk = new ApiSDK(import.meta.env.VITE_API_BASE_URL + "/api");

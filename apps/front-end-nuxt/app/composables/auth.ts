@@ -1,3 +1,5 @@
+import { ApiSDK } from "~/libs/api-sdk";
+
 type LoginPayload = {
   username: string;
   password: string;
@@ -5,11 +7,18 @@ type LoginPayload = {
 
 export function useLogin() {
   const mutateAsync = async (payload: LoginPayload) => {
-    await $fetch("/api/login", {
-      method: "POST",
-      body: payload,
-    });
+    const apiSdk = new ApiSDK("/api");
+    const login = await apiSdk.login(payload);
+    if (!login.success) {
+      throw login.error;
+    }
 
+    const profile = await apiSdk.profile({});
+    if (!profile.success) {
+      throw profile.error;
+    }
+
+    return profile.data;
   }
 
   return { mutateAsync }
@@ -23,10 +32,18 @@ type RegisterPayload = {
 
 export function useRegister() {
   const mutateAsync = async (payload: RegisterPayload) => {
-    await $fetch("/api/register", {
-      method: "POST",
-      body: payload,
-    });
+    const apiSdk = new ApiSDK("/api");
+    const register = await apiSdk.register(payload);
+    if (!register.success) {
+      throw register.error;
+    }
+
+    const profile = await apiSdk.profile({});
+    if (!profile.success) {
+      throw profile.error;
+    }
+
+    return profile.data;
   }
 
   return { mutateAsync }

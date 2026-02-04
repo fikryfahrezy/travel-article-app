@@ -3,8 +3,6 @@ import { computed } from "vue";
 import MyButton from "@/components/MyButton.vue";
 import MyToaster from "@/components/MyToaster.vue";
 import LoadingOverlay from "@/components/LoadingOverlay.vue";
-import { navigateTo } from "#app";
-import { useUserSession } from "#imports";
 
 const { loggedIn, clear: clearSession } = useUserSession();
 
@@ -17,8 +15,8 @@ const navItems = computed(() => {
   return [
     { name: "Home", path: "/", show: true },
     // { name: "Articles", path: "/articles", show: true },
-    { name: "Register", path: "/auth/register", show: !loggedIn },
-    { name: "Login", path: "/auth/login", show: !loggedIn },
+    { name: "Register", path: "/auth/register", show: !loggedIn.value },
+    { name: "Login", path: "/auth/login", show: !loggedIn.value },
   ];
 });
 </script>
@@ -36,6 +34,7 @@ const navItems = computed(() => {
           <template v-for="route in navItems" :key="route.path">
             <NuxtLink
               :to="route.path"
+              v-if="route.show"
               class="hover:text-primary text-base hover:brightness-90 lg:text-xl"
               active-class="text-primary"
               exact-active-class="text-primary"

@@ -15,6 +15,10 @@ export type LoginReqDto = {
   password: string;
 };
 
+export type AuthReqDto = {
+  token?: string;
+};
+
 export type AuthResDto = {
   tokenType: "Bearer";
   expires_in: number;
@@ -22,64 +26,68 @@ export type AuthResDto = {
   refresh_token: string;
 };
 
+export type LogoutReqDto = AuthReqDto;
+
 export type LogoutResDto = {
   success: boolean;
 };
+
+export type ProfileReqDto = AuthReqDto;
 
 export type ProfileResDto = {
   user_id: string;
   username: string;
 };
 
-export type CreateArticleReqDto = {
+export type CreateArticleReqDto = AuthReqDto & {
   title: string;
   content: string;
 };
 
-export type PaginationReqDto = {
+export type PaginationReqDto = AuthReqDto & {
   page?: number;
   limit?: number;
 };
 
-export type GetArticleReqDto = {
+export type GetArticleReqDto = AuthReqDto & {
   idOrSlug: string;
 };
 
-export type UpdateArticleReqDto = {
+export type UpdateArticleReqDto = AuthReqDto & {
   article_id: string;
   title: string;
   content: string;
 };
 
-export type DeleteArticleReqDto = {
+export type DeleteArticleReqDto = AuthReqDto & {
   article_id: string;
 };
 
-export type LikeArticleReqDto = {
+export type LikeArticleReqDto = AuthReqDto & {
   article_id: string;
   like: boolean;
 };
 
-export type CreateArticleCommentReqDto = {
+export type CreateArticleCommentReqDto = AuthReqDto & {
   content: string;
   article_id: string;
 };
 
-export type GetAllArticleCommentReqDto = {
+export type GetAllArticleCommentReqDto = AuthReqDto & {
   article_id: string;
   pagination: PaginationReqDto;
 };
 
-export type GetArticleCommentReqDto = {
+export type GetArticleCommentReqDto = AuthReqDto & {
   comment_id: string;
 };
 
-export type UpdateArticleCommentReqDto = {
+export type UpdateArticleCommentReqDto = AuthReqDto & {
   content: string;
   comment_id: string;
 };
 
-export type DeleteArticleCommentReqDto = {
+export type DeleteArticleCommentReqDto = AuthReqDto & {
   comment_id: string;
 };
 
@@ -133,10 +141,10 @@ export type GetArticleCommentResDto = GetAllArticleCommentItemResDto & {
 
 export type Result<TData> =
   | {
-      success: true;
-      data: TData;
-    }
+    success: true;
+    data: TData;
+  }
   | {
-      success: false;
-      error: Error;
-    };
+    success: false;
+    error: Error;
+  };

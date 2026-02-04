@@ -34,12 +34,4 @@ export default defineNuxtConfig({
       tailwindcss(),
     ],
   },
-  // Disable component auto-imports to maintain explicit imports
-  components: {
-    dirs: [],
-  },
-  // Disable auto-imports
-  imports: {
-    autoImport: false,
-  },
 })

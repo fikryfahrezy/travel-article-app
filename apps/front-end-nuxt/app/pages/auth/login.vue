@@ -9,15 +9,13 @@ import { useLogin } from "@/composables/auth";
 import { useToastStore } from "~/composables/toast";
 import { ref, useTemplateRef } from "vue";
 import z from "zod";
-import { navigateTo } from "#app";
-import { definePageMeta, useUserSession } from "#imports";
 
 definePageMeta({
-  layout: 'auth',
-})
+  layout: "auth",
+});
 
 const { mutateAsync: login } = useLogin();
-const { fetch: refreshSession } = useUserSession()
+const { fetch: refreshSession } = useUserSession();
 const toastStore = useToastStore();
 const formRef = useTemplateRef("form-ref");
 
@@ -63,6 +61,7 @@ async function onSubmit() {
       name="username"
       type="text"
       placeholder="Username"
+      autocomplete="username"
       :aria-invalid="!!fieldErrors?.username"
     />
     <ul>
@@ -80,6 +79,7 @@ async function onSubmit() {
       name="password"
       type="password"
       placeholder="Password"
+      autocomplete="current-password"
       :aria-invalid="!!fieldErrors?.username"
     />
     <ul>
@@ -88,7 +88,9 @@ async function onSubmit() {
         :key="error"
         class="text-destructive"
       >
-        {{ error }}
+        {{
+          error
+        }}
       </ul>
     </ul>
     <MyButton type="submit">Login</MyButton>
