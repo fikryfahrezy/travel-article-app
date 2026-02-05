@@ -8,9 +8,14 @@ import MyPagination from "#layers/my-base/app/components/MyPagination.vue";
 import ArticleLikeButton from "#layers/my-article/app/components/ArticleLikeButton.vue";
 import Comment from "#layers/my-article/app/components/Comment.vue";
 import CommentFormCreate from "#layers/my-article/app/components/CommentFormCreate.vue";
-import { computed, ref, watch } from "vue";
-import { useArticleDetail, useDeleteArticle } from "#layers/my-article/app/composables/article";
-import { commentKeys, useArticleComments } from "#layers/my-article/app/composables/comment";
+import {
+  useArticleDetail,
+  useDeleteArticle,
+} from "#layers/my-article/app/composables/article";
+import {
+  commentKeys,
+  useArticleComments,
+} from "#layers/my-article/app/composables/comment";
 import { useMutationState } from "@tanstack/vue-query";
 
 const route = useRoute();
@@ -25,12 +30,12 @@ const paginationCommentPage = ref(1);
 
 const {
   data: articleDetail,
-  isError: articleDetailIsError,
+  status: articleDetailStatus,
   error: articleDetailError,
 } = useArticleDetail(articleSlug);
 
 const { mutateAsync: deleteArticle } = useDeleteArticle();
-const { data: articleComments, isLoading: articleCommentsIsLoading } =
+const { data: articleComments, status: articleCommentsStatus } =
   useArticleComments(
     computed(() => articleDetail.value?.id || ""),
     paginationCommentPage,
@@ -116,7 +121,7 @@ watch(lastCommentDeleteStatus, (lastStatus) => {
 </script>
 <template>
   <div
-    v-if="articleDetailIsError"
+    v-if="articleDetailStatus === 'error'"
     class="flex w-full flex-[1] items-center justify-center"
   >
     <h2 class="text-destructive text-4xl font-bold italic">
@@ -173,7 +178,7 @@ watch(lastCommentDeleteStatus, (lastStatus) => {
       :article-id="articleDetail.id"
     />
     <div class="p-2">
-      <p v-if="articleCommentsIsLoading">Loading comments...</p>
+      <p v-if="articleCommentsStatus === 'pending'">Loading comments...</p>
       <p v-else-if="(articleComments?.data.length ?? 0) === 0">
         No comment yet, become the first one!
       </p>

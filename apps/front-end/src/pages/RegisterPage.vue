@@ -71,6 +71,7 @@ async function onSubmit() {
       name="username"
       type="text"
       placeholder="Username"
+      autocomplete="username"
       :aria-invalid="!!fieldErrors?.username"
     />
     <ul>
@@ -88,6 +89,7 @@ async function onSubmit() {
       name="password"
       type="password"
       placeholder="Password"
+      autocomplete="new-password"
       :aria-invalid="!!fieldErrors?.password"
     />
     <ul>

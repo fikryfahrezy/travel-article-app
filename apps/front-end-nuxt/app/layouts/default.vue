@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { computed } from "vue";
 import MyButton from "#layers/my-base/app/components/MyButton.vue";
 import MyToaster from "#layers/my-base/app/components/MyToaster.vue";
 import LoadingOverlay from "#layers/my-base/app/components/LoadingOverlay.vue";
+import { useLogout } from "#layers/my-auth/app/composables/auth";
 
 const { loggedIn, clear: clearSession } = useUserSession();
+const { mutateAsync: logout } = useLogout();
 
-async function logout() {
+async function onLogout() {
+  await logout();
   await clearSession();
   await navigateTo("/");
 }
@@ -14,7 +16,7 @@ async function logout() {
 const navItems = computed(() => {
   return [
     { name: "Home", path: "/", show: true },
-    // { name: "Articles", path: "/articles", show: true },
+    { name: "Articles", path: "/articles", show: true },
     { name: "Register", path: "/register", show: !loggedIn.value },
     { name: "Login", path: "/login", show: !loggedIn.value },
   ];
@@ -47,7 +49,7 @@ const navItems = computed(() => {
           v-if="loggedIn"
           variant="destructive"
           background="solid"
-          @click="logout"
+          @click="onLogout"
         >
           Logout
         </MyButton>

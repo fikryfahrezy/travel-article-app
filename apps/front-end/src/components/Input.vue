@@ -1,9 +1,3 @@
-<script setup lang="ts">
-import type { InputHTMLAttributes } from "vue";
-
-defineProps<InputHTMLAttributes>();
-</script>
-
 <template>
   <input
     :class="[

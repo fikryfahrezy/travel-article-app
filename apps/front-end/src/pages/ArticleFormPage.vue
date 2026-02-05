@@ -7,6 +7,7 @@ import {
 } from "@/features/article/schemas";
 import { useArticleStore } from "@/features/article/stores/article";
 import type { MutationResDto, Result } from "@/lib/api-sdk.types";
+import { useArticleFormStore } from "@/stores/article-form";
 import { useToastStore } from "@/stores/toast";
 import { ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -32,8 +33,7 @@ if (articleId) {
   }
 }
 
-const tabs = ["editor", "preview"] as const;
-const activeTab = ref<(typeof tabs)[number]>("editor");
+const articleFormStore = useArticleFormStore();
 
 const title = ref(initialTitle);
 const markdownContent = ref(initialMarkdownContent);
@@ -74,28 +74,10 @@ async function onSubmit() {
 </script>
 
 <template>
-  <Teleport to="#nav-bar">
-    <div>
-      <Button
-        v-for="tab in tabs"
-        :key="tab"
-        background="text"
-        :variant="activeTab === tab ? 'primary' : 'neutral'"
-        :class="[
-          'w-1/2 border-b-2 capitalize',
-          activeTab === tab ? 'border-b-primary' : 'border-b-neutral-400',
-        ]"
-        @click="activeTab = tab"
-      >
-        {{ tab }}
-      </Button>
-    </div>
-  </Teleport>
-
-  <form class="flex flex-[1] w-full flex-col gap-4" @submit.prevent="onSubmit">
+  <form class="flex w-full flex-[1] flex-col gap-4" @submit.prevent="onSubmit">
     <div
-      v-if="activeTab === 'editor'"
-      class="flex flex-[1] w-full flex-col gap-4"
+      v-if="articleFormStore.activeTab === 'editor'"
+      class="flex w-full flex-[1] flex-col gap-4"
     >
       <input
         id="title"
@@ -134,13 +116,13 @@ async function onSubmit() {
       </ul>
     </div>
     <MarkdownPreview
-      v-if="activeTab === 'preview'"
+      v-if="articleFormStore.activeTab === 'preview'"
       :markdown-title="title"
       :markdown-content="markdownContent"
       class="overflow-y-scroll"
     />
-    <Button type="submit" class="w-full lg:ml-auto lg:w-fit">{{
-      articleId ? "Edit" : "Post"
-    }}</Button>
+    <Button type="submit" class="w-full lg:ml-auto lg:w-fit">
+      {{ articleId ? "Edit" : "Post" }}
+    </Button>
   </form>
 </template>

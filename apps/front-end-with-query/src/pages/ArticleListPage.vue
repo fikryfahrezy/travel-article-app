@@ -36,16 +36,6 @@ const nextPage = computed(() => {
 </script>
 
 <template>
-  <Teleport v-if="userStore.isAuthenticated" to="#nav-bar">
-    <div class="flex justify-end py-3">
-      <RouterLink v-slot="{ href, navigate }" custom to="/articles/form">
-        <Button as="a" :href="href" class="w-full lg:w-fit" @click="navigate">
-          Contribute Your Story
-        </Button>
-      </RouterLink>
-    </div>
-  </Teleport>
-
   <div v-if="articlesIsError" class="flex flex-[1] items-center justify-center">
     <h2 class="text-2xl font-bold text-red-500 italic">
       Error: {{ articlesError?.message || "Failed to load articles." }}

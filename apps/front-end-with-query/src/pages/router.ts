@@ -1,5 +1,8 @@
 import { useUserStore } from "@/features/auth/stores/user";
 import AuthLayout from "@/layouts/AuthLayout.vue";
+import LandingLayout from "@/layouts/LandingLayout.vue";
+import ArticlesLayout from "@/layouts/ArticlesLayout.vue";
+import ArticlesFormLayout from "@/layouts/ArticlesFormLayout.vue";
 import {
   type RouteRecordRaw,
   createRouter,
@@ -15,34 +18,61 @@ import RegisterPage from "./RegisterPage.vue";
 
 export const routes: RouteRecordRaw[] = [
   {
-    name: "Home",
     path: "/",
-    component: LandingPage,
-    meta: { navItem: true },
+    component: LandingLayout,
+    children: [
+      {
+        name: "Home",
+        path: "",
+        component: LandingPage,
+        meta: { navItem: true },
+      },
+    ],
   },
   {
     path: "/articles",
     children: [
       {
-        name: "Articles",
         path: "",
-        component: ArticleListPage,
-        meta: { navItem: true },
+        component: ArticlesLayout,
+        children: [
+          {
+            name: "Articles",
+            path: "",
+            component: ArticleListPage,
+            meta: { navItem: true },
+          },
+        ],
+      },
+      {
+        path: "",
+        component: LandingLayout,
+        children: [
+          {
+            path: ":articleSlug",
+            component: ArticleDetailPage,
+          },
+          {
+            path: "comments/:commentId",
+            component: ArticleCommentDetailPage,
+          },
+        ],
       },
       {
         path: "form",
-        component: ArticlesFormPage,
-        meta: { requiredAuth: true },
-      },
-      {
-        path: "form/:articleId",
-        component: ArticlesFormPage,
-        meta: { requiredAuth: true },
-      },
-      { path: ":articleSlug", component: ArticleDetailPage },
-      {
-        path: "comments/:commentId",
-        component: ArticleCommentDetailPage,
+        component: ArticlesFormLayout,
+        children: [
+          {
+            path: "",
+            component: ArticlesFormPage,
+            meta: { requiredAuth: true },
+          },
+          {
+            path: ":articleId",
+            component: ArticlesFormPage,
+            meta: { requiredAuth: true },
+          },
+        ],
       },
     ],
   },

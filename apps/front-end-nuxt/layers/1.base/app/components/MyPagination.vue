@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { range } from "#layers/my-base/app/libs/array";
-import { computed } from "vue";
 
 const props = defineProps({
   currentPage: {

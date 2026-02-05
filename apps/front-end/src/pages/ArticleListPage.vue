@@ -45,16 +45,6 @@ const nextPage = computed(() => {
 </script>
 
 <template>
-  <Teleport v-if="userStore.isAuthenticated" to="#nav-bar">
-    <div class="flex justify-end py-3">
-      <RouterLink v-slot="{ href, navigate }" custom to="/articles/form">
-        <Button as="a" :href="href" class="w-full lg:w-fit" @click="navigate">
-          Contribute Your Story
-        </Button>
-      </RouterLink>
-    </div>
-  </Teleport>
-
   <div
     v-if="articleStore.allArticle.data.length !== 0"
     class="grid grid-cols-1 gap-4 p-2 lg:grid-cols-3"

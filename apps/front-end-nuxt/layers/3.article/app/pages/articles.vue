@@ -4,7 +4,6 @@ import ChevronLeftIcon from "#layers/my-base/app/components/ChevronLeftIcon.vue"
 import ChevronRightIcon from "#layers/my-base/app/components/ChevronRightIcon.vue";
 import MyPagination from "#layers/my-base/app/components/MyPagination.vue";
 import Article from "#layers/my-article/app/components/Article.vue";
-import { computed } from "vue";
 import { useArticles } from "#layers/my-article/app/composables/article";
 
 const route = useRoute();
@@ -16,9 +15,9 @@ const paginationPage = computed(() => {
 
 const {
   data: articlesData,
-  isError: articlesIsError,
+  status: articlesStatus,
   error: articlesError,
-} = useArticles(paginationPage, 36);
+} = await useArticles(paginationPage, 36);
 
 const prevPage = computed(() => {
   return paginationPage.value <= 1 ? 1 : paginationPage.value - 1;
@@ -34,17 +33,27 @@ const nextPage = computed(() => {
 </script>
 
 <template>
-  <Teleport v-if="loggedIn" to="#nav-bar">
-    <div class="flex justify-end py-3">
-      <RouterLink v-slot="{ href, navigate }" custom to="/articles/form">
-        <MyButton as="a" :href="href" class="w-full lg:w-fit" @click="navigate">
-          Contribute Your Story
-        </MyButton>
-      </RouterLink>
-    </div>
-  </Teleport>
+  <ClientOnly>
+    <Teleport v-if="loggedIn" to="#nav-bar">
+      <div class="flex justify-end py-3">
+        <RouterLink v-slot="{ href, navigate }" custom to="/articles/form">
+          <MyButton
+            as="a"
+            :href="href"
+            class="w-full lg:w-fit"
+            @click="navigate"
+          >
+            Contribute Your Story
+          </MyButton>
+        </RouterLink>
+      </div>
+    </Teleport>
+  </ClientOnly>
 
-  <div v-if="articlesIsError" class="flex flex-[1] items-center justify-center">
+  <div
+    v-if="articlesStatus === 'error'"
+    class="flex flex-[1] items-center justify-center"
+  >
     <h2 class="text-2xl font-bold text-red-500 italic">
       Error: {{ articlesError?.message || "Failed to load articles." }}
     </h2>
@@ -69,59 +78,61 @@ const nextPage = computed(() => {
   <div v-else class="flex flex-[1] items-center justify-center">
     <h2 class="text-primary text-4xl font-bold italic">Empty Articles... 🍃</h2>
   </div>
-  <Teleport to="#page-layout">
-    <MyPagination
-      :total-pages="articlesData && articlesData.total_pages"
-      class="sticky bottom-0 mx-auto w-fit py-5"
-    >
-      <template #prev-button>
-        <RouterLink
-          v-slot="{ href, navigate }"
-          custom
-          :to="{ query: { ...$route.query, page: prevPage } }"
-        >
-          <MyButton
-            as="a"
-            :href="href"
-            :disabled="paginationPage <= prevPage"
-            @click="navigate"
+  <ClientOnly>
+    <Teleport to="#page-layout">
+      <MyPagination
+        :total-pages="articlesData && articlesData.total_pages"
+        class="sticky bottom-0 mx-auto w-fit py-5"
+      >
+        <template #prev-button>
+          <RouterLink
+            v-slot="{ href, navigate }"
+            custom
+            :to="{ query: { ...$route.query, page: prevPage } }"
           >
-            <ChevronLeftIcon />
-          </MyButton>
-        </RouterLink>
-      </template>
-      <template #page-item="{ page }">
-        <RouterLink
-          v-slot="{ href, navigate }"
-          custom
-          :to="{ query: { ...$route.query, page } }"
-        >
-          <MyButton
-            as="a"
-            :href="href"
-            :disabled="paginationPage === page"
-            @click="navigate"
+            <MyButton
+              as="a"
+              :href="href"
+              :disabled="paginationPage <= prevPage"
+              @click="navigate"
+            >
+              <ChevronLeftIcon />
+            </MyButton>
+          </RouterLink>
+        </template>
+        <template #page-item="{ page }">
+          <RouterLink
+            v-slot="{ href, navigate }"
+            custom
+            :to="{ query: { ...$route.query, page } }"
           >
-            {{ page }}
-          </MyButton>
-        </RouterLink>
-      </template>
-      <template #next-button>
-        <RouterLink
-          v-slot="{ href, navigate }"
-          custom
-          :to="{ query: { ...$route.query, page: nextPage } }"
-        >
-          <MyButton
-            as="a"
-            :href="href"
-            :disabled="paginationPage >= nextPage"
-            @click="navigate"
+            <MyButton
+              as="a"
+              :href="href"
+              :disabled="paginationPage === page"
+              @click="navigate"
+            >
+              {{ page }}
+            </MyButton>
+          </RouterLink>
+        </template>
+        <template #next-button>
+          <RouterLink
+            v-slot="{ href, navigate }"
+            custom
+            :to="{ query: { ...$route.query, page: nextPage } }"
           >
-            <ChevronRightIcon />
-          </MyButton>
-        </RouterLink>
-      </template>
-    </MyPagination>
-  </Teleport>
+            <MyButton
+              as="a"
+              :href="href"
+              :disabled="paginationPage >= nextPage"
+              @click="navigate"
+            >
+              <ChevronRightIcon />
+            </MyButton>
+          </RouterLink>
+        </template>
+      </MyPagination>
+    </Teleport>
+  </ClientOnly>
 </template>

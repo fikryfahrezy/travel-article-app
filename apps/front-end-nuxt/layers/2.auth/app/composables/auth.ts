@@ -48,3 +48,17 @@ export function useRegister() {
 
   return { mutateAsync }
 }
+
+export function useLogout() {
+  const mutateAsync = async () => {
+    const apiSdk = new ApiSDK("/api");
+    const logout = await apiSdk.logout({});
+    if (!logout.success) {
+      throw logout.error;
+    }
+
+    return logout.data;
+  }
+
+  return { mutateAsync }
+}

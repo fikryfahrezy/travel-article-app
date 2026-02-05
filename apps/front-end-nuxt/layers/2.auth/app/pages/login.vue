@@ -7,7 +7,6 @@ import {
 } from "#layers/my-auth/app/schemas/login.schema";
 import { useLogin } from "#layers/my-auth/app/composables/auth";
 import { useToastStore } from "#layers/my-base/app/composables/toast";
-import { ref, useTemplateRef } from "vue";
 import z from "zod";
 
 definePageMeta({

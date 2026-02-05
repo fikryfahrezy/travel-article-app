@@ -242,7 +242,6 @@ export class ApiSDK {
         body: JSON.stringify(createArticleReqDto),
         headers: {
           "Content-Type": "application/json",
-          "Authorization": createArticleReqDto.token ? `Bearer ${createArticleReqDto.token}` : '',
         },
       },
     );
@@ -264,9 +263,6 @@ export class ApiSDK {
         signal,
         method: "GET",
         credentials: "include",
-        headers: {
-          "Authorization": paginationReqDto.token ? `Bearer ${paginationReqDto.token}` : '',
-        },
       },
     );
   }
@@ -282,9 +278,6 @@ export class ApiSDK {
         signal,
         method: "GET",
         credentials: "include",
-        headers: {
-          "Authorization": getArticleReqDto.token ? `Bearer ${getArticleReqDto.token}` : '',
-        },
       },
     );
   }
@@ -303,7 +296,6 @@ export class ApiSDK {
         body: JSON.stringify(restDto),
         headers: {
           "Content-Type": "application/json",
-          "Authorization": updateArticleReqDto.token ? `Bearer ${updateArticleReqDto.token}` : '',
         },
       },
     );
@@ -320,9 +312,6 @@ export class ApiSDK {
         signal,
         method: "DELETE",
         credentials: "include",
-        headers: {
-          "Authorization": deleteArticleReqDto.token ? `Bearer ${deleteArticleReqDto.token}` : '',
-        },
       },
     );
   }
@@ -341,7 +330,6 @@ export class ApiSDK {
         body: JSON.stringify(restDto),
         headers: {
           "Content-Type": "application/json",
-          "Authorization": likeArticleReqDto.token ? `Bearer ${likeArticleReqDto.token}` : '',
         },
       },
     );
@@ -361,7 +349,6 @@ export class ApiSDK {
         body: JSON.stringify(restDto),
         headers: {
           "Content-Type": "application/json",
-          "Authorization": createArticleCommentReqDto.token ? `Bearer ${createArticleCommentReqDto.token}` : '',
         },
       },
     );
@@ -384,9 +371,6 @@ export class ApiSDK {
         signal,
         method: "GET",
         credentials: "include",
-        headers: {
-          "Authorization": getAllArticleCommentReqDto.token ? `Bearer ${getAllArticleCommentReqDto.token}` : '',
-        },
       },
     );
   }
@@ -402,9 +386,6 @@ export class ApiSDK {
         signal,
         method: "GET",
         credentials: "include",
-        headers: {
-          "Authorization": getArticleCommentReqDto.token ? `Bearer ${getArticleCommentReqDto.token}` : '',
-        },
       },
     );
   }
@@ -423,7 +404,6 @@ export class ApiSDK {
         body: JSON.stringify(restDto),
         headers: {
           "Content-Type": "application/json",
-          "Authorization": updateArticleCommentReqDto.token ? `Bearer ${updateArticleCommentReqDto.token}` : '',
         },
       },
     );
@@ -440,10 +420,9 @@ export class ApiSDK {
         signal,
         method: "DELETE",
         credentials: "include",
-        headers: {
-          "Authorization": deleteArticleCommentReqDto.token ? `Bearer ${deleteArticleCommentReqDto.token}` : '',
-        },
       },
     );
   }
 }
+
+export const apiSdkProxy = new ApiSDK("/api/proxy");

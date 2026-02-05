@@ -15,10 +15,6 @@ export type LoginReqDto = {
   password: string;
 };
 
-export type AuthReqDto = {
-  token?: string;
-};
-
 export type AuthResDto = {
   tokenType: "Bearer";
   expires_in: number;
@@ -26,68 +22,72 @@ export type AuthResDto = {
   refresh_token: string;
 };
 
-export type LogoutReqDto = AuthReqDto;
+export type LogoutReqDto = {
+  token?: string;
+};
 
 export type LogoutResDto = {
   success: boolean;
 };
 
-export type ProfileReqDto = AuthReqDto;
+export type ProfileReqDto = {
+  token?: string;
+};
 
 export type ProfileResDto = {
   user_id: string;
   username: string;
 };
 
-export type CreateArticleReqDto = AuthReqDto & {
+export type CreateArticleReqDto = {
   title: string;
   content: string;
 };
 
-export type PaginationReqDto = AuthReqDto & {
+export type PaginationReqDto = {
   page?: number;
   limit?: number;
 };
 
-export type GetArticleReqDto = AuthReqDto & {
+export type GetArticleReqDto = {
   idOrSlug: string;
 };
 
-export type UpdateArticleReqDto = AuthReqDto & {
+export type UpdateArticleReqDto = {
   article_id: string;
   title: string;
   content: string;
 };
 
-export type DeleteArticleReqDto = AuthReqDto & {
+export type DeleteArticleReqDto = {
   article_id: string;
 };
 
-export type LikeArticleReqDto = AuthReqDto & {
+export type LikeArticleReqDto = {
   article_id: string;
   like: boolean;
 };
 
-export type CreateArticleCommentReqDto = AuthReqDto & {
+export type CreateArticleCommentReqDto = {
   content: string;
   article_id: string;
 };
 
-export type GetAllArticleCommentReqDto = AuthReqDto & {
+export type GetAllArticleCommentReqDto = {
   article_id: string;
   pagination: PaginationReqDto;
 };
 
-export type GetArticleCommentReqDto = AuthReqDto & {
+export type GetArticleCommentReqDto = {
   comment_id: string;
 };
 
-export type UpdateArticleCommentReqDto = AuthReqDto & {
+export type UpdateArticleCommentReqDto = {
   content: string;
   comment_id: string;
 };
 
-export type DeleteArticleCommentReqDto = AuthReqDto & {
+export type DeleteArticleCommentReqDto = {
   comment_id: string;
 };
 

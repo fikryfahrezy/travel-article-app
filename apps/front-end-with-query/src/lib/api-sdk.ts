@@ -72,7 +72,7 @@ export class ApiSDK {
     options: RequestInit,
   ): Promise<Result<TData>> {
     try {
-      const requestUrl = url;
+      const requestUrl = this.baseUrl + url;
       const response = await fetch(requestUrl, options);
 
       if (response.ok) {

@@ -1,12 +1,12 @@
-import { apiSdk } from "#layers/my-base/app/libs/api-sdk";
+import { apiSdkProxy } from "#layers/my-base/app/libs/api-sdk";
 import type {
   CreateArticleCommentReqDto,
   DeleteArticleCommentReqDto,
+  GetAllArticleCommentResDto,
   MutationResDto,
   UpdateArticleCommentReqDto,
 } from "#layers/my-base/app/libs/api-sdk.types";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/vue-query";
-import type { Ref } from "vue";
+import { useMutation, useQueryClient } from "@tanstack/vue-query";
 
 export const commentKeys = {
   all: ["comment"] as const,
@@ -39,37 +39,37 @@ export function useArticleComments(
   paginationCommentPage: Ref<number>,
   paginationCommentLimit = 10,
 ) {
-  return useQuery({
-    queryKey: commentKeys.list(
+  return useAsyncData<GetAllArticleCommentResDto, Error>(
+    commentKeys.list(
       articleId,
       paginationCommentPage,
       paginationCommentLimit,
-    ),
-    queryFn: async () => {
-      const result = await apiSdk.getAllArticleComment({
+    ).join(''),
+    async () => {
+      const result = await apiSdkProxy.getAllArticleComment({
         article_id: articleId.value ?? "",
         pagination: {
           limit: paginationCommentLimit,
           page: paginationCommentPage.value,
         },
       });
-
       if (!result.success) {
         throw result.error;
       }
       return result.data;
     },
-    enabled: () => {
-      return !!articleId.value;
-    },
-    initialData: {
-      data: [],
-      page: 1,
-      total_pages: 1,
-      total_data: 0,
-      limit: paginationCommentLimit,
-    },
-  });
+    {
+      default: () => {
+        return {
+          data: [],
+          page: 1,
+          total_pages: 1,
+          total_data: 0,
+          limit: paginationCommentLimit,
+        }
+      }
+    }
+  );
 }
 
 export function useDeleteComment() {
@@ -78,7 +78,7 @@ export function useDeleteComment() {
   return useMutation<MutationResDto, Error, DeleteArticleCommentReqDto>({
     mutationKey: commentKeys.delete(),
     mutationFn: async (deleteArticleCommentReqDto) => {
-      const result = await apiSdk.deleteArticleComment(
+      const result = await apiSdkProxy.deleteArticleComment(
         deleteArticleCommentReqDto,
       );
       if (!result.success) {
@@ -100,7 +100,7 @@ export function useCreateComment() {
   return useMutation<MutationResDto, Error, CreateArticleCommentReqDto>({
     mutationKey: commentKeys.create(),
     mutationFn: async (createArticleCommentReqDto) => {
-      const result = await apiSdk.createArticleComment(
+      const result = await apiSdkProxy.createArticleComment(
         createArticleCommentReqDto,
       );
       if (!result.success) {
@@ -122,7 +122,7 @@ export function useUpdateComment() {
   return useMutation<MutationResDto, Error, UpdateArticleCommentReqDto>({
     mutationKey: commentKeys.update(),
     mutationFn: async (updateArticleCommentReqDto) => {
-      const result = await apiSdk.updateArticleComment(
+      const result = await apiSdkProxy.updateArticleComment(
         updateArticleCommentReqDto,
       );
       if (!result.success) {
