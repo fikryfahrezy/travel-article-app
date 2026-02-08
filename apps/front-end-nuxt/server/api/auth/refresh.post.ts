@@ -1,7 +1,7 @@
 import { ApiSDK } from "#layers/my-base/app/libs/api-sdk";
 
 export default defineEventHandler(async (event) => {
-  const { secure } = await requireUserSession(event);
+  const { secure, user } = await requireUserSession(event);
   if (!secure) {
     throw createError({
       status: 401,
@@ -13,19 +13,19 @@ export default defineEventHandler(async (event) => {
   const baseUrl = config.apiBaseURL;
   const apiSdk = new ApiSDK(baseUrl + "/api");
 
-  const profile = await apiSdk.profile({
-    token: secure.access_token,
+  const refresh = await apiSdk.refresh({
+    token: secure.refresh_token,
   });
-  if (!profile.success) {
-    return profile.error;
+  if (!refresh.success) {
+    return refresh.error;
   }
 
   // set the user session in the cookie
   // this server util is auto-imported by the auth-utils module
   await replaceUserSession(event, {
-    secure: secure,
-    user: profile.data,
+    secure: refresh.data,
+    user: user,
   });
 
-  return profile.data;
-})
+  return refresh.data;
+});

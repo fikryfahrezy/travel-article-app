@@ -11,11 +11,17 @@ import type { Ref } from "vue";
 
 export const articleKeys = {
   all: ["article"] as const,
-  list: (paginationPage: Ref<number>, paginationLimit: number) => {
-    return [...articleKeys.all, paginationPage, paginationLimit] as const;
+  list: () => {
+    return [...articleKeys.all, "list"] as const;
   },
-  detail: (articleIdOrSlug: Ref<string>) => {
-    return [...articleKeys.all, "detail", articleIdOrSlug] as const;
+  listQuery: (paginationPage: Ref<number>, paginationLimit: number) => {
+    return [...articleKeys.list(), paginationPage, paginationLimit] as const;
+  },
+  detail: () => {
+    return [...articleKeys.all, "detail"] as const;
+  },
+  detailItem: (articleIdOrSlug: Ref<string>) => {
+    return [...articleKeys.detail(), articleIdOrSlug] as const;
   },
   like: () => {
     return [...articleKeys.all, "like"] as const;
@@ -30,7 +36,7 @@ export const articleKeys = {
 
 export function useArticles(paginationPage: Ref<number>, paginationLimit = 10) {
   return useQuery({
-    queryKey: articleKeys.list(paginationPage, paginationLimit),
+    queryKey: articleKeys.listQuery(paginationPage, paginationLimit),
     queryFn: async () => {
       const result = await apiSdk.getAllArticle({
         limit: paginationLimit,
@@ -53,7 +59,7 @@ export function useArticles(paginationPage: Ref<number>, paginationLimit = 10) {
 
 export function useArticleDetail(articleIdOrSlug: Ref<string>) {
   return useQuery({
-    queryKey: articleKeys.detail(articleIdOrSlug),
+    queryKey: articleKeys.detailItem(articleIdOrSlug),
     queryFn: async () => {
       const result = await apiSdk.getArticle({
         idOrSlug: articleIdOrSlug.value,
@@ -143,7 +149,7 @@ export function useDeleteArticle() {
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: articleKeys.all,
+        queryKey: articleKeys.list(),
       });
     },
   });

@@ -6,6 +6,10 @@ import MyPagination from "#layers/my-base/app/components/MyPagination.vue";
 import Article from "#layers/my-article/app/components/Article.vue";
 import { useArticles } from "#layers/my-article/app/composables/article";
 
+definePageMeta({
+  layout: "articles",
+});
+
 const route = useRoute();
 const { loggedIn } = useUserSession();
 
@@ -33,23 +37,6 @@ const nextPage = computed(() => {
 </script>
 
 <template>
-  <ClientOnly>
-    <Teleport v-if="loggedIn" to="#nav-bar">
-      <div class="flex justify-end py-3">
-        <RouterLink v-slot="{ href, navigate }" custom to="/articles/form">
-          <MyButton
-            as="a"
-            :href="href"
-            class="w-full lg:w-fit"
-            @click="navigate"
-          >
-            Contribute Your Story
-          </MyButton>
-        </RouterLink>
-      </div>
-    </Teleport>
-  </ClientOnly>
-
   <div
     v-if="articlesStatus === 'error'"
     class="flex flex-[1] items-center justify-center"

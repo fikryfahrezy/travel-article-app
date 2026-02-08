@@ -66,7 +66,7 @@ const allowedToModifyArticle = computed(() => {
 async function onDeleteArticle() {
   if (articleDetail.value) {
     await deleteArticle({ article_id: articleDetail.value.id });
-    router.replace("/acticles");
+    router.replace("/articles");
   }
 }
 
@@ -180,7 +180,7 @@ watch(lastCommentDeleteStatus, (lastStatus) => {
       class="mb-4"
       :article-id="articleDetail.id"
     />
-    <div class="p-2">
+    <div class="flex flex-col gap-4 p-2">
       <p v-if="articleCommentsIsLoading">Loading comments...</p>
       <p v-else-if="(articleComments?.data.length ?? 0) === 0">
         No comment yet, become the first one!

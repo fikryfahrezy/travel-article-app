@@ -1,12 +1,5 @@
 export default defineEventHandler(async (event) => {
-  const { secure } = await requireUserSession(event);
-  console.log('secure', secure);
-  if (!secure) {
-    throw createError({
-      status: 401,
-      message: 'Unauthorized',
-    })
-  }
+  const { secure } = await getUserSession(event)
 
   const config = useRuntimeConfig()
   const baseUrl = config.apiBaseURL;
@@ -16,7 +9,7 @@ export default defineEventHandler(async (event) => {
 
   return proxyRequest(event, target, {
     headers: {
-      "Authorization": `Bearer ${secure.access_token}`,
+      "Authorization": secure ? `Bearer ${secure.access_token}` : undefined,
     }
   });
 });

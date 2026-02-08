@@ -107,7 +107,7 @@ function commentDeleted() {
 <template>
   <div
     v-if="articleStore.detailError"
-    class="flex flex-[1] w-full items-center justify-center"
+    class="flex w-full flex-[1] items-center justify-center"
   >
     <h2 class="text-destructive text-4xl font-bold italic">
       🚨 {{ articleStore.detailError.message }} 🚨
@@ -166,7 +166,7 @@ function commentDeleted() {
       :article-id="articleStore.detail.id"
       @submit-success="getAllArticleComment"
     />
-    <div class="p-2">
+    <div class="flex flex-col gap-4 p-2">
       <p v-if="commentStore.allArticleComment.data.length === 0">
         No comment yet, become the first one!
       </p>

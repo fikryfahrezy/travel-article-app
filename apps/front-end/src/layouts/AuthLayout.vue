@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import NavBar from "@/components/NavBar.vue";
 import NavBarItems from "./NavBarItems.vue";
-import Main from "./Main.vue";
+import Main from "../components/Main.vue";
 import backgroundImage from "@/assets/kalen-emsley-Bkci_8qcdvQ-unsplash.jpg";
 </script>
 <template>

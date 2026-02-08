@@ -19,6 +19,7 @@ import type {
   PaginationReqDto,
   ProfileReqDto,
   ProfileResDto,
+  RefreshReqDto,
   RegisterReqDto,
   ResponseError,
   Result,
@@ -83,6 +84,17 @@ export class ApiSDK {
     } catch (error) {
       if (error instanceof Error && error.name === "FetchError" && 'data' in error) {
         const errorData = error.data as ResponseError
+        if (errorData.name === "UnauthorizedException") {
+          return {
+            success: false,
+            error: new UnauthorizedError(
+              errorData.name,
+              errorData.message,
+              errorData.errors,
+            ),
+          };
+        }
+
         return {
           success: false,
           error: new ApiError(
@@ -150,7 +162,7 @@ export class ApiSDK {
 
     // If no refresh is in progress, start one.
     this.isRefreshing = true;
-    const refreshResult = await this.refresh();
+    const refreshResult = await this.refresh({}, signal);
 
     // On successful refresh, process the failed queue and retry the original request.
     if (refreshResult.success) {
@@ -193,11 +205,14 @@ export class ApiSDK {
     });
   }
 
-  async refresh(signal?: AbortSignal): Promise<Result<AuthResDto>> {
+  async refresh(refreshReqDto: RefreshReqDto, signal?: AbortSignal): Promise<Result<AuthResDto>> {
     return await this.request<AuthResDto>("/auth/refresh", {
       signal,
       method: "POST",
       credentials: "include",
+      headers: {
+        "Authorization": refreshReqDto.token ? `Bearer ${refreshReqDto.token}` : '',
+      },
     });
   }
 
@@ -425,4 +440,4 @@ export class ApiSDK {
   }
 }
 
-export const apiSdkProxy = new ApiSDK("/api/proxy");
+export const apiSdkProxy = new ApiSDK("/api");

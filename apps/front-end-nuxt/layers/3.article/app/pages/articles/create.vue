@@ -12,9 +12,11 @@ import {
   useUpdateArticle,
   useArticleDetail,
 } from "#layers/my-article/app/composables/article";
+import { useArticleFormStore } from "#layers/my-article/app/stores/article-form";
 
 definePageMeta({
   middleware: ["authenticated"],
+  layout: "articles-form",
 });
 
 const route = useRoute();
@@ -28,8 +30,7 @@ const { mutateAsync: createArticle } = useCreateArticle();
 const { mutateAsync: updateArticle } = useUpdateArticle();
 const { data: articleDetail } = useArticleDetail(articleId);
 
-const tabs = ["editor", "preview"] as const;
-const activeTab = ref<(typeof tabs)[number]>("editor");
+const articleFormStore = useArticleFormStore();
 
 const _title = ref("");
 const title = computed({
@@ -88,29 +89,12 @@ async function onSubmit() {
 </script>
 
 <template>
-  <Teleport to="#nav-bar">
-    <div>
-      <MyButton
-        v-for="tab in tabs"
-        :key="tab"
-        background="text"
-        :variant="activeTab === tab ? 'primary' : 'neutral'"
-        :class="[
-          'w-1/2 border-b-2 capitalize',
-          activeTab === tab ? 'border-b-primary' : 'border-b-neutral-400',
-        ]"
-        @click="activeTab = tab"
-      >
-        {{ tab }}
-      </MyButton>
-    </div>
-  </Teleport>
   <form
     class="flex w-full flex-[1] flex-col gap-4 overflow-y-scroll"
     @submit.prevent="onSubmit"
   >
     <div
-      v-if="activeTab === 'editor'"
+      v-if="articleFormStore.activeTab === 'editor'"
       class="flex w-full flex-[1] flex-col gap-4"
     >
       <input
@@ -150,7 +134,7 @@ async function onSubmit() {
       </ul>
     </div>
     <MarkdownPreview
-      v-if="activeTab === 'preview'"
+      v-if="articleFormStore.activeTab === 'preview'"
       :markdown-title="title"
       :markdown-content="markdownContent"
       class="overflow-y-scroll"

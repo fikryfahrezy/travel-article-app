@@ -2,7 +2,7 @@
 import NavBar from "@/components/NavBar.vue";
 import Button from "@/components/Button.vue";
 import NavBarItems from "./NavBarItems.vue";
-import Main from "./Main.vue";
+import Main from "../components/Main.vue";
 import { useArticleFormStore } from "@/stores/article-form";
 
 const articleFormStore = useArticleFormStore();

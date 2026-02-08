@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import NavBar from "@/components/NavBar.vue";
 import NavBarItems from "./NavBarItems.vue";
-import Main from "./Main.vue";
+import Main from "../components/Main.vue";
 import Button from "@/components/Button.vue";
 import { useUserStore } from "@/features/auth/stores/user";
 

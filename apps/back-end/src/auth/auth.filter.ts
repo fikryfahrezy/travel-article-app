@@ -19,7 +19,6 @@ export class AuthFilter implements ExceptionFilter {
   constructor() {}
 
   catch(exception: unknown): void {
-    console.log(exception);
     if (exception instanceof DuplicateUsernameError) {
       throw new APIError(
         exception.name,

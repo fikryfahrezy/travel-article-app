@@ -15,7 +15,6 @@ export class CatchEverythingFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
 
-    console.log(exception);
     const errorName =
       exception instanceof Error ? exception.name : "UnknownError";
 

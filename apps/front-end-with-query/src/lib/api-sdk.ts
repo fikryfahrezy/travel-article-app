@@ -161,7 +161,7 @@ export class ApiSDK {
 
     // If no refresh is in progress, start one.
     this.isRefreshing = true;
-    const refreshResult = await this.refresh();
+    const refreshResult = await this.refresh(signal);
 
     // On successful refresh, process the failed queue and retry the original request.
     if (refreshResult.success) {

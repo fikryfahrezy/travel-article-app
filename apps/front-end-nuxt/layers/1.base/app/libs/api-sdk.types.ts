@@ -15,6 +15,10 @@ export type LoginReqDto = {
   password: string;
 };
 
+export type RefreshReqDto = {
+  token?: string;
+};
+
 export type AuthResDto = {
   tokenType: "Bearer";
   expires_in: number;

@@ -15,7 +15,10 @@ import { ConfigService } from "src/config/config.service";
 import { JwtPayload } from "src/core/jwt.service";
 import { Jwt, JwtToken } from "src/decorators/jwt.decorator";
 import { UnauthorizedError } from "src/exceptions/api.exception";
-import { extractJwtTokenFromCookie, JwtGuard } from "src/guards/jwt.guard";
+import {
+  extractJwtTokenFromHeaderOrCookie,
+  JwtGuard,
+} from "src/guards/jwt.guard";
 import {
   AuthResDto,
   LoginReqDto,
@@ -137,7 +140,7 @@ export class AuthController {
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
-    const refreshToken = extractJwtTokenFromCookie(
+    const refreshToken = extractJwtTokenFromHeaderOrCookie(
       request,
       this.configService.static.REFRESH_TOKEN_COOKIE_KEY,
     );

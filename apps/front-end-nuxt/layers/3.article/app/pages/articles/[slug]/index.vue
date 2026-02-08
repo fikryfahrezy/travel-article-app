@@ -177,7 +177,7 @@ watch(lastCommentDeleteStatus, (lastStatus) => {
       class="mb-4"
       :article-id="articleDetail.id"
     />
-    <div class="p-2">
+    <div class="flex flex-col gap-4 p-2">
       <p v-if="articleCommentsStatus === 'pending'">Loading comments...</p>
       <p v-else-if="(articleComments?.data.length ?? 0) === 0">
         No comment yet, become the first one!
