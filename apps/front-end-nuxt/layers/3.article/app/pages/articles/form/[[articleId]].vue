@@ -35,7 +35,7 @@ const articleFormStore = useArticleFormStore();
 const _title = ref("");
 const title = computed({
   get: () => {
-    return articleDetail.value ? articleDetail.value.title : _title.value;
+    return _title.value || (articleDetail.value?.title ?? "");
   },
   set: (val: string) => {
     _title.value = val;
@@ -45,9 +45,7 @@ const title = computed({
 const _markdownContent = ref("");
 const markdownContent = computed({
   get: () => {
-    return articleDetail.value
-      ? articleDetail.value.content
-      : _markdownContent.value;
+    return _markdownContent.value || (articleDetail.value?.content ?? "");
   },
   set: (val: string) => {
     _markdownContent.value = val;

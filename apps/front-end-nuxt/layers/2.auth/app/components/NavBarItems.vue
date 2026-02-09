@@ -3,10 +3,8 @@ import { computed } from "vue";
 import MyButton from "#layers/my-base/app/components/MyButton.vue";
 
 const { loggedIn, clear: clearSession } = useUserSession();
-const { mutateAsync: logout } = useLogout();
 
-async function onLogout() {
-  await logout();
+async function logout() {
   await clearSession();
   await navigateTo("/");
 }
@@ -40,7 +38,7 @@ const navItems = computed(() => {
       v-if="loggedIn"
       variant="destructive"
       background="solid"
-      @click="onLogout"
+      @click="logout"
     >
       Logout
     </MyButton>

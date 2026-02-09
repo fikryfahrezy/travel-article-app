@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import MyButton from "#layers/my-base/app/components/MyButton.vue";
 import MyModal from "#layers/my-base/app/components/MyModal.vue";
+import { useMutationStateStore } from "#layers/my-base/app/composables/mutation-state";
 import CommentFormEdit from "./CommentFormEdit.vue";
-import { commentKeys, useDeleteComment } from "#layers/my-article/app/composables/comment";
-import { useMutationState } from "@tanstack/vue-query";
+import {
+  commentKeys,
+  useDeleteComment,
+} from "#layers/my-article/app/composables/comment";
 
 const editMode = ref(false);
 const showDeleteConfirmation = ref(false);
@@ -36,17 +39,10 @@ function commentChange() {
   editMode.value = false;
 }
 
-const commentUpdateStatus = useMutationState({
-  filters: { mutationKey: commentKeys.update() },
-  select: (mutation) => {
-    return mutation.state.status;
-  },
-});
-
-const lastCommentUpdateStatus = computed(() => {
-  const status = commentUpdateStatus.value;
-  return status[status.length - 1];
-});
+const { getState: getMutationState } = useMutationStateStore();
+const lastCommentUpdateStatus = getMutationState(
+  commentKeys.update().toString(),
+);
 
 watch(lastCommentUpdateStatus, (lastStatus) => {
   if (lastStatus === "success") {
@@ -103,8 +99,8 @@ async function onDeleteComment() {
         variant="neutral"
         @click="showDeleteConfirmation = false"
       >
-      Cancel
-    </MyButton>
+        Cancel
+      </MyButton>
     </template>
     <template #confirm-button>
       <MyButton

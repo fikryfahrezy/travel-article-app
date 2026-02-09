@@ -3,25 +3,14 @@ import type {
   CreateArticleCommentReqDto,
   DeleteArticleCommentReqDto,
   GetAllArticleCommentResDto,
-  MutationResDto,
   UpdateArticleCommentReqDto,
 } from "#layers/my-base/app/libs/api-sdk.types";
-import { useMutation, useQueryClient } from "@tanstack/vue-query";
+import { useMutationStateStore } from "#layers/my-base/app/composables/mutation-state";
 
 export const commentKeys = {
   all: ["comment"] as const,
-  list: (
-    articleId: Ref<string>,
-    paginationCommentPage: Ref<number>,
-    paginationCommentLimit: number,
-  ) => {
-    return [
-      ...commentKeys.all,
-      "article",
-      articleId,
-      paginationCommentPage,
-      paginationCommentLimit,
-    ] as const;
+  list: () => {
+    return [...commentKeys.all, "list",] as const;
   },
   create: () => {
     return [...commentKeys.all, "create"] as const;
@@ -40,11 +29,9 @@ export function useArticleComments(
   paginationCommentLimit = 10,
 ) {
   return useAsyncData<GetAllArticleCommentResDto, Error>(
-    commentKeys.list(
-      articleId,
-      paginationCommentPage,
-      paginationCommentLimit,
-    ).join(''),
+    () => {
+      return commentKeys.list().toString()
+    },
     async () => {
       const result = await apiSdkProxy.getAllArticleComment({
         article_id: articleId.value ?? "",
@@ -59,6 +46,8 @@ export function useArticleComments(
       return result.data;
     },
     {
+      watch: [articleId, paginationCommentPage],
+      immediate: !!articleId.value,
       default: () => {
         return {
           data: [],
@@ -73,67 +62,107 @@ export function useArticleComments(
 }
 
 export function useDeleteComment() {
-  const queryClient = useQueryClient();
+  const { setState: setMutationState } = useMutationStateStore();
 
-  return useMutation<MutationResDto, Error, DeleteArticleCommentReqDto>({
-    mutationKey: commentKeys.delete(),
-    mutationFn: async (deleteArticleCommentReqDto) => {
-      const result = await apiSdkProxy.deleteArticleComment(
-        deleteArticleCommentReqDto,
+  const mutateAsync = async (deleteArticleCommentReqDto: DeleteArticleCommentReqDto) => {
+    setMutationState(
+      commentKeys.delete().toString(),
+      "pending"
+    );
+
+    const result = await apiSdkProxy.deleteArticleComment(
+      deleteArticleCommentReqDto,
+    );
+    if (!result.success) {
+      setMutationState(
+        commentKeys.delete().toString(),
+        "error"
       );
-      if (!result.success) {
-        throw result.error;
-      }
-      return result.data;
-    },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: commentKeys.all,
-      });
-    },
-  });
+      throw result.error;
+    }
+
+    await refreshNuxtData([
+      commentKeys.list().toString(),
+    ])
+
+    setMutationState(
+      commentKeys.delete().toString(),
+      "success"
+    );
+
+    return result.data;
+  }
+
+  return { mutateAsync }
 }
 
 export function useCreateComment() {
-  const queryClient = useQueryClient();
+  const { setState: setMutationState } = useMutationStateStore();
 
-  return useMutation<MutationResDto, Error, CreateArticleCommentReqDto>({
-    mutationKey: commentKeys.create(),
-    mutationFn: async (createArticleCommentReqDto) => {
-      const result = await apiSdkProxy.createArticleComment(
-        createArticleCommentReqDto,
+  const mutateAsync = async (createArticleCommentReqDto: CreateArticleCommentReqDto) => {
+    setMutationState(
+      commentKeys.create().toString(),
+      "pending"
+    );
+
+    const result = await apiSdkProxy.createArticleComment(
+      createArticleCommentReqDto,
+    );
+    if (!result.success) {
+      setMutationState(
+        commentKeys.create().toString(),
+        "error"
       );
-      if (!result.success) {
-        throw result.error;
-      }
-      return result.data;
-    },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: commentKeys.all,
-      });
-    },
-  });
+      throw result.error;
+    }
+
+    await refreshNuxtData([
+      commentKeys.list().toString(),
+    ])
+
+    setMutationState(
+      commentKeys.create().toString(),
+      "success"
+    );
+
+    return result.data;
+  }
+
+  return { mutateAsync }
 }
 
 export function useUpdateComment() {
-  const queryClient = useQueryClient();
+  const { setState: setMutationState } = useMutationStateStore();
 
-  return useMutation<MutationResDto, Error, UpdateArticleCommentReqDto>({
-    mutationKey: commentKeys.update(),
-    mutationFn: async (updateArticleCommentReqDto) => {
-      const result = await apiSdkProxy.updateArticleComment(
-        updateArticleCommentReqDto,
+  const mutateAsync = async (updateArticleCommentReqDto: UpdateArticleCommentReqDto) => {
+    setMutationState(
+      commentKeys.update().toString(),
+      "pending"
+    );
+
+    const result = await apiSdkProxy.updateArticleComment(
+      updateArticleCommentReqDto,
+    );
+    if (!result.success) {
+      setMutationState(
+        commentKeys.update().toString(),
+        "error"
       );
-      if (!result.success) {
-        throw result.error;
-      }
-      return result.data;
-    },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: commentKeys.all,
-      });
-    },
-  });
+      throw result.error;
+    }
+
+    await refreshNuxtData([
+      commentKeys.list().toString(),
+    ])
+
+    setMutationState(
+      commentKeys.update().toString(),
+      "success"
+    );
+
+    return result.data;
+  }
+
+  return { mutateAsync }
+
 }

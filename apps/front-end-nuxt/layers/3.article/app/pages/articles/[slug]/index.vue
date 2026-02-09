@@ -16,13 +16,16 @@ import {
   commentKeys,
   useArticleComments,
 } from "#layers/my-article/app/composables/comment";
-import { useMutationState } from "@tanstack/vue-query";
+
+definePageMeta({
+  layout: "landing",
+});
 
 const route = useRoute();
 const { user, loggedIn } = useUserSession();
 
 const articleSlug = computed(() => {
-  return String(route.params.articleSlug || "");
+  return String(route.params.slug || "");
 });
 
 const showDeleteConfirmation = ref(false);
@@ -71,17 +74,10 @@ function commentAdded() {
   paginationCommentPage.value = 1;
 }
 
-const commentCreateStatus = useMutationState({
-  filters: { mutationKey: commentKeys.create() },
-  select: (mutation) => {
-    return mutation.state.status;
-  },
-});
-
-const lastCommentCreateStatus = computed(() => {
-  const status = commentCreateStatus.value;
-  return status[status.length - 1];
-});
+const { getState: getMutationState } = useMutationStateStore();
+const lastCommentCreateStatus = getMutationState(
+  commentKeys.create().toString(),
+);
 
 watch(lastCommentCreateStatus, (lastStatus) => {
   if (lastStatus === "success") {
@@ -101,17 +97,9 @@ function commentDeleted() {
   }
 }
 
-const commentDeletionStatus = useMutationState({
-  filters: { mutationKey: commentKeys.delete() },
-  select: (mutation) => {
-    return mutation.state.status;
-  },
-});
-
-const lastCommentDeleteStatus = computed(() => {
-  const status = commentDeletionStatus.value;
-  return status[status.length - 1];
-});
+const lastCommentDeleteStatus = getMutationState(
+  commentKeys.delete().toString(),
+);
 
 watch(lastCommentDeleteStatus, (lastStatus) => {
   if (lastStatus === "success") {

@@ -32,6 +32,9 @@ export const articleKeys = {
   update: () => {
     return [...articleKeys.all, "update"] as const;
   },
+  delete: () => {
+    return [...articleKeys.all, "delete"] as const;
+  },
 };
 
 export function useArticles(paginationPage: Ref<number>, paginationLimit = 10) {
@@ -139,7 +142,7 @@ export function useDeleteArticle() {
   const queryClient = useQueryClient();
 
   return useMutation<MutationResDto, Error, DeleteArticleReqDto>({
-    mutationKey: articleKeys.update(),
+    mutationKey: articleKeys.delete(),
     mutationFn: async (deleteArticleReqDto) => {
       const result = await apiSdk.deleteArticle(deleteArticleReqDto);
       if (!result.success) {
