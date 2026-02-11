@@ -1,8 +1,8 @@
 # Travel Article App
 
-- Web: https://travel-article-app-fe.fahrezy.work
-- API: https://travel-article-app-be.fahrezy.work
-- Swagger: https://travel-article-app-be.fahrezy.work/docs
+- Web: https://travel.fahrezy.work
+- API: https://travel-api.fahrezy.work
+- Swagger: https://travel-api.fahrezy.work/docs
 
 <img width="1191" height="687" alt="image" src="https://github.com/user-attachments/assets/38737baa-b635-4452-ac18-523424c13388" />
 
