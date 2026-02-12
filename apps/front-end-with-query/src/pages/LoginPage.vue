@@ -11,8 +11,8 @@ import { ref, useTemplateRef } from "vue";
 import { useRouter } from "vue-router";
 import z from "zod";
 
-const userStore = useUserStore();
-const toastStore = useToastStore();
+const { login } = useUserStore();
+const { showToast } = useToastStore();
 const router = useRouter();
 const formRef = useTemplateRef("form-ref");
 
@@ -33,12 +33,12 @@ async function onSubmit() {
     return;
   }
 
-  const loginResult = await userStore.login(loginForm.data);
+  const loginResult = await login(loginForm.data);
   if (!loginResult.success) {
-    toastStore.showToast("error", loginResult.error.message);
+    showToast("error", loginResult.error.message);
     return;
   }
-  toastStore.showToast("success", "Successfully login.");
+  showToast("success", "Successfully login.");
   router.push("/");
 }
 </script>

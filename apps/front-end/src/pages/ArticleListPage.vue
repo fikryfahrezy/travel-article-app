@@ -11,8 +11,8 @@ import { computed, reactive, watch } from "vue";
 import { useRoute } from "vue-router";
 
 const route = useRoute();
-const userStore = useUserStore();
-const articleStore = useArticleStore();
+const { isAuthenticated } = useUserStore();
+const { allArticle, getAllArticle } = useArticleStore();
 
 const paginationReq = reactive<Required<PaginationReqDto>>({
   limit: 36,
@@ -25,7 +25,7 @@ watch(
     const newPageNumber = Number(String(newPage || 1));
 
     paginationReq.page = newPageNumber;
-    articleStore.getAllArticle({
+    getAllArticle({
       ...paginationReq,
       page: newPageNumber,
     });
@@ -38,29 +38,29 @@ const prevPage = computed(() => {
 });
 
 const nextPage = computed(() => {
-  return paginationReq.page >= articleStore.allArticle.total_pages
-    ? articleStore.allArticle.total_pages
+  return paginationReq.page >= allArticle.total_pages
+    ? allArticle.total_pages
     : paginationReq.page + 1;
 });
 </script>
 
 <template>
   <div
-    v-if="articleStore.allArticle.data.length !== 0"
+    v-if="allArticle.data.length !== 0"
     class="grid grid-cols-1 gap-4 p-2 lg:grid-cols-3"
   >
     <Article
-      v-for="article in articleStore.allArticle.data"
+      v-for="article in allArticle.data"
       :key="article.id"
       class="w-full lg:h-44 lg:w-fit lg:max-w-96"
-      :show-like-button="userStore.isAuthenticated"
+      :show-like-button="isAuthenticated"
       :article-id="article.id"
       :liked="article.liked"
       :title="article.title"
       :slug="article.slug"
       :author-name="article.author_username"
       :created-at="article.created_at"
-      @like-change="articleStore.getAllArticle(paginationReq)"
+      @like-change="getAllArticle(paginationReq)"
     />
   </div>
   <div v-else class="flex flex-[1] items-center justify-center">
@@ -68,7 +68,7 @@ const nextPage = computed(() => {
   </div>
   <Teleport to="#page-layout">
     <Pagination
-      :total-pages="articleStore.allArticle.total_pages"
+      :total-pages="allArticle.total_pages"
       class="sticky bottom-0 mx-auto w-fit py-5"
     >
       <template #prev-button>

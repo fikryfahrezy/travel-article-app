@@ -46,11 +46,11 @@ export const useArticleStore = defineStore("article", {
       TCallback extends () => Promise<unknown>,
       TReturn extends Awaited<ReturnType<TCallback>>,
     >(callback: TCallback) {
-      const globalLoadingStore = useLoadingStore();
-      const loadingId = globalLoadingStore.startLoading();
+      const { startLoading, stopLoading } = useLoadingStore();
+      const loadingId = startLoading();
 
       const result = await callback();
-      globalLoadingStore.stopLoading(loadingId);
+      stopLoading(loadingId);
 
       return result as TReturn;
     },

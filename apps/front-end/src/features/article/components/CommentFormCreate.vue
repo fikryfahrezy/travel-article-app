@@ -16,8 +16,8 @@ const props = defineProps({
   },
 });
 
-const commentStore = useCommentStore();
-const toastStore = useToastStore();
+const { createArticleComment } = useCommentStore();
+const { showToast } = useToastStore();
 const formRef = useTemplateRef("form-ref");
 
 const fieldErrors = ref<CommentFormFieldErrors>();
@@ -37,16 +37,16 @@ async function onSubmit() {
     return;
   }
 
-  const commentResult = await commentStore.createArticleComment({
+  const commentResult = await createArticleComment({
     ...commentForm.data,
     article_id: props.articleId,
   });
 
   if (!commentResult.success) {
-    toastStore.showToast("error", commentResult.error.message);
+    showToast("error", commentResult.error.message);
     return;
   }
-  toastStore.showToast("success", "Successfully create comment.");
+  showToast("success", "Successfully create comment.");
   formElement.reset();
   emit("submitSuccess");
 }

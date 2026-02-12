@@ -11,8 +11,8 @@ import { ref, useTemplateRef } from "vue";
 import { useRouter } from "vue-router";
 import z from "zod";
 
-const userStore = useUserStore();
-const toastStore = useToastStore();
+const { register } = useUserStore();
+const { showToast } = useToastStore();
 const router = useRouter();
 const formRef = useTemplateRef("form-ref");
 
@@ -33,12 +33,12 @@ async function onSubmit() {
     return;
   }
 
-  const registerResult = await userStore.register(registerForm.data);
+  const registerResult = await register(registerForm.data);
   if (!registerResult.success) {
-    toastStore.showToast("error", registerResult.error.message);
+    showToast("error", registerResult.error.message);
     return;
   }
-  toastStore.showToast("success", "Successfully register.");
+  showToast("success", "Successfully register.");
   router.push("/");
 }
 </script>

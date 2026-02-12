@@ -4,7 +4,7 @@ import HeartIcon from "@/components/HeartIcon.vue";
 import HeartOffIcon from "@/components/HeartOffIcon.vue";
 import { useArticleStore } from "../stores/article";
 
-const articleStore = useArticleStore();
+const { likeArticle } = useArticleStore();
 
 const emit = defineEmits(["likeChange"]);
 
@@ -20,7 +20,7 @@ const props = defineProps({
 });
 
 async function onClick() {
-  await articleStore.likeArticle({
+  await likeArticle({
     article_id: props.articleId,
     like: !props.liked,
   });

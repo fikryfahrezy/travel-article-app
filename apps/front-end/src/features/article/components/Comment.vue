@@ -8,7 +8,7 @@ import CommentFormEdit from "./CommentFormEdit.vue";
 const editMode = ref(false);
 const showDeleteConfirmation = ref(false);
 
-const commentStore = useCommentStore();
+const { deleteArticleComment } = useCommentStore();
 
 const emit = defineEmits(["commentChange", "commentDeleted"]);
 
@@ -41,7 +41,7 @@ function commentChange() {
 }
 
 async function deleteComment() {
-  await commentStore.deleteArticleComment({
+  await deleteArticleComment({
     comment_id: props.commentId,
   });
   emit("commentDeleted");

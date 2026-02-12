@@ -20,8 +20,8 @@ const props = defineProps({
   },
 });
 
-const commentStore = useCommentStore();
-const toastStore = useToastStore();
+const { updateArticleComment } = useCommentStore();
+const { showToast } = useToastStore();
 const formRef = useTemplateRef("form-ref");
 
 const fieldErrors = ref<CommentFormFieldErrors>();
@@ -41,16 +41,16 @@ async function onSubmit() {
     return;
   }
 
-  const commentResult = await commentStore.updateArticleComment({
+  const commentResult = await updateArticleComment({
     ...commentForm.data,
     comment_id: props.commentId,
   });
 
   if (!commentResult.success) {
-    toastStore.showToast("error", commentResult.error.message);
+    showToast("error", commentResult.error.message);
     return;
   }
-  toastStore.showToast("success", "Successfully update comment.");
+  showToast("success", "Successfully update comment.");
   formElement.reset();
   emit("submitSuccess");
 }

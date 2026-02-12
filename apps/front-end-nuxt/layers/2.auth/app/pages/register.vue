@@ -16,7 +16,7 @@ definePageMeta({
 
 const { mutateAsync: register } = useRegister();
 const { fetch: refreshSession } = useUserSession();
-const toastStore = useToastStore();
+const { showToast } = useToastStore();
 const formRef = useTemplateRef("form-ref");
 
 const fieldErrors = ref<RegisterFormFieldErrors>();
@@ -39,11 +39,11 @@ async function onSubmit() {
   try {
     await register(registerForm.data);
   } catch (error: any) {
-    toastStore.showToast("error", error.message || "Register failed.");
+    showToast("error", error.message || "Register failed.");
     return;
   }
 
-  toastStore.showToast("success", "Successfully register.");
+  showToast("success", "Successfully register.");
   // Refresh the session on client-side and redirect to the home page
   await refreshSession();
   await navigateTo("/");

@@ -3,7 +3,10 @@ import MyButton from "#layers/my-base/app/components/MyButton.vue";
 import MyInput from "#layers/my-base/app/components/MyInput.vue";
 import { useToastStore } from "#layers/my-base/app/composables/toast";
 import z from "zod";
-import { commentFormSchema, type CommentFormFieldErrors } from "#layers/my-article/app/schemas/comment.schema";
+import {
+  commentFormSchema,
+  type CommentFormFieldErrors,
+} from "#layers/my-article/app/schemas/comment.schema";
 import { useCreateComment } from "#layers/my-article/app/composables/comment";
 
 const props = defineProps({
@@ -14,7 +17,7 @@ const props = defineProps({
 });
 
 const { mutateAsync: createComment } = useCreateComment();
-const toastStore = useToastStore();
+const { showToast } = useToastStore();
 const formRef = useTemplateRef("form-ref");
 
 const fieldErrors = ref<CommentFormFieldErrors>();
@@ -39,10 +42,10 @@ async function onSubmit() {
       ...commentForm.data,
       article_id: props.articleId,
     });
-    toastStore.showToast("success", "Successfully create comment.");
+    showToast("success", "Successfully create comment.");
     formElement.reset();
   } catch (error) {
-    toastStore.showToast("error", String(error));
+    showToast("error", String(error));
   }
 }
 </script>
@@ -64,6 +67,8 @@ async function onSubmit() {
         {{ error }}
       </li>
     </ul>
-    <MyButton type="submit" class="w-full lg:ml-auto lg:w-fit">Comment</MyButton>
+    <MyButton type="submit" class="w-full lg:ml-auto lg:w-fit"
+      >Comment</MyButton
+    >
   </form>
 </template>

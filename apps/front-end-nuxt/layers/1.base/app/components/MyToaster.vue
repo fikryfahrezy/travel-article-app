@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { useToastStore, type ToastItem } from "#layers/my-base/app/composables/toast";
+import {
+  useToastStore,
+  type ToastItem,
+} from "#layers/my-base/app/composables/toast";
 import Button, { type ButtonProps } from "./MyButton.vue";
 import ModalCard from "./ModalCard.vue";
 import XIcon from "./XIcon.vue";
 
-const globalToastStore = useToastStore();
+const { items, closeToast } = useToastStore();
 
 const variantToken: Record<ToastItem["type"], string> = {
   error: "[--bg:var(--destructive)] [--text:var(--color-white)]",
@@ -27,14 +30,14 @@ const buttonVariantToken: Record<
     class="fixed right-10 bottom-10 left-10 z-[9999] space-y-4 lg:left-auto lg:w-fit lg:max-w-xs"
   >
     <ModalCard
-      v-for="errorItem in globalToastStore.items"
+      v-for="errorItem in items"
       :key="errorItem.id"
       :class="['bg-(--bg) text-(--text)', variantToken[errorItem.type]]"
     >
       <span class="font-bold">{{ errorItem.message }}</span>
       <Button
         :variant="buttonVariantToken[errorItem.type]"
-        @click="globalToastStore.closeToast(errorItem.id)"
+        @click="closeToast(errorItem.id)"
       >
         <XIcon />
       </Button>

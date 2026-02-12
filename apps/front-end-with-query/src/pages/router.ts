@@ -134,12 +134,12 @@ const router = createRouter({
 });
 
 router.beforeEach(async (to) => {
-  const userStore = useUserStore();
-  await userStore.getProfile();
+  const { getProfile, profile } = useUserStore();
+  await getProfile();
 
   if (
-    (userStore.profile && to.meta.requiredAuth === false) ||
-    (!userStore.profile && to.meta.requiredAuth === true)
+    (profile && to.meta.requiredAuth === false) ||
+    (!profile && to.meta.requiredAuth === true)
   ) {
     return { path: "/" };
   }

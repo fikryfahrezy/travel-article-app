@@ -17,9 +17,9 @@ import { useRoute, useRouter } from "vue-router";
 
 const route = useRoute();
 const router = useRouter();
-const userStore = useUserStore();
-const articleStore = useArticleStore();
-const commentStore = useCommentStore();
+const { profile, isAuthenticated } = useUserStore();
+const { detail, getArticle, deleteArticle, detailError } = useArticleStore();
+const { getAllArticleComment, allArticleComment } = useCommentStore();
 
 const showDeleteConfirmation = ref(false);
 
@@ -33,17 +33,17 @@ const paginationCommentReq = reactive<Required<PaginationReqDto>>({
 });
 
 function getCurrentArticle() {
-  articleStore.getArticle({
+  getArticle({
     idOrSlug: articleSlug.value,
   });
 }
 
-function getAllArticleComment(page: number) {
-  if (!articleStore.detail) {
+function onGetAllArticleComment(page: number) {
+  if (!detail) {
     return;
   }
-  commentStore.getAllArticleComment({
-    article_id: articleStore.detail.id,
+  getAllArticleComment({
+    article_id: detail.id,
     pagination: { ...paginationCommentReq, page },
   });
 }
@@ -56,48 +56,38 @@ watch(
   { immediate: true },
 );
 
-watch(
-  [() => articleStore.detail, () => paginationCommentReq.page],
-  ([, page]) => {
-    getAllArticleComment(page);
-  },
-);
+watch([() => detail, () => paginationCommentReq.page], ([, page]) => {
+  onGetAllArticleComment(page);
+});
 
 const prevCommentPage = computed(() => {
   return paginationCommentReq.page <= 1 ? 1 : paginationCommentReq.page - 1;
 });
 
 const nextCommentPage = computed(() => {
-  return paginationCommentReq.page >= commentStore.allArticleComment.total_pages
-    ? commentStore.allArticleComment.total_pages
+  return paginationCommentReq.page >= allArticleComment.total_pages
+    ? allArticleComment.total_pages
     : paginationCommentReq.page + 1;
 });
 
 const allowedToModifyArticle = computed(() => {
-  return (
-    !!userStore.profile &&
-    !!articleStore.detail &&
-    userStore.profile.user_id === articleStore.detail.author_id
-  );
+  return !!profile && !!detail && profile.user_id === detail.author_id;
 });
 
-async function deleteArticle() {
-  if (articleStore.detail) {
-    await articleStore.deleteArticle({ article_id: articleStore.detail.id });
+async function onDeleteArticle() {
+  if (detail) {
+    await deleteArticle({ article_id: detail.id });
     router.replace("/articles");
   }
 }
 function commentChange() {
-  getAllArticleComment(paginationCommentReq.page);
+  onGetAllArticleComment(paginationCommentReq.page);
 }
 
 function commentDeleted() {
   // When last comment on the page other that 1 deleted
   //  we should back to the previous page to avoid acessing empty page
-  if (
-    paginationCommentReq.page !== 1 &&
-    commentStore.allArticleComment.data.length === 1
-  ) {
+  if (paginationCommentReq.page !== 1 && allArticleComment.data.length === 1) {
     paginationCommentReq.page--;
     return;
   }
@@ -106,39 +96,35 @@ function commentDeleted() {
 </script>
 <template>
   <div
-    v-if="articleStore.detailError"
+    v-if="detailError"
     class="flex w-full flex-[1] items-center justify-center"
   >
     <h2 class="text-destructive text-4xl font-bold italic">
-      🚨 {{ articleStore.detailError.message }} 🚨
+      🚨 {{ detailError.message }} 🚨
     </h2>
   </div>
-  <div v-else-if="articleStore.detail">
+  <div v-else-if="detail">
     <div class="flex items-start justify-between">
       <div class="flex gap-2">
         <p>
-          {{ articleStore.detail.author_username }}
+          {{ detail.author_username }}
         </p>
         <p>
-          {{
-            new Intl.DateTimeFormat().format(
-              new Date(articleStore.detail.created_at),
-            )
-          }}
+          {{ new Intl.DateTimeFormat().format(new Date(detail.created_at)) }}
         </p>
       </div>
       <div class="flex gap-2">
         <ArticleLikeButton
-          v-if="userStore.isAuthenticated"
-          :article-id="articleStore.detail.id"
-          :liked="articleStore.detail.liked"
+          v-if="isAuthenticated"
+          :article-id="detail.id"
+          :liked="detail.liked"
           @like-change="getCurrentArticle"
         />
         <RouterLink
           v-if="allowedToModifyArticle"
           v-slot="{ href, navigate }"
           custom
-          :to="'/articles/form/' + articleStore.detail.id"
+          :to="'/articles/form/' + detail.id"
         >
           <Button background="text" as="a" :href="href" @click="navigate">
             Edit
@@ -156,44 +142,41 @@ function commentDeleted() {
       </div>
     </div>
     <MarkdownPreview
-      :markdown-title="articleStore.detail.title"
-      :markdown-content="articleStore.detail.content"
+      :markdown-title="detail.title"
+      :markdown-content="detail.content"
     />
 
     <CommentFormCreate
-      v-if="userStore.isAuthenticated"
+      v-if="isAuthenticated"
       class="mb-4"
-      :article-id="articleStore.detail.id"
+      :article-id="detail.id"
       @submit-success="getAllArticleComment"
     />
     <div class="flex flex-col gap-4 p-2">
-      <p v-if="commentStore.allArticleComment.data.length === 0">
+      <p v-if="allArticleComment.data.length === 0">
         No comment yet, become the first one!
       </p>
       <template v-else>
         <Comment
-          v-for="comment in commentStore.allArticleComment.data"
+          v-for="comment in allArticleComment.data"
           :key="comment.id"
           :comment-id="comment.id"
           :author-name="comment.author_username"
           :content="comment.content"
           :created-at="comment.created_at"
-          :show-action="
-            !!userStore.profile &&
-            comment.author_id === userStore.profile.user_id
-          "
+          :show-action="!!profile && comment.author_id === profile.user_id"
           @comment-change="commentChange"
           @comment-deleted="commentDeleted"
         />
 
         <Pagination
-          v-if="articleStore.detail"
-          :total-pages="commentStore.allArticleComment.total_pages"
+          v-if="detail"
+          :total-pages="allArticleComment.total_pages"
           class="mx-auto w-fit"
         >
           <template #prev-button>
             <Button
-              :disabled="commentStore.allArticleComment.page <= prevCommentPage"
+              :disabled="allArticleComment.page <= prevCommentPage"
               @click="paginationCommentReq.page--"
             >
               <ChevronLeftIcon />
@@ -201,7 +184,7 @@ function commentDeleted() {
           </template>
           <template #page-item="{ page }">
             <Button
-              :disabled="commentStore.allArticleComment.page === page"
+              :disabled="allArticleComment.page === page"
               @click="paginationCommentReq.page = page"
             >
               {{ page }}
@@ -209,7 +192,7 @@ function commentDeleted() {
           </template>
           <template #next-button>
             <Button
-              :disabled="commentStore.allArticleComment.page >= nextCommentPage"
+              :disabled="allArticleComment.page >= nextCommentPage"
               @click="paginationCommentReq.page++"
             >
               <ChevronRightIcon />
@@ -240,7 +223,7 @@ function commentDeleted() {
       <Button
         class="w-full lg:w-fit"
         variant="destructive"
-        @click="deleteArticle"
+        @click="onDeleteArticle"
       >
         Confirm
       </Button>

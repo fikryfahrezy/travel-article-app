@@ -25,6 +25,17 @@ export const useMutationStateStore = defineStore("mutation-state", {
         });
       }
     },
+    anyPending: (state) => {
+      return computed(() => {
+        const keyLoadingValues = Object.values(state.keys);
+        if (keyLoadingValues.length === 0) {
+        }
+
+        return keyLoadingValues.some((value) => {
+          return value === "pending"
+        });
+      });
+    },
   },
 });
 

@@ -23,7 +23,7 @@ import { useMutationState } from "@tanstack/vue-query";
 
 const route = useRoute();
 const router = useRouter();
-const userStore = useUserStore();
+const { profile, isAuthenticated } = useUserStore();
 const articleSlug = computed(() => {
   return String(route.params.articleSlug || "");
 });
@@ -57,9 +57,9 @@ const nextCommentPage = computed(() => {
 
 const allowedToModifyArticle = computed(() => {
   return (
-    !!userStore.profile &&
+    !!profile &&
     !!articleDetail.value &&
-    userStore.profile.user_id === articleDetail.value.author_id
+    profile.user_id === articleDetail.value.author_id
   );
 });
 
@@ -145,7 +145,7 @@ watch(lastCommentDeleteStatus, (lastStatus) => {
       </div>
       <div class="flex gap-2">
         <ArticleLikeButton
-          v-if="userStore.isAuthenticated"
+          v-if="isAuthenticated"
           :article-id="articleDetail.id"
           :liked="articleDetail.liked"
         />
@@ -176,7 +176,7 @@ watch(lastCommentDeleteStatus, (lastStatus) => {
     />
 
     <CommentFormCreate
-      v-if="userStore.isAuthenticated"
+      v-if="isAuthenticated"
       class="mb-4"
       :article-id="articleDetail.id"
     />
@@ -193,10 +193,7 @@ watch(lastCommentDeleteStatus, (lastStatus) => {
           :author-name="comment.author_username"
           :content="comment.content"
           :created-at="comment.created_at"
-          :show-action="
-            !!userStore.profile &&
-            comment.author_id === userStore.profile.user_id
-          "
+          :show-action="!!profile && comment.author_id === profile.user_id"
         />
 
         <Pagination

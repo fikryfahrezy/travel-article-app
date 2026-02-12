@@ -19,7 +19,7 @@ const props = defineProps({
 });
 
 const { mutateAsync: updateComment } = useUpdateComment();
-const toastStore = useToastStore();
+const { showToast } = useToastStore();
 const formRef = useTemplateRef("form-ref");
 
 const fieldErrors = ref<CommentFormFieldErrors>();
@@ -45,10 +45,10 @@ async function onSubmit() {
       comment_id: props.commentId,
     });
 
-    toastStore.showToast("success", "Successfully update comment.");
+    showToast("success", "Successfully update comment.");
     formElement.reset();
   } catch (error) {
-    toastStore.showToast("error", String(error));
+    showToast("error", String(error));
     return;
   }
 }

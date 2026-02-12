@@ -10,7 +10,7 @@ import { useRoute } from "vue-router";
 import { useArticles } from "@/features/article/composables/article";
 
 const route = useRoute();
-const userStore = useUserStore();
+const { isAuthenticated } = useUserStore();
 
 const paginationPage = computed(() => {
   return Number(route.query.page || 1);
@@ -49,7 +49,7 @@ const nextPage = computed(() => {
       v-for="article in articlesData.data"
       :key="article.id"
       class="w-full lg:h-44 lg:w-fit lg:max-w-96"
-      :show-like-button="userStore.isAuthenticated"
+      :show-like-button="isAuthenticated"
       :article-id="article.id"
       :liked="article.liked"
       :title="article.title"

@@ -22,7 +22,7 @@ const articleId = computed(() => {
   return String(route.params.articleId || "");
 });
 
-const toastStore = useToastStore();
+const { showToast } = useToastStore();
 
 const { mutateAsync: createArticle } = useCreateArticle();
 const { mutateAsync: updateArticle } = useUpdateArticle();
@@ -71,7 +71,7 @@ async function onSubmit() {
       ...articleForm.data,
       article_id: articleIdStr,
     });
-    toastStore.showToast(
+    showToast(
       "success",
       articleIdStr
         ? "Successfully edit article."
@@ -79,7 +79,7 @@ async function onSubmit() {
     );
     router.push("/articles");
   } catch (error) {
-    toastStore.showToast("error", String(error));
+    showToast("error", String(error));
   }
 }
 </script>

@@ -14,8 +14,8 @@ import { useRoute, useRouter } from "vue-router";
 import z from "zod";
 
 const router = useRouter();
-const articleStore = useArticleStore();
-const toastStore = useToastStore();
+const { getArticle, updateArticle, createArticle } = useArticleStore();
+const { showToast } = useToastStore();
 
 const route = useRoute();
 const articleId = String(route.params.articleId || "");
@@ -23,7 +23,7 @@ const articleId = String(route.params.articleId || "");
 let initialTitle = "";
 let initialMarkdownContent = "";
 if (articleId) {
-  const article = await articleStore.getArticle({
+  const article = await getArticle({
     idOrSlug: articleId,
   });
 
@@ -53,19 +53,19 @@ async function onSubmit() {
 
   let articleResult: Result<MutationResDto> | null = null;
   if (articleId) {
-    articleResult = await articleStore.updateArticle({
+    articleResult = await updateArticle({
       ...articleForm.data,
       article_id: articleId,
     });
   } else {
-    articleResult = await articleStore.createArticle(articleForm.data);
+    articleResult = await createArticle(articleForm.data);
   }
   if (!articleResult.success) {
-    toastStore.showToast("error", articleResult.error.message);
+    showToast("error", articleResult.error.message);
     return;
   }
 
-  toastStore.showToast(
+  showToast(
     "success",
     articleId ? "Successfully edit article." : "Successfully create article.",
   );

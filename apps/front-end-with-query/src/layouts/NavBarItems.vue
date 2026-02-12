@@ -6,10 +6,10 @@ import { useUserStore } from "@/features/auth/stores/user";
 import { navItems } from "@/pages/router";
 
 const router = useRouter();
-const userStore = useUserStore();
+const { profile, logout } = useUserStore();
 
 const publicRoutes = computed(() => {
-  if (!userStore.profile) {
+  if (!profile) {
     return navItems;
   }
 
@@ -18,8 +18,8 @@ const publicRoutes = computed(() => {
   });
 });
 
-async function logout() {
-  await userStore.logout();
+async function onLogout() {
+  await logout();
   router.push("/");
 }
 </script>
@@ -39,10 +39,10 @@ async function logout() {
       </template>
     </div>
     <Button
-      v-if="userStore.profile !== null"
+      v-if="profile !== null"
       variant="destructive"
       background="solid"
-      @click="logout"
+      @click="onLogout"
     >
       Logout
     </Button>

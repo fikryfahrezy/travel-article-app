@@ -26,10 +26,10 @@ export const useUserStore = defineStore("user", {
   },
   actions: {
     async getProfile() {
-      const globalLoadingStore = useLoadingStore();
-      const loadingId = globalLoadingStore.startLoading();
+      const { startLoading, stopLoading } = useLoadingStore();
+      const loadingId = startLoading();
       const result = await apiSdk.profile();
-      globalLoadingStore.stopLoading(loadingId);
+      stopLoading(loadingId);
 
       this.profile = result.success ? result.data : null;
       this.profileError = result.success ? null : result.error;
@@ -37,10 +37,10 @@ export const useUserStore = defineStore("user", {
       return result;
     },
     async login(loginReqDto: LoginReqDto) {
-      const globalLoadingStore = useLoadingStore();
-      const loadingId = globalLoadingStore.startLoading();
+      const { startLoading, stopLoading } = useLoadingStore();
+      const loadingId = startLoading();
       const result = await apiSdk.login(loginReqDto);
-      globalLoadingStore.stopLoading(loadingId);
+      stopLoading(loadingId);
 
       if (!result.success) {
         return result;
@@ -50,10 +50,10 @@ export const useUserStore = defineStore("user", {
       return result;
     },
     async register(registerReqDto: RegisterReqDto) {
-      const globalLoadingStore = useLoadingStore();
-      const loadingId = globalLoadingStore.startLoading();
+      const { startLoading, stopLoading } = useLoadingStore();
+      const loadingId = startLoading();
       const result = await apiSdk.register(registerReqDto);
-      globalLoadingStore.stopLoading(loadingId);
+      stopLoading(loadingId);
 
       if (!result.success) {
         return result;
@@ -62,10 +62,10 @@ export const useUserStore = defineStore("user", {
       return result;
     },
     async logout() {
-      const globalLoadingStore = useLoadingStore();
-      const loadingId = globalLoadingStore.startLoading();
+      const { startLoading, stopLoading } = useLoadingStore();
+      const loadingId = startLoading();
       const result = await apiSdk.logout();
-      globalLoadingStore.stopLoading(loadingId);
+      stopLoading(loadingId);
 
       if (!result.success) {
         return result;

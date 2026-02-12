@@ -24,13 +24,13 @@ const articleId = computed(() => {
   return String(route.params.articleId || "");
 });
 
-const toastStore = useToastStore();
+const { showToast } = useToastStore();
 
 const { mutateAsync: createArticle } = useCreateArticle();
 const { mutateAsync: updateArticle } = useUpdateArticle();
 const { data: articleDetail } = useArticleDetail(articleId);
 
-const articleFormStore = useArticleFormStore();
+const { activeTab } = useArticleFormStore();
 
 const _title = ref("");
 const title = computed({
@@ -73,7 +73,7 @@ async function onSubmit() {
       ...articleForm.data,
       article_id: articleIdStr,
     });
-    toastStore.showToast(
+    showToast(
       "success",
       articleIdStr
         ? "Successfully edit article."
@@ -81,7 +81,7 @@ async function onSubmit() {
     );
     await navigateTo("/articles");
   } catch (error) {
-    toastStore.showToast("error", String(error));
+    showToast("error", String(error));
   }
 }
 </script>
@@ -92,7 +92,7 @@ async function onSubmit() {
     @submit.prevent="onSubmit"
   >
     <div
-      v-if="articleFormStore.activeTab === 'editor'"
+      v-if="activeTab === 'editor'"
       class="flex w-full flex-[1] flex-col gap-4"
     >
       <input
@@ -132,7 +132,7 @@ async function onSubmit() {
       </ul>
     </div>
     <MarkdownPreview
-      v-if="articleFormStore.activeTab === 'preview'"
+      v-if="activeTab === 'preview'"
       :markdown-title="title"
       :markdown-content="markdownContent"
       class="overflow-y-scroll"
