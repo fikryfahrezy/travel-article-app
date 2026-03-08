@@ -1,6 +1,11 @@
 {
   "name": "travel-article-app",
   "version": "0.0.0",
+  "engines": {
+    "node": ">=22",
+    "npm": ">=10",
+    "pnpm": ">=10"
+  },
   "scripts": {
     "be:build": "cd apps/back-end && npm run build",
     "be:dev": "cd apps/back-end && npm run dev",
