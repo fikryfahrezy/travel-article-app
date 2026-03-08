@@ -12,5 +12,3 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-    ports:
-      - "3000:3000"
